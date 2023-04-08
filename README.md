@@ -1,3 +1,24 @@
+# URSA
+
+**U**rban **R**eporting based on **S**atellite **A**nalysis
+
+## **¿Qué es?**
+
+URSA es un sistema de apoyo para la planificación urbana. Permite acceder de forma sencilla a la enorme cantidad de información capturada por sensores satelitales, encargándose de recopilar, procesar y presentar información clave acerca de la evolución de ciudades en Latinoamérica y el Caribe (LAC).
+
+URSA es una herramienta gratuita, de código abierto.
+
+
+## ¿Por qué fue desarrollada?
+
+El sistema fue desarrollado en colaboración entre la División de Vivienda y Desarrollo Urbano (HUD) del BID y el Centro para el Futuro de las Ciudades del Tecnológico de Monterrey. La misión fue la de diseñar una plataforma que permita a los gobiernos municipales adquirir de forma fácil información cartográfica actualizada, en el formato apropiado y en la resolución geográfica adecuada. 
+
+
+## ¿Por qué la estamos compartiendo?
+
+URSA está a disposición del público general, y sobre todo de equipos de gobierno, para apoyar los procesos de toma de decisiones, planificación y gestión en ciudades y regiones metropolitanas.
+
+
 ## Instalación
 
 (estos pasos son requeridos sólo una vez)
