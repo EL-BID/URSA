@@ -18,6 +18,7 @@ El sistema fue desarrollado en colaboración entre la División de Vivienda y De
 
 URSA está a disposición del público general, y sobre todo de equipos de gobierno, para apoyar los procesos de toma de decisiones, planificación y gestión en ciudades y regiones metropolitanas.
 
+![](https://github.com/bitsandbricks/URSA/raw/main/documentation/URSA_analisis_historico_.gif)
 
 ## Instalación
 
