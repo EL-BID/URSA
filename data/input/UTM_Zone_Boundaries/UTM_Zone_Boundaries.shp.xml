@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<metadata>
+	<idinfo>
+		<citation>
+			<citeinfo>
+				<origin>Coordinate Systems Analysis Team (SNAC) of the National Geospatial-Intelligence Agency (NGA)</origin>
+				<pubdate>2009</pubdate>
+				<title Sync="TRUE">UTM_Zones_Worldwide</title>
+				<geoform Sync="TRUE">vector digital data</geoform>
+				<serinfo>
+					<sername>UTM zone shapefiles</sername>
+				</serinfo>
+				<pubinfo>
+					<pubplace>NGA St. Louis</pubplace>
+					<publish>SNAC</publish>
+				</pubinfo>
+				<ftname Sync="TRUE">UTM_Zones_Worldwide</ftname><onlink Sync="TRUE">\\STLC056605G\E\ReferenceSystems\UGS\UTM\UTM_polygons\UTM_Zones\WorldWide\UTM_Zones_Worldwide.shp</onlink></citeinfo>
+		</citation>
+		<descript>
+			<abstract>This is a UTM polygon shapefile.  The polygons are defined by UTM zone and hemisphere.  There are 60 UTM zones numbered from 01 to 60.  There are two hemispheres, north and south.  There are no classification restrictions on this information.  This information was created by the National Geospatial-Intelligence Agency (NGA) Coordinate Systems Analysis Team (SNAC).  This information was created in 2009.  Acronyms used in the attribute table include: CM = central meridian, n = northern hemisphere, s = southern hemisphere.  Abbreviations used in the attribute table include: LAT = latitude, LONG = longitude, HEMI = hemisphere.</abstract>
+			<purpose>The purpose of this file is for GIS use, reference graphics, and instruction.  To show all 60 zones worldwide, it should be demonstrated in the GCS_WGS84 projection.  It can also be referenced to a particular zone and hemisphere, but only that zone and hemisphere will be properly displayed in the arc window.  </purpose>
+			<langdata Sync="TRUE">en</langdata></descript>
+		<timeperd>
+			<timeinfo>
+				<sngdate>
+					<caldate>2009</caldate>
+				</sngdate>
+			</timeinfo>
+			<current>publication date</current>
+		</timeperd>
+		<status>
+			<progress>Complete</progress>
+			<update>None planned</update>
+		</status>
+		<spdom>
+			<bounding>
+				<westbc Sync="TRUE">-180.000000</westbc>
+				<eastbc Sync="TRUE">180.000000</eastbc>
+				<northbc Sync="TRUE">84.000000</northbc>
+				<southbc Sync="TRUE">-80.000000</southbc>
+			</bounding>
+			<lboundng><leftbc Sync="TRUE">-180.000000</leftbc><rightbc Sync="TRUE">180.000000</rightbc><bottombc Sync="TRUE">-80.000000</bottombc><topbc Sync="TRUE">84.000000</topbc></lboundng></spdom>
+		<keywords>
+			<theme>
+				<themekt>ISO 19115</themekt>
+				<themekey>Location</themekey>
+				<themekey>Polygon</themekey>
+				<themekey>Grid</themekey>
+				<themekey>Reference System</themekey>
+				<themekey>Grid System</themekey>
+				<themekey>Grid Reference System</themekey>
+				<themekey>UTM</themekey>
+				<themekey>Zone</themekey></theme>
+		</keywords>
+		<accconst>none</accconst>
+		<useconst>There are no use constraints on this information.  There are no classification restrictions on this information.</useconst>
+		<ptcontac>
+			<cntinfo>
+				<cntorgp>
+					<cntorg>Coordinate Systems Analysis Team (SNAC) of National Geospatial-Intelligence Agency</cntorg>
+				</cntorgp>
+				<cntaddr>
+					<addrtype>mailing address</addrtype>
+					<address>SNAC, Mail Stop L-41</address>
+					<address>NGA St. Louis</address>
+					<address>3838 Vogel Rd.</address>
+					<city>Arnold</city>
+					<state>MO</state>
+					<postal>63010-6238</postal>
+					<country>USA</country>
+				</cntaddr>
+				<cntvoice>314.676.9124</cntvoice>
+				<cntfax>314.676.3113</cntfax>
+				<cntemail>brian.n.akers@nga.mil</cntemail>
+				<cntemail>kurt.j.schulz@nga.mil</cntemail>
+			</cntinfo>
+		</ptcontac>
+		<browse>
+			<browsen>UTM_Zones_Worldwide</browsen>
+			<browsed>Shapefile of the UTM zones defined by UTM zone and hemisphere, worldwide.</browsed>
+			<browset>Shapefile</browset>
+		</browse>
+		<secinfo>
+			<secsys>Unclassified</secsys>
+			<secclass>Unclassified</secclass>
+			<sechandl>no restrictions</sechandl>
+		</secinfo>
+		<native Sync="TRUE">Microsoft Windows XP Version 5.1 (Build 2600) Service Pack 2; ESRI ArcCatalog 9.2.2.1350</native>
+		<natvform Sync="TRUE">Shapefile</natvform></idinfo>
+	<spdoinfo>
+		<direct Sync="TRUE">Vector</direct>
+		<ptvctinf>
+			<sdtsterm Name="UTM_Zones_Worldwide">
+				<sdtstype Sync="TRUE">G-polygon</sdtstype>
+				<ptvctcnt Sync="TRUE">120</ptvctcnt>
+			</sdtsterm>
+			<esriterm Name="UTM_Zones_Worldwide"><efeatyp Sync="TRUE">Simple</efeatyp><efeageom Sync="TRUE">Polygon</efeageom><esritopo Sync="TRUE">FALSE</esritopo><efeacnt Sync="TRUE">120</efeacnt><spindex Sync="TRUE">TRUE</spindex><linrefer Sync="TRUE">FALSE</linrefer></esriterm></ptvctinf>
+	</spdoinfo>
+	<spref>
+		<horizsys>
+			<geodetic>
+				<horizdn Sync="TRUE">D_WGS_1984</horizdn>
+				<ellips Sync="TRUE">WGS_1984</ellips>
+				<semiaxis Sync="TRUE">6378137.000000</semiaxis>
+				<denflat Sync="TRUE">298.257224</denflat>
+			</geodetic>
+			<cordsysn><geogcsn Sync="TRUE">GCS_WGS_1984</geogcsn></cordsysn><geograph><geogunit Sync="TRUE">Decimal degrees</geogunit><latres Sync="TRUE">0.000000</latres><longres Sync="TRUE">0.000000</longres></geograph></horizsys>
+	</spref>
+	<eainfo>
+		<detailed Name="UTM_Zones_Worldwide">
+			<attr>
+				<attrlabl>CM</attrlabl>
+				<attrtype Sync="TRUE">String</attrtype><attwidth Sync="TRUE">3</attwidth></attr>
+			<attr><attrlabl Sync="TRUE">Zone</attrlabl><attalias Sync="TRUE">Zone</attalias><attrtype Sync="TRUE">String</attrtype><attwidth Sync="TRUE">3</attwidth></attr><attr><attrlabl Sync="TRUE">Hemisphere</attrlabl><attalias Sync="TRUE">Hemisphere</attalias><attrtype Sync="TRUE">String</attrtype><attwidth Sync="TRUE">254</attwidth></attr><attr><attrlabl Sync="TRUE">SWLON</attrlabl><attalias Sync="TRUE">SWLON</attalias><attrtype Sync="TRUE">String</attrtype><attwidth Sync="TRUE">254</attwidth></attr><enttyp>
+				<enttypl Sync="TRUE">UTM_Zones_Worldwide</enttypl>
+				<enttypt Sync="TRUE">Feature Class</enttypt><enttypc Sync="TRUE">120</enttypc></enttyp>
+			<attr><attrlabl Sync="TRUE">SWLAT</attrlabl><attalias Sync="TRUE">SWLAT</attalias><attrtype Sync="TRUE">String</attrtype><attwidth Sync="TRUE">3</attwidth></attr><attr>
+				<attrlabl>FID</attrlabl>
+				<attrdef>Internal feature number.</attrdef>
+				<attrdefs>ESRI</attrdefs>
+				<attrdomv>
+					<udom>Sequential unique whole numbers that are automatically generated.</udom>
+				</attrdomv>
+				<attrtype Sync="TRUE">String</attrtype><attwidth Sync="TRUE">5</attwidth></attr>
+			<attr>
+				<attrlabl>Shape</attrlabl>
+				<attrdef>Feature geometry.</attrdef>
+				<attrdefs>ESRI</attrdefs>
+				<attrdomv>
+					<udom>Coordinates defining the features.</udom>
+				</attrdomv>
+				<attrtype Sync="TRUE">String</attrtype><attwidth Sync="TRUE">5</attwidth></attr>
+			<attr><attrlabl Sync="TRUE">HEMISPHERE</attrlabl><attalias Sync="TRUE">HEMISPHERE</attalias><attrtype Sync="TRUE">String</attrtype><attwidth Sync="TRUE">5</attwidth></attr><attr><attrlabl Sync="TRUE">ZONE</attrlabl><attalias Sync="TRUE">ZONE</attalias><attrtype Sync="TRUE">String</attrtype><attwidth Sync="TRUE">5</attwidth><atprecis Sync="TRUE">0</atprecis><attscale Sync="TRUE">0</attscale></attr><attr><attrlabl Sync="TRUE">Zone_Hemi</attrlabl><attalias Sync="TRUE">Zone_Hemi</attalias><attrtype Sync="TRUE">String</attrtype><attwidth Sync="TRUE">5</attwidth><atprecis Sync="TRUE">0</atprecis><attscale Sync="TRUE">0</attscale></attr></detailed>
+	</eainfo>
+	<distinfo>
+		<distrib>
+			<cntinfo>
+				<cntorgp>
+					<cntorg>Coordinate Systems Analysis Team (SNAC) of the National Geospatial Intelligence Agency (NGA)</cntorg>
+				</cntorgp>
+				<cntvoice>314.676.9124</cntvoice>
+				<cntfax>314.676.3113</cntfax>
+				<cntemail>brian.n.akers@nga.mil</cntemail>
+				<cntemail>kurt.j.schulz@nga.mil</cntemail>
+			</cntinfo>
+		</distrib>
+		<resdesc>Downloadable Data</resdesc>
+		<distliab>none</distliab>
+		<stdorder>
+			<digform>
+				<digtinfo>
+					<transize>1.755</transize>
+					<dssize Sync="TRUE">0.874</dssize></digtinfo>
+			</digform>
+			<fees>none</fees>
+			<ordering>web download, email contact, phone contact</ordering>
+		</stdorder>
+		<custom>contact shapefile producer</custom>
+		<techpreq>ESRI</techpreq>
+	</distinfo>
+	<metainfo>
+		<metd Sync="TRUE">20091016</metd>
+		<metc>
+			<cntinfo>
+				<cntorgp>
+					<cntorg>SNAC</cntorg>
+					<cntper>REQUIRED: The person responsible for the metadata information.</cntper></cntorgp>
+				<cntaddr>
+					<addrtype>mailing address</addrtype>
+					<address>SNAC, Mail Stop L-41</address>
+					<address>NGA St. Louis</address>
+					<address>3838 Vogel Rd.</address>
+					<city>Arnold</city>
+					<state>MO</state>
+					<postal>63010-6238</postal>
+					<country>USA</country>
+				</cntaddr>
+				<cntvoice>314.676.9124</cntvoice>
+				<cntfax>314.676.3113</cntfax>
+				<cntemail>brian.n.akers@nga.mil</cntemail>
+				<cntemail>kurt.j.schulz@nga.mil</cntemail>
+			</cntinfo>
+		</metc>
+		<metstdn Sync="TRUE">FGDC Content Standards for Digital Geospatial Metadata</metstdn>
+		<metstdv Sync="TRUE">FGDC-STD-001-1998</metstdv>
+		<mettc Sync="TRUE">local time</mettc>
+		<metsi>
+			<metscs>unclassified</metscs>
+			<metsc>Unclassified</metsc>
+			<metshd>no restrictions</metshd>
+		</metsi>
+		<metextns>
+			<onlink>http://www.esri.com/metadata/esriprof80.html</onlink>
+			<metprof>ESRI Metadata Profile</metprof>
+		</metextns>
+		<langmeta Sync="TRUE">en</langmeta><metextns><onlink Sync="TRUE">http://www.esri.com/metadata/esriprof80.html</onlink><metprof Sync="TRUE">ESRI Metadata Profile</metprof></metextns></metainfo>
+	<Esri><CreaDate>20091016</CreaDate><CreaTime>11284400</CreaTime><SyncOnce>FALSE</SyncOnce><ModDate>20091016</ModDate><ModTime>14501500</ModTime><SyncDate>20091016</SyncDate><SyncTime>14501500</SyncTime><MetaID>{C46CC5B2-4BEC-4370-AC07-43E9118629B8}</MetaID></Esri><dataqual><lineage><procstep><procdesc Sync="TRUE">Metadata imported.</procdesc><srcused Sync="TRUE">C:\DOCUME~1\akersbn\LOCALS~1\Temp\xmlB0.tmp</srcused><date Sync="TRUE">20090710</date><time Sync="TRUE">15090800</time></procstep><procstep><procdesc Sync="TRUE">Metadata imported.</procdesc><srcused Sync="TRUE">E:\ReferenceSystems\UGS\MGRS\GZD\ByZone_Hemi\Zone02\n\metadata.xml</srcused><date Sync="TRUE">20091014</date><time Sync="TRUE">14234500</time></procstep><procstep><procdesc Sync="TRUE">Metadata imported.</procdesc><srcused Sync="TRUE">E:\ReferenceSystems\UGS\MGRS\GZD\ByZone_Hemi\Zone02\s\GZD_02s.shp.xml</srcused><date Sync="TRUE">20091016</date><time Sync="TRUE">11284400</time></procstep></lineage></dataqual><mdDateSt Sync="TRUE">20091016</mdDateSt><dataIdInfo><envirDesc Sync="TRUE">Microsoft Windows XP Version 5.1 (Build 2600) Service Pack 2; ESRI ArcCatalog 9.2.2.1350</envirDesc><dataLang><languageCode Sync="TRUE" value="en"></languageCode></dataLang><idCitation><resTitle Sync="TRUE">UTM_Zones_Worldwide</resTitle><presForm><PresFormCd Sync="TRUE" value="005"></PresFormCd></presForm></idCitation><spatRpType><SpatRepTypCd Sync="TRUE" value="001"></SpatRepTypCd></spatRpType><dataExt><geoEle><GeoBndBox esriExtentType="native"><westBL Sync="TRUE">-180</westBL><eastBL Sync="TRUE">180</eastBL><northBL Sync="TRUE">84</northBL><southBL Sync="TRUE">-80</southBL><exTypeCode Sync="TRUE">1</exTypeCode></GeoBndBox></geoEle></dataExt><geoBox esriExtentType="decdegrees"><westBL Sync="TRUE">-180</westBL><eastBL Sync="TRUE">180</eastBL><northBL Sync="TRUE">84</northBL><southBL Sync="TRUE">-80</southBL><exTypeCode Sync="TRUE">1</exTypeCode></geoBox></dataIdInfo><mdLang><languageCode Sync="TRUE" value="en"></languageCode></mdLang><mdStanName Sync="TRUE">ISO 19115 Geographic Information - Metadata</mdStanName><mdStanVer Sync="TRUE">DIS_ESRI1.0</mdStanVer><mdChar><CharSetCd Sync="TRUE" value="004"></CharSetCd></mdChar><mdHrLv><ScopeCd Sync="TRUE" value="005"></ScopeCd></mdHrLv><mdHrLvName Sync="TRUE">dataset</mdHrLvName><distInfo><distributor><distorTran><onLineSrc><orDesc Sync="TRUE">002</orDesc><linkage Sync="TRUE">file://\\STLC056605G\E\ReferenceSystems\UGS\UTM\UTM_polygons\UTM_Zones\WorldWide\UTM_Zones_Worldwide.shp</linkage><protocol Sync="TRUE">Local Area Network</protocol></onLineSrc><transSize Sync="TRUE">0.874</transSize></distorTran><distorFormat><formatName Sync="TRUE">Shapefile</formatName></distorFormat></distributor></distInfo><refSysInfo><RefSystem><refSysID><identCode Sync="TRUE">GCS_WGS_1984</identCode></refSysID></RefSystem></refSysInfo><spatRepInfo><VectSpatRep><topLvl><TopoLevCd Sync="TRUE" value="001"></TopoLevCd></topLvl><geometObjs Name="UTM_Zones_Worldwide"><geoObjTyp><GeoObjTypCd Sync="TRUE" value="001"></GeoObjTypCd></geoObjTyp><geoObjCnt Sync="TRUE">120</geoObjCnt></geometObjs></VectSpatRep></spatRepInfo></metadata>
