@@ -1,3 +1,5 @@
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=EL-BID_URSA&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=EL-BID_URSA)
+
 # URSA
 
 **U**rban **R**eporting based on **S**atellite **A**nalysis
