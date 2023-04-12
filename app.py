@@ -116,4 +116,4 @@ if __name__ == "__main__":
         print("Unexpected error:", sys.exc_info()[0])
         print("¡Error desconocido en la autenticación!")
         raise
-    app.run_server(host='0.0.0.0', debug=True)
+    app.run_server(host='0.0.0.0', debug=False)
