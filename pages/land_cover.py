@@ -3,9 +3,8 @@ from dash import html, dcc
 import dash_bootstrap_components as dbc
 from urllib.parse import unquote
 from pathlib import Path
-import sys
 
-sys.path.append('./src')
+from caching_utils import make_cache_dir
 from dynamic_world import plot_map_season, plot_lc_year, plot_lc_time_series
 from components.text import figureWithDescription
 from components.page import pageContent
@@ -48,8 +47,7 @@ def layout(country='', city=''):
 
     country = unquote(country)
     city = unquote(city)
-    path_cache = Path(f'./data/cache/{country}-{city}')
-    path_cache.mkdir(exist_ok=True)
+    path_cache : Path = make_cache_dir(f'./data/cache/{country}-{city}')
 
     # Load figures
     map1 = plot_map_season(country, city, path_fua,

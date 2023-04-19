@@ -8,9 +8,9 @@ from pathlib import Path
 import ee
 import subprocess
 import sys
-# from ast import literal_eval
-# import json
-# mport base64
+
+sys.path.append('./src')
+sys.path.append('./utils')
 
 data_path = Path('./data')
 

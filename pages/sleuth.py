@@ -2,8 +2,8 @@ import dash
 from dash import html, dcc, callback, Input, Output, State
 from urllib.parse import unquote
 from pathlib import Path
-import sys
-sys.path.append('./src')
+
+from caching_utils import make_cache_dir
 import sleuth_prep as prep
 
 path_fua = Path('./data/output/cities/')
@@ -22,8 +22,7 @@ def layout(country='', city=''):
 
     country = unquote(country)
     city = unquote(city)
-    path_cache = Path(f'./data/cache/{country}-{city}')
-    path_cache.mkdir(exist_ok=True)
+    path_cache : Path = make_cache_dir(f'./data/cache/{country}-{city}')
 
     fpath = prep.load_or_prep_rasters(country, city, path_fua, path_cache)
     scen_path = prep.create_scenario_file(

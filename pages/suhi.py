@@ -4,8 +4,7 @@ import dash_bootstrap_components as dbc
 from urllib.parse import unquote
 from pathlib import Path
 
-import sys
-sys.path.append('./src')
+from caching_utils import make_cache_dir
 import heat_islands as ht
 from components.text import figureWithDescription
 from components.page import pageContent
@@ -321,8 +320,7 @@ def layout(country="", city=""):
 
     country = unquote(country)
     city = unquote(city)
-    path_cache = Path(f'./data/cache/{country}-{city}')
-    path_cache.mkdir(exist_ok=True)
+    path_cache : Path = make_cache_dir(f'./data/cache/{country}-{city}')
 
     global globalCity
     global globalCountry
