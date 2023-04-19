@@ -8,7 +8,6 @@ import sys
 sys.path.append('./src')
 import heat_islands as ht
 from components.text import figureWithDescription
-from components.text import figureWithDescriptionOnTheSide
 from components.page import pageContent
 
 path_fua = Path('./data/output/cities/')
@@ -209,82 +208,41 @@ globalUrbanMeanTemp = None
 
 
 def format_temp(temp):
-    return f'{round(temp, 1)} °C'
+    return f'{round(temp, 2)} °C'
 
 
 def meanTempView(urban_mean_temperature):
 
-    col1 = dbc.Col(
-        [
-            html.P(
-                "Temperatura promedio",
-                style=SUBTITLE_STYLE
-            ),
-            html.P(
-                f"{format_temp(urban_mean_temperature)}",
-                id="urban_mean_temperature",
-                style=MEAN_TEMPERATURE_STYLE,
-            ),
-        ]
+    title = html.P("Temperatura promedio", style=SUBTITLE_STYLE)
+
+    paragraph1 = html.P(
+        f"{format_temp(urban_mean_temperature)}",
+        id="urban_mean_temperature",
+        style=MEAN_TEMPERATURE_STYLE,
     )
 
-    col2 = dbc.Col(
+    paragraph2 = html.P(
         [
-            html.P(
-                [
-                    (
-                        "* Datos obtenidos para el año 2022 a partir de "
-                        "la imagen satelital "
-                    ),
-                    html.A(
-                        "USGS Landsat 8 Level 2, Collection 2, Tier 1",
-                        href=(
-                            "https://developers.google.com/earth-engine"
-                            "/datasets/catalog/LANDSAT_LC08_C02_T1_L2"
-                        ),
-                    ),
-                ],
-                style={"fontSize": "0.8rem"},
-            )
-        ]
+            ("* Datos obtenidos para el año 2022 a partir de " "la imagen satelital "),
+            html.A(
+                "USGS Landsat 8 Level 2, Collection 2, Tier 1",
+                href=(
+                    "https://developers.google.com/earth-engine"
+                    "/datasets/catalog/LANDSAT_LC08_C02_T1_L2"
+                ),
+            ),
+        ],
+        style={"fontSize": "0.8rem"},
     )
 
     return html.Div(
         [
-            html.Div(
-                [
-                    dbc.Row(
-                        [
-                            col1,
-                            col2,
-                        ],
-                        style={"margin-bottom": "15px"},
-                    ),
-                ]
-            )
-        ]
+            title,
+            paragraph1,
+            paragraph2,
+        ],
+        style={"margin-bottom": "15px"},
     )
-
-
-# def resultsView(urban_mean_temperature):
-#     return html.Div(
-#         [
-#             html.Div(
-#                 [
-#                     html.Div(
-#                         'Temperatura promedio',
-#                         style=SUBTITLE_STYLE
-#                     ),
-#                     html.Div(
-#                         f'{urban_mean_temperature}',
-#                         id='urban_mean_temperature',
-#                         style=MEAN_TEMPERATURE_STYLE
-#                     )
-#                 ]
-#             )
-#         ]
-#     )
-
 
 impactView = html.Div(
     [
@@ -356,17 +314,7 @@ def right_side(urban_mean_temperature):
     )
 
 
-# def text_box(urban_mean_temperature):
-#     return html.Div(
-#         [
-#             resultsView(urban_mean_temperature),
-#             strategyList,
-#             impactView
-#         ],
-#     )
-
-
-def layout(country='', city=''):
+def layout(country="", city=""):
 
     if not city or not country:
         return 'No city selected'
@@ -473,28 +421,6 @@ def layout(country='', city=''):
 
     return layout
 
-
-# @callback(
-#     Output('impact-result-degrees', 'children'),
-#     Output('impact-mitigated-degrees', 'children'),
-#     Input('strategy-checklist', 'value')
-# )
-# def update_mitigation_degrees(values):
-#     global globalUrbanMeanTemp
-#     if globalUrbanMeanTemp is None:
-#         print('here inside calculating globalUrbanMeanTemp')
-#         globalUrbanMeanTemp = ht.get_urban_mean(globalCity,
-#                                                 globalCountry,
-#                                                 path_fua,
-#                                                 'Qall', 2022,
-#                                                 globalPathCache)
-#     mitigatedDegrees = 0
-#     for strategyId in values:
-#         mitigatedDegrees += STRATEGIES[strategyId]['mitigation']
-#     mitigatedUrbanTemperature = globalUrbanMeanTemp - mitigatedDegrees
-#     return format_temp(mitigatedUrbanTemperature), format_temp(mitigatedDegrees)
-
-
 @callback(
     Output('impact-result-square-kilometers', 'children'),
     Output('impact-result-kilometers', 'children'),
@@ -523,23 +449,23 @@ def update_mitigation_kilometers(values):
     mitigatedDegrees = 0
     impactedSquareKm = 0
     impactedKm = 0
-    roadsAdded = False
-    buildingsAdded = False
+
     for strategyId in values:
-        areaFraction = STRATEGIES[strategyId]['area_fraction']
-        if not buildingsAdded and (strategyId == 'strat-techos-verdes'
-                                   or strategyId == 'strat-techos-frescos'):
-            impactedSquareKm += area_roofs * areaFraction
-            mitigatedDegrees += STRATEGIES[strategyId]['mitigation']
-            buildingsAdded = True
-        elif not roadsAdded and (strategyId == 'strat-pavimento-concreto'
-                                 or strategyId == 'strat-pavimento-reflector'):
+        mitigatedDegrees += STRATEGIES[strategyId]["mitigation"]
+        areaFraction = STRATEGIES[strategyId]["area_fraction"]
+        if (
+            strategyId == "strat-pavimento-concreto"
+            or strategyId == "strat-pavimento-reflector"
+        ):
             impactedKm += roads_distance
-            mitigatedDegrees += STRATEGIES[strategyId]['mitigation']
-            roadsAdded = True
-        elif strategyId == 'strat-vegetacion':
-            mitigatedDegrees += STRATEGIES[strategyId]['mitigation']
+        elif (
+            strategyId == "strat-techos-verdes" or strategyId == "strat-techos-frescos"
+        ):
+            impactedSquareKm += area_roofs * areaFraction
+        elif strategyId == "strat-vegetacion":
             impactedSquareKm += area_urban * areaFraction
+        else:
+            pass
 
     mitigatedUrbanTemperature = globalUrbanMeanTemp - mitigatedDegrees
 
