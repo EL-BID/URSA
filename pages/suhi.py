@@ -3,6 +3,7 @@ from dash import html, dcc, callback, Input, Output
 import dash_bootstrap_components as dbc
 from urllib.parse import unquote
 from pathlib import Path
+import pandas as pd
 
 from caching_utils import make_cache_dir
 import heat_islands as ht
@@ -202,7 +203,7 @@ STRATEGIES = {
 
 globalCountry = ''
 globalCity = ''
-globalPathCache = ''
+globalPathCache = Path()
 globalUrbanMeanTemp = None
 
 
@@ -405,12 +406,18 @@ def layout(country="", city=""):
         ]
     )
 
+    download_button = html.Div([
+            dbc.Button('Descargar datos',
+                        id='btn-csv',
+                        color='light'),
+            dcc.Download(id="download-dataframe-csv")
+    ])
     welcomeAlert = dbc.Alert(WELCOME_CONTENT, color="secondary")
     mapIntroAlert = dbc.Alert(MAP_INTRO_TEXT, color="light")
 
     layout = pageContent(
         pageTitle="Islas de calor",
-        alerts=[welcomeAlert, mapIntroAlert],
+        alerts=[welcomeAlert, mapIntroAlert, download_button],
         content=[
             map_and_checks,
             plots,
@@ -473,3 +480,14 @@ def update_mitigation_kilometers(values):
         format_temp(mitigatedUrbanTemperature),
         format_temp(mitigatedDegrees)
     )
+
+@callback(
+    Output('download-dataframe-csv', 'data'),
+    Input('btn-csv', 'n_clicks'),
+    prevent_initial_call=True
+)
+def download_file(n_clicks):
+    csv_path = globalPathCache / 'land_cover_by_temp.csv'
+    if csv_path.exists():
+        df = pd.read_csv(csv_path)
+        return dcc.send_data_frame(df.to_csv, f'{globalCity}_{globalCountry}-suhi-data.csv')
