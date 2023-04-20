@@ -11,22 +11,16 @@ BLOCK_STYLE = {
 }
 
 
-def figureWithDescription(fig, text):
+def figureWithDescription(fig, text, title='Default title (change me)'):
     return html.Div(
         [
             html.Div(
                 fig,
                 style=FIG_STYLE
             ),
-            html.Div(
-                [
-                    html.Hr(),
-                    text,
-                ],
-                style={
-                    'margin': '0 50px',
-                }
-            ),
+            html.H3(title),
+            html.Hr(),
+            text,
         ],
         style=BLOCK_STYLE
     )
