@@ -13,7 +13,7 @@ path_fua = Path('./data/output/cities/')
 
 dash.register_page(
     __name__,
-    title='SUHI',
+    title='URSA',
     path_template='suhi/<country>/<city>'
 )
 

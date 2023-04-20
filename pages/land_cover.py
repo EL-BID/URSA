@@ -13,7 +13,7 @@ path_fua = Path('./data/output/cities/')
 
 dash.register_page(
     __name__,
-    title='Cobertura de suelo',
+    title='URSA',
     path_template='land-cover/<country>/<city>'
 )
 

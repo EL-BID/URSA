@@ -1,7 +1,11 @@
 import dash
 from dash import html
 
-dash.register_page(__name__, path='/')
+dash.register_page(
+    __name__,
+    title='URSA',
+    path='/'
+)
 
 layout = html.Div(
     children=[

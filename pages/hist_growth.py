@@ -19,7 +19,7 @@ path_fua = Path('./data/output/cities/')
 
 dash.register_page(
     __name__,
-    title='Crecimiento histórico',
+    title='URSA',
     path_template='hist-growth/<country>/<city>'
 )
 
