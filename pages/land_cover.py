@@ -65,7 +65,8 @@ def layout(country='', city=''):
                 "pixel pertnezca a la clase mostrada. "
                 "Notese que los bordes entre clases presentan mayor "
                 "incertidumbre."
-            )
+            ),
+            'Clasificación del Territorio por Categoría de Uso de Suelo (Año 2022)'
     )
 
     lines = html.Div([
@@ -75,7 +76,8 @@ def layout(country='', city=''):
                 "El gráfico de barras muestra las superficie en kilómetros "
                 "cuadrados que le corresponde a cada clase de cobertura en "
                 "el año 2022."
-            )
+            ),
+            'Superficie por Categoría de Uso de Suelo (Año 2022)'
         ),
         figureWithDescription(
             dcc.Graph(figure=lines2),

@@ -466,7 +466,7 @@ def plot_temp_areas(country, city, path_fua, path_cache,
         df_t_areas.rename(columns={'urban': 'Urbana', 'rural': 'Rural'}),
         x=[k for i, k in enumerate(colors.keys()) if i+1 in df_t_areas.index],
         y=['Urbana', 'Rural'],
-        color_discrete_sequence=['gray', 'green'])
+        color_discrete_sequence=['black', 'gray'])
 
     fig.update_layout(
         # title="Plot Title",
@@ -566,8 +566,8 @@ def plot_radial_temperature(country, city, path_fua, path_cache,
                               bbox_latlon, uc_latlon)
 
     fig = px.line(
-        x=df["radius"],
-        y=df["reduced"],
+        x=df["radius"].map(lambda x: round(x, 1)),
+        y=df["reduced"].map(lambda x: round(x, 1)),
         labels={
             "x": "Radio (km)",
             "y": "Diferencia con respecto a la temperatura rural (°C)",
@@ -641,8 +641,10 @@ def plot_radial_lc(country, city, path_fua, path_cache,
     df = load_or_get_radial_lc(bbox_ee, start_date, end_date, path_cache,
                                bbox_latlon, uc_latlon)
 
+    df.round(1)
     colors = [wc.COVER_PALETTE_NAME_MAP[x] for x in df.columns]
     x = list(df.index)
+    map(lambda x: round(x, 1), x)
 
     fig = go.Figure()
     for col, color in zip(df.columns, colors):

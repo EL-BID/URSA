@@ -123,23 +123,23 @@ MAP_POP_EXPANDED_TEXT = (
 )
 
 LINE_GRAPH_TEXT_1 = (
-    "Este primer gráfico de líneas muestra el cambio en la"
-    "superficie urbanizada dentro de la zona de interés del año 1975 al 2020. "
-    "El cambio se desglosa en dos categorías: "
-    "la superficie urbana dentro del cluster urbano principal y "
-    "la superficie urbana en la periferia (desconectada y sin contigüidad "
-    "con la mancha urbana). "
-    "El recuadro con un contorno azul en los mapas delimita la zona de "
-    "análisis en la región metropolitana, a partir del cual se derivan "
-    "ambas categorías de la urbanización. "
-    "La línea en color marrón en el gráfico corresponde a la superficie "
-    "urbana del centro urbano principal, "
-    "misma que se identifica en los mapas como el recuadro con un contorno "
-    "en color marrón. "
-    "La línea amarilla del gráfico representa el cambio por año en la "
-    "superficie urbana en la periferia de la ciudad, "
-    "cuya representación en el mapa se puede identificar como un recuadro "
-    "con un color amarillo."
+    """Este primer gráfico de líneas muestra el cambio en la
+    superficie urbanizada dentro de la zona de interés del año 1975 al 2020.
+    El cambio se desglosa en dos categorías:
+    la superficie urbana dentro del cluster urbano principal y
+    la superficie urbana en la periferia (desconectada y sin contigüidad
+    con la mancha urbana).
+    El recuadro con un contorno azul en los mapas delimita la zona de
+    análisis en la región metropolitana, a partir del cual se derivan
+    ambas categorías de la urbanización.
+    La línea en color marrón en el gráfico corresponde a la superficie
+    urbana del centro urbano principal,
+    misma que se identifica en los mapas como el recuadro con un contorno
+    en color marrón.
+    La línea amarilla del gráfico representa el cambio por año en la
+    superficie urbana en la periferia de la ciudad,
+    cuya representación en el mapa se puede identificar como un recuadro
+    con un color amarillo."""
 )
 
 LINE_GRAPH_TEXT_2 = html.Div(
@@ -193,26 +193,20 @@ compara ambos elementos y su cambio en el tiempo. Las
 fracciones se presentan para toda la zona metropolitana y también desglosadas
 por tipo de urbanización, central y en la periferia."""
 
-LINE_GRAPH_TEXT_5 = (
-    "Finalmente, contando con las áreas de superficie construida y urbana "
-    "y la población por año, es posible calcular la evolución de la "
-    "densidad poblacional a través del tiempo. "
-    "En este caso, se presenta la densidad de población, representada "
-    "como número de personas por superficie urbanizada en kilométros "
-    "cuadrados."
-)
+LINE_GRAPH_TEXT_5 = """Finalmente, contando con las áreas de superficie
+construida y urbana y la población por año, es posible calcular la evolución
+de la densidad poblacional a través del tiempo. En este caso, se presenta la
+densidad de población, representada como número de personas por superficie
+urbanizada en kilométros cuadrados."""
 
-LINE_GRAPH_TEXT_6 = (
-    "El gráfico de líneas muestra la densidad poblacional, "
-    "pero en este caso calculada como el número de personas sobre "
-    "la superficie construida en kilómetros cuadrados. "
-    "Se puede apreciar la evolución y cambio en la densidad poblacional "
-    "del año 1975 al 2020. "
-    "La densidad por superficie construida –y no urbanizada- es un "
-    "indicador útil para medir el aprovechamiento de la infrainstructura "
-    "en la ciudad: a mayor densidad, hay un uso más intensivo de la "
-    "misma infraestructura."
-)
+
+LINE_GRAPH_TEXT_6 = """El gráfico de líneas muestra la densidad poblacional,
+pero en este caso calculada como el número de personas sobre la superficie
+construida en kilómetros cuadrados. Se puede apreciar la evolución y cambio
+en la densidad poblacional del año 1975 al 2020. La densidad por superficie
+construida –y no urbanizada- es un indicador útil para medir el aprovechamiento
+de la infrainstructura en la ciudad: a mayor densidad, hay un uso más intensivo
+de la misma infraestructura. """
 
 
 def layout(country='', city=''):
@@ -305,46 +299,56 @@ def layout(country='', city=''):
     maps = html.Div([
         figureWithDescription(
             dcc.Graph(figure=map1),
-            MAP_HIST_BUILTUP_EXPANDED_TEXT
+            MAP_HIST_BUILTUP_EXPANDED_TEXT,
+            'Año en el que aparece la construcción'
         ),
         figureWithDescription(
             dcc.Graph(figure=map2),
-            MAP_HIST_URBAN_EXPANDED_TEXT
+            MAP_HIST_URBAN_EXPANDED_TEXT,
+            'Año en el que se considera celda urbana'
         ),
         figureWithDescription(
             dcc.Graph(figure=map3),
-            MAP_BUILT_F_EXPANDED_TEXT
+            MAP_BUILT_F_EXPANDED_TEXT,
+            'Fracción de construcción 2020'
         ),
         figureWithDescription(
             dcc.Graph(figure=map4),
-            MAP_POP_EXPANDED_TEXT
+            MAP_POP_EXPANDED_TEXT,
+            'Habitantes por celda'
         ),
     ])
 
     lines = html.Div([
         figureWithDescription(
             dcc.Graph(figure=lines1),
-            LINE_GRAPH_TEXT_1
+            LINE_GRAPH_TEXT_1,
+            'Superficie del Área Urbana por Tipo de Urbanización (1975-2020)'
         ),
         figureWithDescription(
             dcc.Graph(figure=lines2),
-            LINE_GRAPH_TEXT_2
+            LINE_GRAPH_TEXT_2,
+            'Superficie del Área Construida por Tipo de Urbanización (1975-2020)'
         ),
         figureWithDescription(
             dcc.Graph(figure=lines3),
-            LINE_GRAPH_TEXT_3
+            LINE_GRAPH_TEXT_3,
+            'Población Total del Área Urbana por Tipo de Urbanización (1975-2020)'
         ),
         figureWithDescription(
             dcc.Graph(figure=lines4),
-            LINE_GRAPH_TEXT_4
+            LINE_GRAPH_TEXT_4,
+            'Densidad de Construcción por Tipo de Urbanización (1975-2020)'
         ),
         figureWithDescription(
             dcc.Graph(figure=lines5),
-            LINE_GRAPH_TEXT_5
+            LINE_GRAPH_TEXT_5,
+            'Densidad de Población por Tipo de Urbanización (1975-2020)'
         ),
         figureWithDescription(
             dcc.Graph(figure=lines6),
-            LINE_GRAPH_TEXT_6
+            LINE_GRAPH_TEXT_6,
+            'Densidad de Población (por Superficie de Construcción) por Tipo de Urbanización (1975-2020)'
         ),
         ])
     welcomeAlert = dbc.Alert(WELCOME_TEXT, color='secondary')
@@ -357,7 +361,6 @@ def layout(country='', city=''):
         ],
         content=[
             maps,
-            html.Hr(),
             lines,
         ]
     )

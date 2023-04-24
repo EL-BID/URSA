@@ -334,8 +334,7 @@ def plot_built_agg_img(country, city, path_fua, path_cache,
     fig = px.scatter_mapbox(dummy_df,
                             lat='lat', lon='lon',
                             color='Año', color_discrete_map=cmap_cat,
-                            mapbox_style='carto-positron',
-                            title='Año en el que aparece construcción.')
+                            mapbox_style='carto-positron')
     fig.update_layout(mapbox_center={'lat': (latmin + latmax)/2,
                                      'lon': (lonmin + lonmax)/2})
 
@@ -663,8 +662,7 @@ def plot_smod_clusters(country, city, path_fua, path_cache,
         hover_data={'Año': True, 'index': False},
         color_discrete_map=cmap_cat,
         opacity=0.5,
-        mapbox_style='carto-positron',
-        title='Año en el que se considera celda urbana.'
+        mapbox_style='carto-positron'
     )
     fig.update_traces(marker_line_width=0)
     fig.update_layout(mapbox_center={'lat': bbox_latlon.centroid.xy[1][0],
@@ -919,8 +917,7 @@ def plot_pop_year_img(country, city, path_fua, path_cache,
                             lat='lat', lon='lon',
                             color='Población',
                             color_discrete_map=cmap_d,
-                            mapbox_style='carto-positron',
-                            title='Habitantes por celda.',
+                            mapbox_style='carto-positron'
                             )
     fig.update_layout(mapbox_center={'lat': (latmin + latmax)/2,
                                      'lon': (lonmin + lonmax)/2})

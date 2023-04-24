@@ -127,6 +127,8 @@ LINE_TEXT = (
     "Para evaluar esto, generamos “donas” concéntricas con radios "
     "crecientes. Con esto, calculamos la media de la SUHII de todos los "
     "pixeles contenidos en cada dona, y la graficamos en esta imagen. "
+    "El gráfico muestra el diferencial de temperatura en ese radio específico"
+    "y no de forma acumulada"
     "Se puede apreciar el gradiente de disminución de la temperatura "
     "promedio conforme incrementamos el radio de las “donas”, "
     "esto es, conforme nos alejamos del centro de la zona urbana."
@@ -139,7 +141,9 @@ AREA_TEXT = (
     "Típicamente, lo que ocurre es que cerca del centro de la ciudad, "
     "la gran mayoría del suelo está cubierto de suelo construido; "
     "entre más nos alejamos, más disminuye esta categoría y aumenta "
-    "la fracción de cobertura verde. "
+    "la fracción de cobertura verde."
+    "Cabe destacar que la composición de uso de suelo en cada radio o distancia"
+    "no es acumulada, sino que es específica para esa dona en particular. "
     "Finalmente, cerca de los bordes de la ciudad, podemos observar una "
     "mezcla de varias coberturas, como xsparte del proceso de urbanización."
 )
@@ -374,6 +378,7 @@ def layout(country="", city=""):
                     ]
                 ),
                 MAP_TEXT,
+                'Categoría de temperatura en islas de calor'
             ),
         ]
     )
@@ -384,11 +389,13 @@ def layout(country="", city=""):
                 [
                     figureWithDescription(
                         dcc.Graph(figure=areas_plot),
-                        HISTOGRAMA_TEXT
+                        HISTOGRAMA_TEXT,
+                        'Frecuencia de la superficie (Km²) de análisis por categoría de temperatura'
                     ),
                     figureWithDescription(
                         dcc.Graph(figure=temps_by_lc_plot),
-                        BARS_TEXT
+                        BARS_TEXT,
+                        'Fracción de uso de suelo por categoría de temperatura'
                     ),
                 ]
             ),
@@ -396,11 +403,14 @@ def layout(country="", city=""):
                 [
                     figureWithDescription(
                         dcc.Graph(figure=radial_temp_plot),
-                        LINE_TEXT
+                        LINE_TEXT,
+                        'Diferencia entre la temperatura urbana y la rural promedio por anillo concéntrico respecto al centro de la ciudad'
                     ),
                     figureWithDescription(
                         dcc.Graph(figure=radial_lc_plot),
-                        AREA_TEXT),
+                        AREA_TEXT,
+                        'Tipo de uso de suelo por anillo concéntrico respecto al centro de la ciudad'
+                    )
                 ]
             ),
         ]
@@ -437,7 +447,6 @@ def update_mitigation_kilometers(values):
     global globalUrbanMeanTemp
 
     if globalUrbanMeanTemp is None:
-        print('here inside calculating globalUrbanMeanTemp')
         globalUrbanMeanTemp = ht.get_urban_mean(globalCity,
                                                 globalCountry,
                                                 path_fua,
