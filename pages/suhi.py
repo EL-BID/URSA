@@ -8,7 +8,7 @@ import pandas as pd
 from caching_utils import make_cache_dir
 import heat_islands as ht
 from components.text import figureWithDescription
-from components.page import pageContent
+from components.page import pageContentLayout
 
 path_fua = Path('./data/output/cities/')
 
@@ -416,16 +416,15 @@ def layout(country="", city=""):
         ]
     )
 
-    download_button = html.Div([
-            dbc.Button('Descargar datos',
-                        id='btn-csv',
-                        color='light'),
-            dcc.Download(id="download-dataframe-csv")
-    ])
     welcomeAlert = dbc.Alert(WELCOME_CONTENT, color="secondary")
     mapIntroAlert = dbc.Alert(MAP_INTRO_TEXT, color="light")
-
-    layout = pageContent(
+    download_button = html.Div([
+            dbc.Button('Descargar datos',
+                        id='download-btn-hist-growth',
+                        color='light'),
+            dcc.Download(id="download-hist-growth")
+    ])
+    layout = pageContentLayout(
         pageTitle="Islas de calor",
         alerts=[welcomeAlert, mapIntroAlert, download_button],
         content=[

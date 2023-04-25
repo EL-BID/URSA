@@ -7,7 +7,7 @@ from pathlib import Path
 from caching_utils import make_cache_dir
 from dynamic_world import plot_map_season, plot_lc_year, plot_lc_time_series
 from components.text import figureWithDescription
-from components.page import pageContent
+from components.page import pageContentLayout
 
 path_fua = Path('./data/output/cities/')
 
@@ -93,9 +93,18 @@ def layout(country='', city=''):
     ])
 
     alert = dbc.Alert(ALERT_TEXT, color='light')
-    layout = pageContent(
+    download_button = html.Div([
+            dbc.Button('Descargar datos',
+                        id='download-btn-hist-growth',
+                        color='light'),
+            dcc.Download(id="download-hist-growth")
+    ])
+    layout = pageContentLayout(
         pageTitle='Cobertura de suelo',
-        alerts=[alert],
+        alerts=[
+            alert,
+            download_button
+        ],
         content=[
             maps,
             lines

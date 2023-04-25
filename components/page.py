@@ -1,7 +1,7 @@
 from dash import html
 
 
-def pageContent(pageTitle, alerts, content):
+def pageContentLayout(pageTitle, alerts, content):
     title = html.H2(
         pageTitle,
         style={'margin': '50px 0'}

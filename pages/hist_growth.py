@@ -13,7 +13,7 @@ from ghsl import (
 )
 from caching_utils import make_cache_dir
 from components.text import figureWithDescription
-from components.page import pageContent
+from components.page import pageContentLayout
 
 path_fua = Path('./data/output/cities/')
 
@@ -353,11 +353,18 @@ def layout(country='', city=''):
         ])
     welcomeAlert = dbc.Alert(WELCOME_TEXT, color='secondary')
     mapIntroAlert = dbc.Alert(MAP_INTRO_TEXT, color='light')
-    layout = pageContent(
+    download_button = html.Div([
+            dbc.Button('Descargar datos',
+                        id='btn-csv',
+                        color='light'),
+            dcc.Download(id="download-dataframe-csv")
+    ])
+    layout = pageContentLayout(
         pageTitle='Crecimiento histórico',
         alerts=[
             welcomeAlert,
-            mapIntroAlert
+            mapIntroAlert,
+            download_button
         ],
         content=[
             maps,
