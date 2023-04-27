@@ -420,9 +420,9 @@ def layout(country="", city=""):
     mapIntroAlert = dbc.Alert(MAP_INTRO_TEXT, color="light")
     download_button = html.Div([
             dbc.Button('Descargar datos',
-                        id='download-btn-hist-growth',
+                        id='btn-csv',
                         color='light'),
-            dcc.Download(id="download-hist-growth")
+            dcc.Download(id="download-dataframe-csv")
     ])
     layout = pageContentLayout(
         pageTitle="Islas de calor",

@@ -1,8 +1,9 @@
 import dash
-from dash import html, dcc
+from dash import html, dcc, callback, Input, Output
 import dash_bootstrap_components as dbc
 from urllib.parse import unquote
 from pathlib import Path
+from zipfile import ZipFile
 
 from ghsl import (
     plot_built_agg_img,
@@ -16,6 +17,7 @@ from components.text import figureWithDescription
 from components.page import pageContentLayout
 
 path_fua = Path('./data/output/cities/')
+path_cache : Path = Path('')
 
 dash.register_page(
     __name__,
@@ -216,7 +218,8 @@ def layout(country='', city=''):
 
     country = unquote(country)
     city = unquote(city)
-    path_cache : Path = make_cache_dir(f'./data/cache/{country}-{city}')
+    global path_cache
+    path_cache = make_cache_dir(f'./data/cache/{country}-{city}')
 
     # Load figures
     map1 = plot_built_agg_img(country, city, path_fua, path_cache)
@@ -355,9 +358,9 @@ def layout(country='', city=''):
     mapIntroAlert = dbc.Alert(MAP_INTRO_TEXT, color='light')
     download_button = html.Div([
             dbc.Button('Descargar datos',
-                        id='btn-csv',
+                        id='btn-download-rasters',
                         color='light'),
-            dcc.Download(id="download-dataframe-csv")
+            dcc.Download(id="download-rasters-zip")
     ])
     layout = pageContentLayout(
         pageTitle='Crecimiento histórico',
@@ -373,3 +376,25 @@ def layout(country='', city=''):
     )
 
     return layout
+
+@callback(
+    Output('download-rasters-zip', 'data'),
+    Input('btn-download-rasters', 'n_clicks'),
+    prevent_initial_call=True
+)
+def download_file(n_clicks):
+    rasters : list[str] = [
+         'GHS_BUILT_S_100.tif',
+         'GHS_LAND_100.tif',
+         'GHS_POP_100.tif',
+         'GHS_SMOD_1000.tif',
+         'dou.tif',
+         'protected.tif',
+         'slope.tif'
+    ]
+    zip_file_name : str = f'hist-growth-rasters.zip'
+    def write_archive(bytes_io):
+        with ZipFile(bytes_io, mode="w") as zip_object:
+            for raster_file_name in rasters:
+                zip_object.write((path_cache / raster_file_name), raster_file_name)
+    return dcc.send_bytes(write_archive, zip_file_name)
