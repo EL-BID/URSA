@@ -319,21 +319,21 @@ def plot_cat_map(country, city, path_fua, path_cache,
     #     height=600)
 
     # Create dummy legend
-    poly = Polygon([(0, 0), (1e-3, 1e-3), (-1e-3, -1e-3)])
-    gdf = gpd.GeoDataFrame(
-        {'geometry': [poly]*7,
-         'Clases': colors.keys()},
-        crs=4326).reset_index()
-    fig = px.choropleth_mapbox(
-        gdf,
-        geojson=gdf.geometry,
-        locations='index',
-        mapbox_style='carto-positron',
-        color='Clases',
-        color_discrete_map=colors
-    )
+    # poly = Polygon([(0, 0), (1e-3, 1e-3), (-1e-3, -1e-3)])
+    # gdf = gpd.GeoDataFrame(
+        # {'geometry': [poly]*7,
+         # 'Clases': colors.keys()},
+        # crs=4326).reset_index()
+    # fig = px.choropleth_mapbox(
+        # gdf,
+        # geojson=gdf.geometry,
+        # locations='index',
+        # mapbox_style='carto-positron',
+        # color='Clases',
+        # color_discrete_map=colors
+    # )
 
-    Map.add_traces(fig.data)
+    # Map.add_traces(fig.data)
 
     Map.layout.mapbox.layers[0].sourceattribution = (
         'LandSat'

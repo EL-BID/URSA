@@ -317,6 +317,39 @@ def right_side(urban_mean_temperature):
         ],
     )
 
+legend_colors = {
+    'Muy frío': "#2166AC",
+    'Frío': "#67A9CF",
+    'Ligeramente frío': "#D1E5F0",
+    'Templado': "#F7F7F7",
+    'Ligeramente cálido': "#FDDBC7",
+    'Caliente': "#EF8A62",
+    'Muy caliente': "#B2182B",
+}
+
+map_legend = html.Div(
+    [ html.Div(
+        [
+            html.Div(
+                '',
+                style={
+                    'height': '10px',
+                    'width': '10px',
+                    'backgroundColor': f'{value}',
+                    'margin-right': '5px'
+                }
+            ),
+            html.Div(
+                key,
+                className='font-weight-light text-white',
+                style={'font-size': '13px'}
+            )
+        ],
+        className='d-flex align-items-center'
+    ) for key, value in legend_colors.items() ],
+    className='d-flex justify-content-around bg-secondary',
+    style={'height': '5%'}
+)
 
 def layout(country="", city=""):
 
@@ -364,10 +397,13 @@ def layout(country="", city=""):
                 dbc.Row(
                     [
                         dbc.Col(
-                            dcc.Graph(
-                                figure=temp_map,
-                                style={"height": "100%"}
-                            ),
+                            [
+                                map_legend,
+                                dcc.Graph(
+                                    figure=temp_map,
+                                    style={"height": "95%"}
+                                )
+                            ],
                             width=8,
                         ),
                         dbc.Col(
