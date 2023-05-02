@@ -27,6 +27,8 @@ URSA está a disposición del público general, y sobre todo de equipos de gobie
 
 ## Instalación
 
+[Tutorial paso a paso para la instalación en Windows](https://github.com/EL-BID/URSA/blob/main/documentation/URSA-Tutorial-Windows.pdf)
+
 (estos pasos son requeridos sólo una vez)
 
 1. Clonar o descargar el contenido de este repositorio.
