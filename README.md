@@ -13,6 +13,8 @@ URSA es un sistema de apoyo para la planificación urbana. Permite acceder de fo
 
 URSA es una herramienta gratuita, de código abierto.
 
+[TUTORIAL PARA INSTALACIÓN Y USO EN WINDOWS](https://github.com/EL-BID/URSA/blob/main/documentation/URSA-Tutorial-Windows.pdf)
+
 
 ## ¿Por qué fue desarrollada?
 
@@ -25,9 +27,8 @@ URSA está a disposición del público general, y sobre todo de equipos de gobie
 
 ![](https://github.com/bitsandbricks/URSA/raw/main/documentation/URSA_analisis_historico_.gif)
 
-## Instalación
 
-[Tutorial paso a paso para la instalación en Windows](https://github.com/EL-BID/URSA/blob/main/documentation/URSA-Tutorial-Windows.pdf)
+## Instalación
 
 (estos pasos son requeridos sólo una vez)
 
