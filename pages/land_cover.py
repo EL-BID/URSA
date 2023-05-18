@@ -1,11 +1,11 @@
 import dash
-from dash import html, dcc
+from dash import html, dcc, callback, Input, Output
 import dash_bootstrap_components as dbc
 from urllib.parse import unquote
 from pathlib import Path
 
 from caching_utils import make_cache_dir
-from dynamic_world import plot_map_season, plot_lc_year, plot_lc_time_series
+from dynamic_world import plot_map_season, plot_lc_year, plot_lc_time_series, download_map_season
 from components.text import figureWithDescription
 from components.page import pageContentLayout
 
@@ -39,15 +39,27 @@ ALERT_TEXT = html.Div(
     ]
 )
 
+globalCountry = ''
+globalCity = ''
+globalTask = None
 
 def layout(country='', city=''):
 
     if not city or not country:
         return 'No city selected'
 
+    global globalCountry
+    global globalCity
+
+    globalTask = None
     country = unquote(country)
+    
     city = unquote(city)
+    
     path_cache : Path = make_cache_dir(f'./data/cache/{country}-{city}')
+
+    globalCountry = country
+    globalCity = city
 
     # Load figures
     map1 = plot_map_season(country, city, path_fua,
@@ -99,11 +111,20 @@ def layout(country='', city=''):
                         color='light'),
             dcc.Download(id="download-hist-growth")
     ])
+
+    download_button_rasters = html.Div([
+            dbc.Button('Descargar rasters',
+                        id='btn-rasters',
+                        color='light'),
+            html.Span(id="btn-rasters-output", style={"verticalAlign": "middle"})
+    ])
+
     layout = pageContentLayout(
         pageTitle='Cobertura de suelo',
         alerts=[
             alert,
-            download_button
+            download_button,
+            download_button_rasters
         ],
         content=[
             maps,
@@ -112,3 +133,16 @@ def layout(country='', city=''):
     )
 
     return layout
+
+@callback(
+    Output('btn-rasters-output', 'children'),
+    Input('btn-rasters', 'n_clicks'),
+    prevent_initial_call=True
+    )
+def download_rasters(n_clicks):
+    global globalTask
+
+    if globalTask is None: 
+        globalTask = download_map_season(globalCountry, globalCity, path_fua,'Qall', 2022)
+
+    return "Status de la Descarga: {}".format(globalTask.status()["state"])

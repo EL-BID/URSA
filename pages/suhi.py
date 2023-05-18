@@ -7,6 +7,7 @@ import pandas as pd
 
 from caching_utils import make_cache_dir
 import heat_islands as ht
+import raster_utils as ru
 from components.text import figureWithDescription
 from components.page import pageContentLayout
 
@@ -209,6 +210,7 @@ globalCountry = ''
 globalCity = ''
 globalPathCache = Path()
 globalUrbanMeanTemp = None
+globalTask = None
 
 
 def format_temp(temp):
@@ -460,9 +462,17 @@ def layout(country="", city=""):
                         color='light'),
             dcc.Download(id="download-dataframe-csv")
     ])
+
+    download_button_rasters = html.Div([
+            dbc.Button('Descargar rasters',
+                        id='btn-rasters-suhi',
+                        color='light'),
+            html.Span(id="btn-rasters-suhi-output", style={"verticalAlign": "middle"})
+    ])
+
     layout = pageContentLayout(
         pageTitle="Islas de calor",
-        alerts=[welcomeAlert, mapIntroAlert, download_button],
+        alerts=[welcomeAlert, mapIntroAlert, download_button, download_button_rasters],
         content=[
             map_and_checks,
             plots,
@@ -535,3 +545,19 @@ def download_file(n_clicks):
     if csv_path.exists():
         df = pd.read_csv(csv_path)
         return dcc.send_data_frame(df.to_csv, f'{globalCity}_{globalCountry}-suhi-data.csv')
+
+@callback(
+    Output('btn-rasters-suhi-output', 'children'),
+    Input('btn-rasters-suhi', 'n_clicks'),
+    prevent_initial_call=True
+    )
+def download_rasters(n_clicks):
+    global globalTask
+
+    if globalTask is None: 
+        globalTask = ht.download_cat_suhi(globalCountry, globalCity, path_fua, globalPathCache,
+                    'Qall', 2022)
+    
+    return "Status de la Descarga: {}".format(globalTask.status()["state"])
+
+

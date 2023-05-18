@@ -218,6 +218,28 @@ def get_cat_suhi(bbox_ee, start_date, end_date, path_cache,
     return cat_img
 
 
+def download_cat_suhi(country, city, path_fua, path_cache,
+                    season, year):
+
+    bbox_latlon, uc_latlon, fua_latlon = ru.get_bbox(
+        city, country, path_fua,
+        proj='EPSG:4326')
+    bbox_ee = ru.bbox_to_ee(bbox_latlon)
+
+    start_date, end_date = date_format(season, year)
+
+    cat_img = get_cat_suhi(bbox_ee, start_date, end_date, path_cache)
+
+    task = ee.batch.Export.image.toDrive(image          = cat_img,
+                                         description    = 'suhi_raster',
+                                         scale          = cat_img.projection().nominalScale() ,
+                                         region         = bbox_ee,
+                                         crs            = cat_img.projection(),
+                                         fileFormat = 'GeoTIFF')
+    task.start()
+    return task
+
+
 def make_offsets(
         s_mean: float,
         s_std: float,
