@@ -532,6 +532,7 @@ def make_donuts(bbox_ee, proj, bbox_latlon, uc_latlon, width=100):
 
     donuts_df = gpd.GeoDataFrame(discs)
     donuts_df.columns = ["geometry"]
+    donuts_df.set_geometry("geometry", inplace=True)
     donuts_df = donuts_df.set_crs(proj)
     donuts_df = donuts_df.to_crs("EPSG:4326")
 
