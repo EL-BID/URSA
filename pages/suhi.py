@@ -383,12 +383,12 @@ def layout(country="", city=""):
                                     season, year)
     temps_by_lc_plot = ht.plot_temp_by_lc(country, city, path_fua, path_cache,
                                           season, year)
-    radial_temp_plot = ht.plot_radial_temperature(
-        country, city, path_fua, path_cache,
-        season, year)
-    radial_lc_plot = ht.plot_radial_lc(
-        country, city, path_fua, path_cache,
-        season, year)
+    # radial_temp_plot = ht.plot_radial_temperature(
+        # country, city, path_fua, path_cache,
+        # season, year)
+    # radial_lc_plot = ht.plot_radial_lc(
+        # country, city, path_fua, path_cache,
+        # season, year)
 
     globalUrbanMeanTemp = ht.get_urban_mean(
         globalCity, globalCountry, path_fua, 'Qall', 2022, globalPathCache)
@@ -437,21 +437,22 @@ def layout(country="", city=""):
                     ),
                 ]
             ),
-            dbc.Row(
-                [
-                    figureWithDescription(
-                        dcc.Graph(figure=radial_temp_plot),
-                        LINE_TEXT,
-                        'Diferencia entre la temperatura urbana y la rural promedio por anillo concéntrico respecto al centro de la ciudad'
-                    ),
-                    figureWithDescription(
-                        dcc.Graph(figure=radial_lc_plot),
-                        AREA_TEXT,
-                        'Tipo de uso de suelo por anillo concéntrico respecto al centro de la ciudad'
-                    )
-                ]
-            ),
-        ]
+            # dbc.Row(
+                # [
+                    # figureWithDescription(
+                        # dcc.Graph(figure=radial_temp_plot),
+                        # LINE_TEXT,
+                        # 'Diferencia entre la temperatura urbana y la rural promedio por anillo concéntrico respecto al centro de la ciudad'
+                    # ),
+                    # figureWithDescription(
+                        # dcc.Graph(figure=radial_lc_plot),
+                        # AREA_TEXT,
+                        # 'Tipo de uso de suelo por anillo concéntrico respecto al centro de la ciudad'
+                    # )
+                # ]
+            # ),
+        ],
+        id="plots"
     )
 
     welcomeAlert = dbc.Alert(WELCOME_CONTENT, color="secondary")
@@ -470,13 +471,23 @@ def layout(country="", city=""):
             html.Span(id="btn-rasters-suhi-output", style={"verticalAlign": "middle"})
     ])
 
-    layout = pageContentLayout(
-        pageTitle="Islas de calor",
-        alerts=[welcomeAlert, mapIntroAlert, download_button, download_button_rasters],
-        content=[
-            map_and_checks,
-            plots,
-        ],
+    layout = dbc.Container(
+        [
+            dbc.Row(
+                [
+                    dbc.Col(map_and_checks, width=6, id="map-col"),  # Adjust the width as needed
+                    dbc.Col(
+                        [
+                            html.Button("Hide/Show Plots", id="toggle-button", className="mb-3"),
+                            plots
+                        ],
+                        width=6,  # Adjust the width as needed
+                        id="plots-col"
+                    ),
+                ],
+                className="mt-4",
+            ),
+        ]
     )
 
     return layout
@@ -560,4 +571,13 @@ def download_rasters(n_clicks):
     
     return "Status de la Descarga: {}".format(globalTask.status()["state"])
 
-
+@callback(
+    Output("plots", "style"),
+    Output("map-col", "width"),
+    Output("plots-col", "width"),
+    Input("toggle-button", "n_clicks")
+)
+def toggle_plots(n_clicks):
+    if n_clicks and n_clicks % 2 != 0:
+        return {"display": "none"}, 12, 0
+    return {"display": "block"}, 6, 6
