@@ -2,30 +2,27 @@ from dash import Dash, html, Input, Output, State, callback, dcc
 import dash_bootstrap_components as dbc
 from dash.exceptions import PreventUpdate
 import dash
-from components.sidebar import sidebar
+from components.country_selector import country_selector
 from components.navbar import navbar
 from pathlib import Path
 import ee
 import subprocess
 import sys
 
-sys.path.append('./src')
-sys.path.append('./utils')
+sys.path.append("./src")
+sys.path.append("./utils")
 
-data_path = Path('./data')
+data_path = Path("./data")
 
 CONTENT_STYLE = {
     "color": "gray",
-    "width": '80%',
-    "height": 'fit-content',
+    # "width": '80%',
+    "height": "fit-content",
     "padding": "10px 10px",
-    "margin": 'auto',
+    "margin": "auto",
 }
 
-HEADER_STYLE = {
-    'text-align': 'center',
-    'margin': '50px'
-}
+HEADER_STYLE = {"text-align": "center", "margin": "50px"}
 
 app = Dash(
     __name__,
@@ -34,43 +31,46 @@ app = Dash(
 
 content = dcc.Loading(
     children=[
-        dbc.Row(
-            [
-                sidebar,
-                dbc.Col(
-                    [
-                        dash.page_container
-                    ], id="content",
-                    width=9
-                ),
-            ],
+        html.Div(
+            [dash.page_container],
+            id="content",
             style=CONTENT_STYLE,
-        )
+        ),
     ],
     id="loading-spinner",
     className="loading-callback-spinner",
     type="circle",
 )
 
-app.layout = html.Div([
-    navbar,
-    content
-], style={'backgroundColor': '#FBFBFB'})
+# app.layout = html.Div([
+# navbar,
+# content
+# ], style={'backgroundColor': '#FBFBFB'})
+
+app.layout = dbc.Container(
+    [
+        dbc.Row(dbc.Col(country_selector, width={"size":5, "offset":1}, )),
+        dbc.Row(
+            [dbc.Col(navbar, width=1), dbc.Col(content)],
+        ),
+    ],
+    style={"backgroundColor": "#FBFBFB"},
+    fluid=True,
+)
 
 
 @callback(
-    Output('city-info', 'children'),
-    Output('growth_link', 'href'),
-    Output('lc_link', 'href'),
-    Output('sleuth_link', 'href'),
-    Output('suhi_link', 'href'),
-    Input('submit-button', 'n_clicks'),
-    State('cou-dro', 'value'),
-    State('cit-dro', 'value'),
-    prevent_initial_call=True
+    Output("growth_link", "href"),
+    Output("lc_link", "href"),
+    Output("sleuth_link", "href"),
+    Output("suhi_link", "href"),
+    Input("submit-button", "n_clicks"),
+    State("cou-dro", "value"),
+    State("cit-dro", "value"),
+    prevent_initial_call=True,
 )
 def set_city(n_clicks, country, city):
-    '''Sets updates nav links and header.
+    """Sets updates nav links and header.
 
     State:
     (A state would save the colected data but it won't trigger anything)
@@ -86,18 +86,15 @@ def set_city(n_clicks, country, city):
         - g_link: Link for historic growth page.
         - lc_link: Link for land cover.
         - sleuth_link: Link for slueth page.
-    '''
+    """
 
     if n_clicks > 0:
+        g_link = f"/hist-growth/{country}/{city}"
+        lc_link = f"/land-cover/{country}/{city}"
+        sleuth_link = f"/sleuth/{country}/{city}"
+        suhi_link = f"/suhi/{country}/{city}"
+        return g_link, lc_link, sleuth_link, suhi_link
 
-        header_txt = '{0}, {1}'.format(city, country)
-
-        g_link = f'/hist-growth/{country}/{city}'
-        lc_link = f'/land-cover/{country}/{city}'
-        sleuth_link = f'/sleuth/{country}/{city}'
-        suhi_link = f'/suhi/{country}/{city}'
-
-        return header_txt, g_link, lc_link, sleuth_link, suhi_link
     else:
         return PreventUpdate
 
