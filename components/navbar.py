@@ -28,6 +28,11 @@ def navIcon(icon_path):
     )
 
 
+NAV_LINK_STYLE = {
+    "padding": "0",
+}
+
+
 navbar = dbc.Nav(
     [
         dbc.NavItem(
@@ -36,6 +41,7 @@ navbar = dbc.Nav(
                     navIcon(HIST_GROWTH_ICON_PATH),
                     id="growth_link",
                     href="/hist-growth",
+                    style=NAV_LINK_STYLE,
                 ),
                 dbc.Tooltip("Crecimiento histórico", target="growth_link"),
             ]
@@ -46,6 +52,7 @@ navbar = dbc.Nav(
                     navIcon(LAND_COVER_ICON_PATH),
                     id="lc_link",
                     href="/land-cover",
+                    style=NAV_LINK_STYLE,
                 ),
                 dbc.Tooltip("Cobertura de suelo", target="lc_link"),
             ]
@@ -56,6 +63,7 @@ navbar = dbc.Nav(
                     navIcon(FUTURE_WORLD_ICON_PATH),
                     id="sleuth_link",
                     href="/sleuth",
+                    style=NAV_LINK_STYLE,
                 ),
                 dbc.Tooltip("Escenarios del futuro", target="sleuth_link"),
             ]
@@ -66,13 +74,14 @@ navbar = dbc.Nav(
                     navIcon(HEAT_ISLANDS_ICON_PATH),
                     id="suhi_link",
                     href="/suhi",
+                    style=NAV_LINK_STYLE,
                 ),
                 dbc.Tooltip("Islas de calor", target="suhi_link"),
             ]
         ),
     ],
-    vertical=True,  # Set vertical attribute to True
-    pills=True,  # Optionally use pills style
+    vertical=True,
+    pills=True,
 )
 
 navbar_with_logo = dbc.Container(
@@ -81,7 +90,7 @@ navbar_with_logo = dbc.Container(
             alt="Home",
             src=b64_image(BID_LOGO_PATH),
             style={
-                "height": "60px",
+                "height": "10px",
                 "width": "auto",
                 "margin-bottom": "20px",  # Add some bottom margin for spacing
             },

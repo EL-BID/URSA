@@ -16,10 +16,6 @@ data_path = Path("./data")
 
 CONTENT_STYLE = {
     "color": "gray",
-    # "width": '80%',
-    "height": "fit-content",
-    "padding": "10px 10px",
-    "margin": "auto",
 }
 
 HEADER_STYLE = {"text-align": "center", "margin": "50px"}
@@ -27,6 +23,7 @@ HEADER_STYLE = {"text-align": "center", "margin": "50px"}
 app = Dash(
     __name__,
     use_pages=True,
+    external_stylesheets=[dbc.themes.BOOTSTRAP, dbc.icons.BOOTSTRAP]
 )
 
 content = dcc.Loading(
@@ -42,16 +39,11 @@ content = dcc.Loading(
     type="circle",
 )
 
-# app.layout = html.Div([
-# navbar,
-# content
-# ], style={'backgroundColor': '#FBFBFB'})
-
 app.layout = dbc.Container(
     [
-        dbc.Row(dbc.Col(country_selector, width={"size":5, "offset":1}, )),
+        dbc.Row(dbc.Col(country_selector, width={"size":5, "offset":1})),
         dbc.Row(
-            [dbc.Col(navbar, width=1), dbc.Col(content)],
+            [dbc.Col(navbar, className="col-auto"), dbc.Col(content)],
         ),
     ],
     style={"backgroundColor": "#FBFBFB"},

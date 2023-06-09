@@ -11,13 +11,9 @@ import raster_utils as ru
 from components.text import figureWithDescription
 from components.page import pageContentLayout
 
-path_fua = Path('./data/output/cities/')
+path_fua = Path("./data/output/cities/")
 
-dash.register_page(
-    __name__,
-    title='URSA',
-    path_template='suhi/<country>/<city>'
-)
+dash.register_page(__name__, title="URSA", path_template="suhi/<country>/<city>")
 
 WELCOME_CONTENT = [
     html.P(
@@ -25,10 +21,7 @@ WELCOME_CONTENT = [
             "Este apartado muestra un análisis sobre ",
             html.Strong("islas de calor"),
             " y el potencial impacto de estrategias de mitigación. La ",
-            html.A(
-                "metodología",
-                href="https://www.mdpi.com/2072-4292/11/1/48"
-            ),
+            html.A("metodología", href="https://www.mdpi.com/2072-4292/11/1/48"),
             (
                 " (Zhou et al., 2018) para identificar islas de calor "
                 "consiste en contrastar la temperatura promedio anual de un "
@@ -149,76 +142,78 @@ AREA_TEXT = (
     "mezcla de varias coberturas, como xsparte del proceso de urbanización."
 )
 
-MEAN_TEMPERATURE_STYLE = {
-    'font-weight': 'lighter',
-    'font-size': '3rem'
-}
+MEAN_TEMPERATURE_STYLE = {"font-weight": "lighter", "font-size": "3rem"}
 
-SUBTITLE_STYLE = {
-    'font-size': '100'
-}
+SUBTITLE_STYLE = {"font-size": "100"}
 
-RESULT_STYLE = {
-    'font-weight': 'lighter'
-}
+RESULT_STYLE = {"font-weight": "lighter"}
 
 STRATEGIES = {
-    'strat-vegetacion': {
-        'title': 'Reintroducción de vegetación',
-        'description': ('Reintroducir vegetación a al menos 16% del área '
-                        'urbana a través de parques, jardines y camellones'
-                        ' puede generar un enfriamiento de 1.07 °C promedio.'),
-        'mitigation': 1.07,
-        'area_fraction': 0.16
+    "strat-vegetacion": {
+        "title": "Reintroducción de vegetación",
+        "description": (
+            "Reintroducir vegetación a al menos 16% del área "
+            "urbana a través de parques, jardines y camellones"
+            " puede generar un enfriamiento de 1.07 °C promedio."
+        ),
+        "mitigation": 1.07,
+        "area_fraction": 0.16,
     },
-    'strat-techos-verdes': {
-        'title': 'Instalación de techos verdes',
-        'description': ('Instalar techos verdes en 50% de la superficie '
-                        'de techo disponible reduce un promedio de 0.083°C'),
-        'mitigation': 0.083,
-        'area_fraction': 0.5
+    "strat-techos-verdes": {
+        "title": "Instalación de techos verdes",
+        "description": (
+            "Instalar techos verdes en 50% de la superficie "
+            "de techo disponible reduce un promedio de 0.083°C"
+        ),
+        "mitigation": 0.083,
+        "area_fraction": 0.5,
     },
-    'strat-techos-frescos': {
-        'title': 'Instalación de techos frescos',
-        'description': ('Incrementar el albedo a 0.5 en el 50% de los techos '
-                        'de la ciudad  por medio de materiales reflectores en '
-                        'los techos reduce la temperatura un promedio de '
-                        '0.078°C'),
-        'mitigation': 0.078,
-        'area_fraction': 0.5
+    "strat-techos-frescos": {
+        "title": "Instalación de techos frescos",
+        "description": (
+            "Incrementar el albedo a 0.5 en el 50% de los techos "
+            "de la ciudad  por medio de materiales reflectores en "
+            "los techos reduce la temperatura un promedio de "
+            "0.078°C"
+        ),
+        "mitigation": 0.078,
+        "area_fraction": 0.5,
     },
-    'strat-pavimento-concreto': {
-        'title': 'Instalación de pavimentos de concreto',
-        'description': ('Cambiar los pavimentos de asfalto por pavimentos '
-                        'de concreto tiene la capacidad de reducir un '
-                        'promedio de 0.39ºC.'),
-        'mitigation': 0.39,
-        'area_fraction': 1.0
+    "strat-pavimento-concreto": {
+        "title": "Instalación de pavimentos de concreto",
+        "description": (
+            "Cambiar los pavimentos de asfalto por pavimentos "
+            "de concreto tiene la capacidad de reducir un "
+            "promedio de 0.39ºC."
+        ),
+        "mitigation": 0.39,
+        "area_fraction": 1.0,
     },
-    'strat-pavimento-reflector': {
-        'title': 'Instalación de pavimentos reflectores',
-        'description': ('Incrementar el albedo en 0.2 en todos los '
-                        'pavimentos de la ciudad mediante materiales o '
-                        'pinturas reflectoras en tiene la capacidad de '
-                        'reducir la temperatura en 1.39 °C promedio'),
-        'mitigation': 1.39,
-        'area_fraction': 1.0
-    }
+    "strat-pavimento-reflector": {
+        "title": "Instalación de pavimentos reflectores",
+        "description": (
+            "Incrementar el albedo en 0.2 en todos los "
+            "pavimentos de la ciudad mediante materiales o "
+            "pinturas reflectoras en tiene la capacidad de "
+            "reducir la temperatura en 1.39 °C promedio"
+        ),
+        "mitigation": 1.39,
+        "area_fraction": 1.0,
+    },
 }
 
-globalCountry = ''
-globalCity = ''
+globalCountry = ""
+globalCity = ""
 globalPathCache = Path()
 globalUrbanMeanTemp = None
 globalTask = None
 
 
 def format_temp(temp):
-    return f'{round(temp, 2)} °C'
+    return f"{round(temp, 2)} °C"
 
 
 def meanTempView(urban_mean_temperature):
-
     title = html.P("Temperatura promedio", style=SUBTITLE_STYLE)
 
     paragraph1 = html.P(
@@ -249,6 +244,7 @@ def meanTempView(urban_mean_temperature):
         ],
         style={"margin-bottom": "15px"},
     )
+
 
 impactView = html.Div(
     [
@@ -312,55 +308,55 @@ strategyList = html.Div(
 
 def right_side(urban_mean_temperature):
     return html.Div(
-        [
-            meanTempView(urban_mean_temperature),
-            strategyList,
-            impactView
-        ],
+        [meanTempView(urban_mean_temperature), strategyList, impactView],
     )
 
+
 legend_colors = {
-    'Muy frío': "#2166AC",
-    'Frío': "#67A9CF",
-    'Ligeramente frío': "#D1E5F0",
-    'Templado': "#F7F7F7",
-    'Ligeramente cálido': "#FDDBC7",
-    'Caliente': "#EF8A62",
-    'Muy caliente': "#B2182B",
+    "Muy frío": "#2166AC",
+    "Frío": "#67A9CF",
+    "Ligeramente frío": "#D1E5F0",
+    "Templado": "#F7F7F7",
+    "Ligeramente cálido": "#FDDBC7",
+    "Caliente": "#EF8A62",
+    "Muy caliente": "#B2182B",
 }
 
 map_legend = html.Div(
-    [ html.Div(
-        [
-            html.Div(
-                '',
-                style={
-                    'height': '10px',
-                    'width': '10px',
-                    'backgroundColor': f'{value}',
-                    'margin-right': '5px'
-                }
-            ),
-            html.Div(
-                key,
-                className='font-weight-light text-white',
-                style={'font-size': '13px'}
-            )
-        ],
-        className='d-flex align-items-center'
-    ) for key, value in legend_colors.items() ],
-    className='d-flex justify-content-around bg-secondary',
-    style={'height': '5%'}
+    [
+        html.Div(
+            [
+                html.Div(
+                    "",
+                    style={
+                        "height": "10px",
+                        "width": "10px",
+                        "backgroundColor": f"{value}",
+                        "margin-right": "5px",
+                    },
+                ),
+                html.Div(
+                    key,
+                    className="font-weight-light text-white",
+                    style={"font-size": "13px"},
+                ),
+            ],
+            className="d-flex align-items-center m-1",
+        )
+        for key, value in legend_colors.items()
+    ],
+    className="d-flex justify-content-around flex-column",
+    style={"width": "fit-content", "backgroundColor": "rgba(0,0,0,0.35)"},
 )
 
-def layout(country="", city=""):
 
+def layout(country="", city=""):
     if not city or not country:
-        return 'No city selected'
+        return "No city selected"
 
     country = unquote(country)
     city = unquote(city)
-    path_cache : Path = make_cache_dir(f'./data/cache/{country}-{city}')
+    path_cache: Path = make_cache_dir(f"./data/cache/{country}-{city}")
 
     global globalCity
     global globalCountry
@@ -371,143 +367,195 @@ def layout(country="", city=""):
     globalCity = city
     globalPathCache = path_cache
     globalUrbanMeanTemp = ht.get_urban_mean(
-        globalCity, globalCountry, path_fua, 'Qall', 2022, globalPathCache)
+        globalCity, globalCountry, path_fua, "Qall", 2022, globalPathCache
+    )
 
-    season = 'Qall'
+    season = "Qall"
     year = 2022
 
-    temp_map = ht.plot_cat_map(country, city, path_fua, path_cache,
-                               season, year)
+    temp_map = ht.plot_cat_map(country, city, path_fua, path_cache, season, year)
 
-    areas_plot = ht.plot_temp_areas(country, city, path_fua, path_cache,
-                                    season, year)
-    temps_by_lc_plot = ht.plot_temp_by_lc(country, city, path_fua, path_cache,
-                                          season, year)
+    areas_plot = ht.plot_temp_areas(country, city, path_fua, path_cache, season, year)
+    temps_by_lc_plot = ht.plot_temp_by_lc(
+        country, city, path_fua, path_cache, season, year
+    )
     # radial_temp_plot = ht.plot_radial_temperature(
-        # country, city, path_fua, path_cache,
-        # season, year)
+    # country, city, path_fua, path_cache,
+    # season, year)
     # radial_lc_plot = ht.plot_radial_lc(
-        # country, city, path_fua, path_cache,
-        # season, year)
+    # country, city, path_fua, path_cache,
+    # season, year)
 
     globalUrbanMeanTemp = ht.get_urban_mean(
-        globalCity, globalCountry, path_fua, 'Qall', 2022, globalPathCache)
+        globalCity, globalCountry, path_fua, "Qall", 2022, globalPathCache
+    )
+
+    # map_and_checks = html.Div(
+    # [
+    # figureWithDescription(
+    # dbc.Row(
+    # [
+    # dbc.Col(
+    # [
+    # map_legend,
+    # dcc.Graph(figure=temp_map, style={"height": "95%"}),
+    # ],
+    # width=8,
+    # ),
+    # # dbc.Col(
+    # # right_side(globalUrbanMeanTemp),
+    # # width=4,
+    # # style={"padding": "15px"},
+    # # ),
+    # ]
+    # ),
+    # MAP_TEXT,
+    # "Categoría de temperatura en islas de calor",
+    # ),
+    # ]
+    # )
 
     map_and_checks = html.Div(
         [
-            figureWithDescription(
-                dbc.Row(
-                    [
-                        dbc.Col(
-                            [
-                                map_legend,
-                                dcc.Graph(
-                                    figure=temp_map,
-                                    style={"height": "95%"}
-                                )
-                            ],
-                            width=8,
-                        ),
-                        dbc.Col(
-                            right_side(globalUrbanMeanTemp),
-                            width=4,
-                            style={"padding": "15px"},
-                        ),
-                    ]
-                ),
-                MAP_TEXT,
-                'Categoría de temperatura en islas de calor'
-            ),
-        ]
+            html.Div(map_legend, className="position-absolute fixed-bottom right-0"),
+            dcc.Graph(figure=temp_map, style={"height": "100%"}),
+        ],
+        className="position-relative",
+        style={"height": "100%"},
     )
 
     plots = html.Div(
         [
             dbc.Row(
                 [
+                    right_side(globalUrbanMeanTemp),
                     figureWithDescription(
                         dcc.Graph(figure=areas_plot),
                         HISTOGRAMA_TEXT,
-                        'Frecuencia de la superficie (Km²) de análisis por categoría de temperatura'
+                        "Frecuencia de la superficie (Km²) de análisis por categoría de temperatura",
                     ),
                     figureWithDescription(
                         dcc.Graph(figure=temps_by_lc_plot),
                         BARS_TEXT,
-                        'Fracción de uso de suelo por categoría de temperatura'
+                        "Fracción de uso de suelo por categoría de temperatura",
                     ),
-                ]
+                ],
+                style={"overflow": "scroll", "height": "82vh"},
             ),
             # dbc.Row(
-                # [
-                    # figureWithDescription(
-                        # dcc.Graph(figure=radial_temp_plot),
-                        # LINE_TEXT,
-                        # 'Diferencia entre la temperatura urbana y la rural promedio por anillo concéntrico respecto al centro de la ciudad'
-                    # ),
-                    # figureWithDescription(
-                        # dcc.Graph(figure=radial_lc_plot),
-                        # AREA_TEXT,
-                        # 'Tipo de uso de suelo por anillo concéntrico respecto al centro de la ciudad'
-                    # )
-                # ]
+            # [
+            # figureWithDescription(
+            # dcc.Graph(figure=radial_temp_plot),
+            # LINE_TEXT,
+            # 'Diferencia entre la temperatura urbana y la rural promedio por anillo concéntrico respecto al centro de la ciudad'
+            # ),
+            # figureWithDescription(
+            # dcc.Graph(figure=radial_lc_plot),
+            # AREA_TEXT,
+            # 'Tipo de uso de suelo por anillo concéntrico respecto al centro de la ciudad'
+            # )
+            # ]
             # ),
         ],
-        id="plots"
+        id="plots",
     )
 
     welcomeAlert = dbc.Alert(WELCOME_CONTENT, color="secondary")
     mapIntroAlert = dbc.Alert(MAP_INTRO_TEXT, color="light")
-    download_button = html.Div([
-            dbc.Button('Descargar datos',
-                        id='btn-csv',
-                        color='light'),
-            dcc.Download(id="download-dataframe-csv")
-    ])
+    download_button = html.Div(
+        [
+            dbc.Button("Descargar datos", id="btn-csv", color="light"),
+            dcc.Download(id="download-dataframe-csv"),
+        ]
+    )
 
-    download_button_rasters = html.Div([
-            dbc.Button('Descargar rasters',
-                        id='btn-rasters-suhi',
-                        color='light'),
-            html.Span(id="btn-rasters-suhi-output", style={"verticalAlign": "middle"})
-    ])
+    download_button_rasters = html.Div(
+        [
+            dbc.Button("Descargar rasters", id="btn-rasters-suhi", color="light"),
+            html.Span(id="btn-rasters-suhi-output", style={"verticalAlign": "middle"}),
+        ]
+    )
 
     layout = dbc.Container(
         [
             dbc.Row(
                 [
-                    dbc.Col(map_and_checks, width=6, id="map-col"),  # Adjust the width as needed
+                    dbc.Col(map_and_checks, id="map-col", style={"height": "88vh"}),
+                    dbc.Col(
+                        dbc.Button(
+                            html.I(
+                                className="bi bi-arrow-right-short", id="toggle-icon"
+                            ),
+                            id="toggle-button",
+                            color="secondary",
+                            className="d-flex align-items-center justify-content-center",
+                            style={"width": "15px", "height": "500px"},
+                        ),
+                        className="col-auto d-flex align-items-center",
+                    ),
                     dbc.Col(
                         [
-                            html.Button("Hide/Show Plots", id="toggle-button", className="mb-3"),
-                            plots
+                            dbc.Tabs(
+                                [
+                                    dbc.Tab(
+                                        plots,
+                                        label="Gráficas",
+                                        id="tab-1",
+                                        tab_id="tabPlots",
+                                    ),
+                                    dbc.Tab(
+                                        html.Div(
+                                            [
+                                                welcomeAlert,
+                                                mapIntroAlert,
+                                            ]
+                                        ),
+                                        label="Info",
+                                        id="tab-info",
+                                        tab_id="tabInfo",
+                                    ),
+                                    dbc.Tab(
+                                        html.Div(
+                                            [download_button, download_button_rasters]
+                                        ),
+                                        label="Descargables",
+                                        id="tab-download",
+                                        tab_id="tabDownload",
+                                    ),
+                                ],
+                                id="tabs",
+                                active_tab="tabPlots",
+                                className="mt-3",
+                            ),
+                            html.Div(id="tab-content"),
                         ],
+                        id="plots-col",
                         width=6,  # Adjust the width as needed
-                        id="plots-col"
                     ),
-                ],
-                className="mt-4",
+                ]
             ),
-        ]
+        ],
+        className="p-0 m-0", 
+        fluid=True,
     )
 
     return layout
 
+
 @callback(
-    Output('impact-result-square-kilometers', 'children'),
-    Output('impact-result-kilometers', 'children'),
-    Output('impact-result-degrees', 'children'),
-    Output('impact-mitigated-degrees', 'children'),
-    Input('strategy-checklist', 'value')
+    Output("impact-result-square-kilometers", "children"),
+    Output("impact-result-kilometers", "children"),
+    Output("impact-result-degrees", "children"),
+    Output("impact-mitigated-degrees", "children"),
+    Input("strategy-checklist", "value"),
 )
 def update_mitigation_kilometers(values):
     global globalUrbanMeanTemp
 
     if globalUrbanMeanTemp is None:
-        globalUrbanMeanTemp = ht.get_urban_mean(globalCity,
-                                                globalCountry,
-                                                path_fua,
-                                                'Qall', 2022,
-                                                globalPathCache)
+        globalUrbanMeanTemp = ht.get_urban_mean(
+            globalCity, globalCountry, path_fua, "Qall", 2022, globalPathCache
+        )
 
     df = ht.load_or_get_mit_areas_df(
         globalCity, globalCountry, path_fua, globalPathCache
@@ -540,44 +588,51 @@ def update_mitigation_kilometers(values):
     mitigatedUrbanTemperature = globalUrbanMeanTemp - mitigatedDegrees
 
     return (
-        f'{int(round(impactedSquareKm, 0))} Km²',
-        f'{int(round(impactedKm, 0))} Km',
+        f"{int(round(impactedSquareKm, 0))} Km²",
+        f"{int(round(impactedKm, 0))} Km",
         format_temp(mitigatedUrbanTemperature),
-        format_temp(mitigatedDegrees)
+        format_temp(mitigatedDegrees),
     )
 
+
 @callback(
-    Output('download-dataframe-csv', 'data'),
-    Input('btn-csv', 'n_clicks'),
-    prevent_initial_call=True
+    Output("download-dataframe-csv", "data"),
+    Input("btn-csv", "n_clicks"),
+    prevent_initial_call=True,
 )
 def download_file(n_clicks):
-    csv_path = globalPathCache / 'land_cover_by_temp.csv'
+    csv_path = globalPathCache / "land_cover_by_temp.csv"
     if csv_path.exists():
         df = pd.read_csv(csv_path)
-        return dcc.send_data_frame(df.to_csv, f'{globalCity}_{globalCountry}-suhi-data.csv')
+        return dcc.send_data_frame(
+            df.to_csv, f"{globalCity}_{globalCountry}-suhi-data.csv"
+        )
+
 
 @callback(
-    Output('btn-rasters-suhi-output', 'children'),
-    Input('btn-rasters-suhi', 'n_clicks'),
-    prevent_initial_call=True
-    )
+    Output("btn-rasters-suhi-output", "children"),
+    Input("btn-rasters-suhi", "n_clicks"),
+    prevent_initial_call=True,
+)
 def download_rasters(n_clicks):
     global globalTask
 
-    if globalTask is None: 
-        globalTask = ht.download_cat_suhi(globalCountry, globalCity, path_fua, globalPathCache,
-                    'Qall', 2022)
-    
+    if globalTask is None:
+        globalTask = ht.download_cat_suhi(
+            globalCountry, globalCity, path_fua, globalPathCache, "Qall", 2022
+        )
+
     return "Status de la Descarga: {}".format(globalTask.status()["state"])
+
 
 @callback(
     Output("plots", "style"),
+    Output("toggle-icon", "className"),
     Output("map-col", "width"),
     Output("plots-col", "width"),
-    Input("toggle-button", "n_clicks")
+    Input("toggle-button", "n_clicks"),
 )
 def toggle_plots(n_clicks):
     if n_clicks and n_clicks % 2 != 0:
-        return {"display": "none"}, 12, 0
-    return {"display": "block"}, 6, 6
+        return {"display": "none"}, "bi bi-arrow-left-short", 11, 0
+    return {"display": "block"}, "bi bi-arrow-right-short", 7, 4
