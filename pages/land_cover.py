@@ -100,17 +100,12 @@ def layout(country='', city=''):
                 "El gráfico es interactivo y se pueden seleccionar una "
                 "o varias clases específicas para observar más claramente "
                 "su comportamiento en el tiempo."
-            )
+            ),
+            'Cobertura de suelo'
         ),
     ])
 
     alert = dbc.Alert(ALERT_TEXT, color='light')
-    download_button = html.Div([
-            dbc.Button('Descargar datos',
-                        id='download-btn-hist-growth',
-                        color='light'),
-            dcc.Download(id="download-hist-growth")
-    ])
 
     download_button_rasters = html.Div([
             dbc.Button('Descargar rasters',
@@ -123,7 +118,6 @@ def layout(country='', city=''):
         pageTitle='Cobertura de suelo',
         alerts=[
             alert,
-            download_button,
             download_button_rasters
         ],
         content=[
