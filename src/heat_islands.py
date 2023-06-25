@@ -465,6 +465,16 @@ def plot_temp_areas(country, city, path_fua, path_cache,
 
     df_t_areas = load_or_get_t_areas(bbox_ee, start_date, end_date, path_cache)
 
+    custom_colors = {
+        1: "#2166AC",
+        2: "#67A9CF",
+        3: "#D1E5F0",
+        4: "#F7F7F7",
+        5: "#FDDBC7",
+        6: "#EF8A62",
+        7: "#B2182B",
+    }
+
     fig = px.bar(
         df_t_areas.rename(columns={'total': 'Area'}),
         x=[k for i, k in enumerate(colors.keys()) if i+1 in df_t_areas.index],
