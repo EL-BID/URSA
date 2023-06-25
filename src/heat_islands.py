@@ -337,25 +337,6 @@ def plot_cat_map(country, city, path_fua, path_cache,
                  vis_params,
                  'SUHI',
                  opacity=0.6)
-    # Map.update_layout(
-    #     height=600)
-
-    # Create dummy legend
-    # poly = Polygon([(0, 0), (1e-3, 1e-3), (-1e-3, -1e-3)])
-    # gdf = gpd.GeoDataFrame(
-        # {'geometry': [poly]*7,
-         # 'Clases': colors.keys()},
-        # crs=4326).reset_index()
-    # fig = px.choropleth_mapbox(
-        # gdf,
-        # geojson=gdf.geometry,
-        # locations='index',
-        # mapbox_style='carto-positron',
-        # color='Clases',
-        # color_discrete_map=colors
-    # )
-
-    # Map.add_traces(fig.data)
 
     Map.layout.mapbox.layers[0].sourceattribution = (
         'LandSat'
@@ -485,16 +466,18 @@ def plot_temp_areas(country, city, path_fua, path_cache,
     df_t_areas = load_or_get_t_areas(bbox_ee, start_date, end_date, path_cache)
 
     fig = px.bar(
-        df_t_areas.rename(columns={'urban': 'Urbana', 'rural': 'Rural'}),
+        df_t_areas.rename(columns={'total': 'Area'}),
         x=[k for i, k in enumerate(colors.keys()) if i+1 in df_t_areas.index],
-        y=['Urbana', 'Rural'],
-        color_discrete_sequence=['black', 'gray'])
+        y='Area',
+        color=[k for i, k in enumerate(colors.keys()) if i+1 in df_t_areas.index],
+        color_discrete_map=colors
+    )
 
     fig.update_layout(
         # title="Plot Title",
         xaxis_title="Clase de temperatura",
         yaxis_title="Área (km²)",
-        legend_title="Región",
+        legend_title="Temperatura",
     )
 
     return fig
