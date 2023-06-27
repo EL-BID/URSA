@@ -2,6 +2,7 @@ import dash
 from dash import html, dcc, callback, Input, Output, State
 from urllib.parse import unquote
 from pathlib import Path
+import dash_bootstrap_components as dbc
 
 from caching_utils import make_cache_dir
 import sleuth_prep as prep
@@ -43,7 +44,23 @@ def layout(country='', city=''):
                      children=str(fpath)),
             html.Button("Descarga datos", id="btn-download-sleuth"),
             dcc.Download(id="download-sleuth"),
+            html.Span(
+              "?",
+              id="tooltip-target",
+              style={
+                     "textAlign": "center", 
+                     "color": "white",
+                     "height": 25,
+                     "width": 25,
+                     "background-color": "#bbb",
+                     "border-radius": "50%",
+                     "display": "inline-block"
 
+              }),
+            dbc.Tooltip(
+                "Descarga los archivos Raster localmente en tu carpeta de Descargas.",
+                target="tooltip-target",
+            ),
             html.Div(id='scen-path-div', style={'display': 'none'},
                      children=str(scen_path)),
             html.Button("Descarga archivo config", id="btn-download-config"),

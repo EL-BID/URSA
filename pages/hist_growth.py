@@ -356,12 +356,32 @@ def layout(country='', city=''):
         ])
     welcomeAlert = dbc.Alert(WELCOME_TEXT, color='secondary')
     mapIntroAlert = dbc.Alert(MAP_INTRO_TEXT, color='light')
+
     download_button = html.Div([
-            dbc.Button('Descargar datos',
+            dbc.Button('Descargar a disco',
                         id='btn-download-rasters',
                         color='light'),
-            dcc.Download(id="download-rasters-zip")
+            dcc.Download(id="download-rasters-zip"),
+            html.Span(
+              "?",
+              id="tooltip-target01",
+              style={
+                     "textAlign": "center", 
+                     "color": "white",
+                     "height": 25,
+                     "width": 25,
+                     "background-color": "#bbb",
+                     "border-radius": "50%",
+                     "display": "inline-block"
+
+              }),
+            dbc.Tooltip(
+                "Descarga los archivos Raster localmente en tu carpeta de Descargas.",
+                target="tooltip-target01",
+            )
     ])
+
+
     layout = pageContentLayout(
         pageTitle='Crecimiento histórico',
         alerts=[

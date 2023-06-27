@@ -108,10 +108,27 @@ def layout(country='', city=''):
     alert = dbc.Alert(ALERT_TEXT, color='light')
 
     download_button_rasters = html.Div([
-            dbc.Button('Descargar rasters',
+            dbc.Button('Descarga a Google Drive',
                         id='btn-rasters',
                         color='light'),
-            html.Span(id="btn-rasters-output", style={"verticalAlign": "middle"})
+            html.Span(id="btn-rasters-output", style={"verticalAlign": "middle"}),
+            html.Span(
+              "?",
+              id="tooltip-target02",
+              style={
+                     "textAlign": "center", 
+                     "color": "white",
+                     "height": 25,
+                     "width": 25,
+                     "background-color": "#bbb",
+                     "border-radius": "50%",
+                     "display": "inline-block"
+
+              }),
+            dbc.Tooltip(
+                "Descarga los archivos Raster a tu Google Drive, en este caso la información es procesada en GGE y la única opción de descarga es a esta carpeta en el directorio raíz.",
+                target="tooltip-target02",
+            )
     ])
 
     layout = pageContentLayout(

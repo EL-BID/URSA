@@ -457,17 +457,51 @@ def layout(country="", city=""):
     welcomeAlert = dbc.Alert(WELCOME_CONTENT, color="secondary")
     mapIntroAlert = dbc.Alert(MAP_INTRO_TEXT, color="light")
     download_button = html.Div([
-            dbc.Button('Descargar datos',
+            dbc.Button('Descargar a disco',
                         id='btn-csv',
                         color='light'),
-            dcc.Download(id="download-dataframe-csv")
+            dcc.Download(id="download-dataframe-csv"),
+            html.Span(
+              "?",
+              id="tooltip-target03",
+              style={
+                     "textAlign": "center", 
+                     "color": "white",
+                     "height": 25,
+                     "width": 25,
+                     "background-color": "#bbb",
+                     "border-radius": "50%",
+                     "display": "inline-block"
+
+              }),
+            dbc.Tooltip(
+                "Descarga el archivo .csv, que alimenta las visualizaciones, localmente en tu carpeta de Descargas.",
+                target="tooltip-target03",
+            )
     ])
 
     download_button_rasters = html.Div([
-            dbc.Button('Descargar rasters',
+            dbc.Button('Descarga a Google Drive',
                         id='btn-rasters-suhi',
                         color='light'),
-            html.Span(id="btn-rasters-suhi-output", style={"verticalAlign": "middle"})
+            html.Span(id="btn-rasters-suhi-output", style={"verticalAlign": "middle"}),
+            html.Span(
+              "?",
+              id="tooltip-target04",
+              style={
+                     "textAlign": "center", 
+                     "color": "white",
+                     "height": 25,
+                     "width": 25,
+                     "background-color": "#bbb",
+                     "border-radius": "50%",
+                     "display": "inline-block"
+
+              }),
+            dbc.Tooltip(
+                "Descarga los archivos Raster a tu Google Drive, en este caso la información es procesada en GGE y la única opción de descarga es a esta carpeta en el directorio raíz.",
+                target="tooltip-target04",
+            )
     ])
 
     layout = pageContentLayout(
