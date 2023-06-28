@@ -1,5 +1,5 @@
 import dash
-from dash import html, dcc, callback, Input, Output
+from dash import html, dcc, callback, Input, Output, State
 import dash_bootstrap_components as dbc
 from urllib.parse import unquote
 from pathlib import Path
@@ -477,67 +477,65 @@ def layout(country="", city=""):
     )
 
     layout = dbc.Container(
-        [
-            dbc.Row(
-                [
-                    dbc.Col(map_and_checks, id="map-col", style={"height": "88vh"}),
-                    dbc.Col(
-                        dbc.Button(
-                            html.I(
-                                className="bi bi-arrow-right-short", id="toggle-icon"
-                            ),
-                            id="toggle-button",
-                            color="secondary",
-                            className="d-flex align-items-center justify-content-center",
-                            style={"width": "15px", "height": "500px"},
+    [
+        dbc.Row(
+            [
+                dbc.Col(map_and_checks, id="map-col", style={"height": "88vh"}),
+                dbc.Col(
+                    dbc.Button(
+                        html.I(className="bi bi-arrow-right-short", id="toggle-icon"),
+                        id="toggle-button",
+                        color="secondary",
+                        className="d-flex align-items-center justify-content-center",
+                        style={"width": "15px", "height": "500px"},
+                    ),
+                    className="col-auto d-flex align-items-center",
+                ),
+                dbc.Col(
+                    [
+                        dbc.Tabs(
+                            [
+                                dbc.Tab(
+                                    plots,
+                                    label="Gráficas",
+                                    id="tab-1",
+                                    tab_id="tabPlots",
+                                ),
+                                dbc.Tab(
+                                    html.Div(
+                                        [
+                                            welcomeAlert,
+                                            mapIntroAlert,
+                                        ]
+                                    ),
+                                    label="Info",
+                                    id="tab-info",
+                                    tab_id="tabInfo",
+                                ),
+                                dbc.Tab(
+                                    html.Div(
+                                        [download_button, download_button_rasters]
+                                    ),
+                                    label="Descargables",
+                                    id="tab-download",
+                                    tab_id="tabDownload",
+                                ),
+                            ],
+                            id="tabs",
+                            active_tab="tabPlots",
+                            className="mt-3",
                         ),
-                        className="col-auto d-flex align-items-center",
-                    ),
-                    dbc.Col(
-                        [
-                            dbc.Tabs(
-                                [
-                                    dbc.Tab(
-                                        plots,
-                                        label="Gráficas",
-                                        id="tab-1",
-                                        tab_id="tabPlots",
-                                    ),
-                                    dbc.Tab(
-                                        html.Div(
-                                            [
-                                                welcomeAlert,
-                                                mapIntroAlert,
-                                            ]
-                                        ),
-                                        label="Info",
-                                        id="tab-info",
-                                        tab_id="tabInfo",
-                                    ),
-                                    dbc.Tab(
-                                        html.Div(
-                                            [download_button, download_button_rasters]
-                                        ),
-                                        label="Descargables",
-                                        id="tab-download",
-                                        tab_id="tabDownload",
-                                    ),
-                                ],
-                                id="tabs",
-                                active_tab="tabPlots",
-                                className="mt-3",
-                            ),
-                            html.Div(id="tab-content"),
-                        ],
-                        id="plots-col",
-                        width=6,  # Adjust the width as needed
-                    ),
-                ]
-            ),
-        ],
-        className="p-0 m-0", 
-        fluid=True,
-    )
+                        html.Div(id="tab-content"),
+                    ],
+                    id="hiddeable-content",
+                    width=6,  # Adjust the width as needed
+                ),
+            ],
+        ),
+    ],
+    className="p-0 m-0",
+    fluid=True,
+)
 
     return layout
 
@@ -626,13 +624,28 @@ def download_rasters(n_clicks):
 
 
 @callback(
-    Output("plots", "style"),
-    Output("toggle-icon", "className"),
-    Output("map-col", "width"),
-    Output("plots-col", "width"),
-    Input("toggle-button", "n_clicks"),
+    [
+        Output("hiddeable-content", "style"),
+        Output("hiddeable-content", "width"),
+        Output("toggle-icon", "className"),
+    ],
+    [
+        Input("toggle-button", "n_clicks"),
+    ],
+    [
+        State("hiddeable-content", "style"),
+        State("hiddeable-content", "width"),
+        State("toggle-icon", "className"),
+    ],
 )
-def toggle_plots(n_clicks):
+def toggle_plots(n_clicks, content_style, button_class_name, map_col_width):
     if n_clicks and n_clicks % 2 != 0:
-        return {"display": "none"}, "bi bi-arrow-left-short", 11, 0
-    return {"display": "block"}, "bi bi-arrow-right-short", 7, 4
+        content_style["display"] = "none"
+        button_class_name = "bi bi-arrow-left-short"
+        map_col_width = 0
+    else:
+        content_style["display"] = "block"
+        button_class_name = "bi bi-arrow-right-short"
+        map_col_width = 4
+
+    return content_style, button_class_name, map_col_width

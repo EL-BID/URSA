@@ -9,6 +9,10 @@ import ee
 import subprocess
 import sys
 
+from utils.image_utils import b64_image
+
+BID_LOGO_PATH = "./assets/BID_blue.png"
+
 sys.path.append("./src")
 sys.path.append("./utils")
 
@@ -41,7 +45,24 @@ content = dcc.Loading(
 
 app.layout = dbc.Container(
     [
-        dbc.Row(dbc.Col(country_selector, width={"size":5, "offset":1})),
+        dbc.Row([
+            dbc.Col(
+                html.A(
+                    html.Img(
+                    alt="Home",
+                    src=b64_image(BID_LOGO_PATH),
+                    style={
+                        "height": "40px",
+                        "width": "auto",
+                        "margin": "15px 0px",
+                        "cursor": "pointer"
+                    }, 
+                    ),
+                    href="/"
+                ),
+                width=2
+            ),
+            dbc.Col(country_selector, width=5)]),
         dbc.Row(
             [dbc.Col(navbar, className="col-auto"), dbc.Col(content)],
         ),
@@ -105,4 +126,4 @@ if __name__ == "__main__":
         print("Unexpected error:", sys.exc_info()[0])
         print("¡Error desconocido en la autenticación!")
         raise
-    app.run_server(host='0.0.0.0', debug=False)
+    app.run_server(host='0.0.0.0', debug=True)
