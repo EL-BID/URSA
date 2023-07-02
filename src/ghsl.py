@@ -57,7 +57,7 @@ def download_s3(bbox, ds,
     print(f'Downloading {ds} rasters ...')
 
     s3_path = f'{s3_path}/GHS_{ds}/'
-    fname = f'GHS_{ds}_E{{}}_GLOBE_R2022A_54009_{resolution}_V1_0.tif'
+    fname = f'GHS_{ds}_E{{}}_GLOBE_R2023A_54009_{resolution}_V1_0.tif'
     year_list = list(range(1975, 2021, 5))
     if ds == 'LAND':
         year_list = [2018]
@@ -467,44 +467,52 @@ def get_urb_growth_df(country, city, path_fua, path_cache):
     # center_built_all = []
     cluster_pop_all = []
     # center_pop_all = []
+
     for year in years:
-        # Main cluster and center
-        cluster = main_cluster[main_cluster.year == year].geometry.iloc[0]
-        # center = main_center[main_center.year == year].geometry.iloc[0]
+        # Check if main cluster is empty
+        if main_cluster[main_cluster.year == year].empty:
+            cluster_built.append(0)
+            cluster_pop.append(0)
+            cluster_built_all.append(0)
+            cluster_pop_all.append(0)
+        else:
+            # Main cluster and center
+            cluster = main_cluster[main_cluster.year == year].geometry.iloc[0]
+            # center = main_center[main_center.year == year].geometry.iloc[0]
+            
+            # All clusters and centers
+            cluster_all = clusters_gdf[clusters_gdf.year == year].geometry
+            # center_all = centers_gdf[centers_gdf.year == year].geometry
 
-        # All clusters and centers
-        cluster_all = clusters_gdf[clusters_gdf.year == year].geometry
-        # center_all = centers_gdf[centers_gdf.year == year].geometry
+            # Series for main cluster and center
+            cluster_built.append(np.nansum(
+                built.sel(band=year).rio.set_nodata(0).rio.clip(
+                    [cluster], crs=built.rio.crs).values))
+            # center_built.append(np.nansum(
+            #     built.sel(band=year).rio.set_nodata(0).rio.clip(
+            #         [center], crs=built.rio.crs).values))
 
-        # Series for main cluster and center
-        cluster_built.append(np.nansum(
-            built.sel(band=year).rio.set_nodata(0).rio.clip(
-                [cluster], crs=built.rio.crs).values))
-        # center_built.append(np.nansum(
-        #     built.sel(band=year).rio.set_nodata(0).rio.clip(
-        #         [center], crs=built.rio.crs).values))
+            cluster_pop.append(np.nansum(
+                pop.sel(band=year).rio.set_nodata(0).rio.clip(
+                    [cluster], crs=pop.rio.crs).values))
+            # center_pop.append(np.nansum(
+            #     pop.sel(band=year).rio.set_nodata(0).rio.clip(
+            #         [center], crs=pop.rio.crs).values))
 
-        cluster_pop.append(np.nansum(
-            pop.sel(band=year).rio.set_nodata(0).rio.clip(
-                [cluster], crs=pop.rio.crs).values))
-        # center_pop.append(np.nansum(
-        #     pop.sel(band=year).rio.set_nodata(0).rio.clip(
-        #         [center], crs=pop.rio.crs).values))
+            # Series for ALL clusters and centers
+            cluster_built_all.append(np.nansum(
+                built.sel(band=year).rio.set_nodata(0).rio.clip(
+                    cluster_all, crs=built.rio.crs).values))
+            # center_built_all.append(np.nansum(
+            #     built.sel(band=year).rio.set_nodata(0).rio.clip(
+            #         center_all, crs=built.rio.crs).values))
 
-        # Series for ALL clusters and centers
-        cluster_built_all.append(np.nansum(
-            built.sel(band=year).rio.set_nodata(0).rio.clip(
-                cluster_all, crs=built.rio.crs).values))
-        # center_built_all.append(np.nansum(
-        #     built.sel(band=year).rio.set_nodata(0).rio.clip(
-        #         center_all, crs=built.rio.crs).values))
-
-        cluster_pop_all.append(np.nansum(
-            pop.sel(band=year).rio.set_nodata(0).rio.clip(
-                cluster_all, crs=pop.rio.crs).values))
-        # center_pop_all.append(np.nansum(
-        #     pop.sel(band=year).rio.set_nodata(0).rio.clip(
-        #         center_all, crs=pop.rio.crs).values))
+            cluster_pop_all.append(np.nansum(
+                pop.sel(band=year).rio.set_nodata(0).rio.clip(
+                    cluster_all, crs=pop.rio.crs).values))
+            # center_pop_all.append(np.nansum(
+            #     pop.sel(band=year).rio.set_nodata(0).rio.clip(
+            #         center_all, crs=pop.rio.crs).values))
 
     cluster_built = np.array(cluster_built)
     # center_built = np.array(center_built)
@@ -527,6 +535,17 @@ def get_urb_growth_df(country, city, path_fua, path_cache):
     #     pop.rio.clip([cluster_2020], crs=pop.rio.crs).values, axis=(1, 2))
     # center_pop = np.nansum(
     #     pop.rio.clip([center_2020], crs=pop.rio.crs).values, axis=(1, 2))
+
+    # Identify year that are not in main, i.e. years without a main cluster
+    years_not_int_main = set(years) - set(main_cluster.year.values)
+
+    # Create dummy dataframe with years without a main cluster with 'Area' set to zero
+    dummy_dataframe = pd.DataFrame(years_not_int_main, columns = ['year'])
+    dummy_dataframe['Area'] = 0
+
+    # Complete clusters_gdf and main_cluster with dummy_dataframe
+    clusters_gdf = pd.concat([clusters_gdf, dummy_dataframe], ignore_index = True)
+    main_cluster = pd.concat([main_cluster, dummy_dataframe], ignore_index = True)
 
     # Urban area for main cluster and center
     # center_area = main_center.sort_values('year').Area.values
@@ -1066,7 +1085,13 @@ def plot_growth(country, city, path_fua, path_cache,
     colors = {}
 
     for col in y_cols:
-        c0 = growth_df[col].iloc[0]
+
+        i = 0
+        c0 = growth_df[col].iloc[i]
+        while np.isnan(c0):
+            i+=1
+            c0 = growth_df[col].iloc[i]
+
         cf = growth_df[col].iloc[-1]
         delta = (cf - c0) / c0 * 100
         if delta > 0:

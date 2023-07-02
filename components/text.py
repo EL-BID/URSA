@@ -22,7 +22,6 @@ def figureWithDescription(fig, text, title='Default title (change me)'):
 
     info_button = html.I(
         id=info_id,
-        # color="light",
         className="bi bi-info-circle",
     )
 

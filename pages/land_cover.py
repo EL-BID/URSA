@@ -100,30 +100,41 @@ def layout(country='', city=''):
                 "El gráfico es interactivo y se pueden seleccionar una "
                 "o varias clases específicas para observar más claramente "
                 "su comportamiento en el tiempo."
-            )
+            ),
+            'Cobertura de suelo'
         ),
     ])
 
     alert = dbc.Alert(ALERT_TEXT, color='light')
-    download_button = html.Div([
-            dbc.Button('Descargar datos',
-                        id='download-btn-hist-growth',
-                        color='light'),
-            dcc.Download(id="download-hist-growth")
-    ])
 
     download_button_rasters = html.Div([
-            dbc.Button('Descargar rasters',
+            dbc.Button('Descarga a Google Drive',
                         id='btn-rasters',
                         color='light'),
-            html.Span(id="btn-rasters-output", style={"verticalAlign": "middle"})
+            html.Span(id="btn-rasters-output", style={"verticalAlign": "middle"}),
+            html.Span(
+              "?",
+              id="tooltip-target02",
+              style={
+                     "textAlign": "center", 
+                     "color": "white",
+                     "height": 25,
+                     "width": 25,
+                     "background-color": "#bbb",
+                     "border-radius": "50%",
+                     "display": "inline-block"
+
+              }),
+            dbc.Tooltip(
+                "Descarga los archivos Raster a tu Google Drive, en este caso la información es procesada en GGE y la única opción de descarga es a esta carpeta en el directorio raíz.",
+                target="tooltip-target02",
+            )
     ])
 
     layout = pageContentLayout(
         pageTitle='Cobertura de suelo',
         alerts=[
             alert,
-            download_button,
             download_button_rasters
         ],
         content=[

@@ -13,7 +13,11 @@ from components.page import newPageLayout
 
 path_fua = Path("./data/output/cities/")
 
-dash.register_page(__name__, title="URSA", path_template="suhi/<country>/<city>")
+dash.register_page(
+    __name__,
+    title='URSA',
+    path_template='suhi/<country>/<city>'
+)
 
 WELCOME_CONTENT = [
     html.P(
@@ -21,7 +25,10 @@ WELCOME_CONTENT = [
             "Este apartado muestra un análisis sobre ",
             html.Strong("islas de calor"),
             " y el potencial impacto de estrategias de mitigación. La ",
-            html.A("metodología", href="https://www.mdpi.com/2072-4292/11/1/48"),
+            html.A(
+                "metodología",
+                href="https://www.mdpi.com/2072-4292/11/1/48"
+            ),
             (
                 " (Zhou et al., 2018) para identificar islas de calor "
                 "consiste en contrastar la temperatura promedio anual de un "
@@ -142,11 +149,18 @@ AREA_TEXT = (
     "mezcla de varias coberturas, como xsparte del proceso de urbanización."
 )
 
-MEAN_TEMPERATURE_STYLE = {"font-weight": "lighter", "font-size": "3rem"}
+MEAN_TEMPERATURE_STYLE = {
+    'font-weight': 'lighter',
+    'font-size': '3rem'
+}
 
-SUBTITLE_STYLE = {"font-size": "100"}
+SUBTITLE_STYLE = {
+    'font-size': '100'
+}
 
-RESULT_STYLE = {"font-weight": "lighter"}
+RESULT_STYLE = {
+    'font-weight': 'lighter'
+}
 
 STRATEGIES = {
     "strat-vegetacion": {
@@ -411,8 +425,7 @@ def layout(country="", city=""):
     # ),
     # MAP_TEXT,
     # "Categoría de temperatura en islas de calor",
-    # ),
-    # ]
+    # ), ]
     # )
 
     map_and_checks = html.Div(
@@ -461,20 +474,55 @@ def layout(country="", city=""):
 
     welcomeAlert = dbc.Alert(WELCOME_CONTENT, color="secondary")
     mapIntroAlert = dbc.Alert(MAP_INTRO_TEXT, color="light")
-    download_button = html.Div(
-        [
-            dbc.Button("Descargar datos", id="btn-csv", color="light"),
+
+    download_button = html.Div([
+            dbc.Button('Descargar a disco',
+                        id='btn-csv',
+                        color='light'),
             dcc.Download(id="download-dataframe-csv"),
-        ]
-    )
+            html.Span(
+              "?",
+              id="tooltip-target03",
+              style={
+                     "textAlign": "center", 
+                     "color": "white",
+                     "height": 25,
+                     "width": 25,
+                     "background-color": "#bbb",
+                     "border-radius": "50%",
+                     "display": "inline-block"
 
-    download_button_rasters = html.Div(
-        [
-            dbc.Button("Descargar rasters", id="btn-rasters-suhi", color="light"),
+              }),
+            dbc.Tooltip(
+                "Descarga el archivo .csv, que alimenta las visualizaciones, localmente en tu carpeta de Descargas.",
+                target="tooltip-target03",
+            )
+    ])
+
+    download_button_rasters = html.Div([
+            dbc.Button('Descarga a Google Drive',
+                        id='btn-rasters-suhi',
+                        color='light'),
             html.Span(id="btn-rasters-suhi-output", style={"verticalAlign": "middle"}),
-        ]
-    )
+            html.Span(
+              "?",
+              id="tooltip-target04",
+              style={
+                     "textAlign": "center", 
+                     "color": "white",
+                     "height": 25,
+                     "width": 25,
+                     "background-color": "#bbb",
+                     "border-radius": "50%",
+                     "display": "inline-block"
 
+              }),
+            dbc.Tooltip(
+                "Descarga los archivos Raster a tu Google Drive, en este caso la información es procesada en GGE y la única opción de descarga es a esta carpeta en el directorio raíz.",
+                target="tooltip-target04",
+            )
+    ])
+    
     layout = newPageLayout(map_and_checks, [right_side(globalUrbanMeanTemp)], plots, [welcomeAlert, mapIntroAlert], [download_button, download_button_rasters])
 
     return layout
