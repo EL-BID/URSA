@@ -24,14 +24,17 @@ def newPageLayout(maps, tabs):
                     dbc.Col(
                         dbc.Button(
                             html.I(
-                                className="bi bi-arrow-right-short", id="toggle-icon"
+                                className="bi bi-arrow-right-short", 
+                                id="toggle-icon",
+                                style={"font-size": "1.3rem"}
                             ),
                             id="toggle-button",
                             color="secondary",
-                            className="d-flex align-items-center justify-content-center",
-                            style={"width": "15px", "height": "500px"},
+                            outline=True,
+                            className="d-flex align-items-center justify-content-center btn-sm",
+                            style={"height": "35%", "width": "10px", "border-bottom-right-radius": "0px", "border-top-right-radius": "0px", },
                         ),
-                        className="col-auto d-flex align-items-center",
+                        className="col-auto d-flex align-items-center m-0 p-0 border-end border-secondary"
                     ),
                     dbc.Col(
                         [
