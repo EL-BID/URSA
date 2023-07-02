@@ -15,7 +15,7 @@ def pageContentLayout(pageTitle, alerts, content):
 
     return html.Div(result)
 
-def newPageLayout(map, controls, plots, alerts, buttons):
+def newPageLayout(map, tabs):
     return dbc.Container(
         [
             dbc.Row(
@@ -36,34 +36,9 @@ def newPageLayout(map, controls, plots, alerts, buttons):
                     dbc.Col(
                         [
                             dbc.Tabs(
-                                [
-                                    dbc.Tab(
-                                        controls,
-                                        label="Controles",
-                                        id="tab-controls",
-                                        tab_id="tabControls",
-                                    ),
-                                    dbc.Tab(
-                                        plots,
-                                        label="Gráficas",
-                                        id="tab-plots",
-                                        tab_id="tabPlots",
-                                    ),
-                                    dbc.Tab(
-                                        html.Div(alerts),
-                                        label="Info",
-                                        id="tab-info",
-                                        tab_id="tabInfo",
-                                    ),
-                                    dbc.Tab(
-                                        html.Div(buttons),
-                                        label="Descargables",
-                                        id="tab-download",
-                                        tab_id="tabDownload",
-                                    ),
-                                ],
+                                tabs,
                                 id="tabs",
-                                active_tab="tabControls",
+                                active_tab=tabs[0].tab_id,
                                 className="mt-3",
                             ),
                             html.Div(id="tab-content"),

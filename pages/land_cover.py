@@ -4,10 +4,12 @@ import dash_bootstrap_components as dbc
 from urllib.parse import unquote
 from pathlib import Path
 
+from xarray.core.utils import K
+
 from caching_utils import make_cache_dir
 from dynamic_world import plot_map_season, plot_lc_year, plot_lc_time_series, download_map_season
 from components.text import figureWithDescription
-from components.page import pageContentLayout
+from components.page import newPageLayout
 
 path_fua = Path('./data/output/cities/')
 
@@ -67,19 +69,9 @@ def layout(country='', city=''):
     lines1 = plot_lc_year(country, city, path_fua, path_cache)
     lines2 = plot_lc_time_series(country, city, path_fua, path_cache)
 
-    maps = figureWithDescription(
-            dcc.Graph(figure=map1),
-            html.P(
-                "El mapa muestra la categoría mas común observada en 2022 "
-                "para cada pixel de 10x10 metros. "
-                "El relieve refleja la certeza del proceso de clasificación, "
-                "una mayor altura refleja una mayor certidumbre de que el "
-                "pixel pertnezca a la clase mostrada. "
-                "Notese que los bordes entre clases presentan mayor "
-                "incertidumbre."
-            ),
-            'Clasificación del Territorio por Categoría de Uso de Suelo (Año 2022)'
-    )
+    maps = html.Div([
+        dcc.Graph(figure=map1, style={"height" : "100%"}),
+    ], style={"height": "100%"})
 
     lines = html.Div([
         figureWithDescription(
@@ -103,9 +95,21 @@ def layout(country='', city=''):
             ),
             'Cobertura de suelo'
         ),
-    ])
+    ], style={"overflow": "scroll", "height": "82vh"})
 
+    map_info_alert = dbc.Alert([
+        html.H4('Clasificación del Territorio por Categoría de Uso de Suelo (Año 2022)'),
+        """El mapa muestra la categoría mas común observada en 2022
+        para cada pixel de 10x10 metros.
+                El relieve refleja la certeza del proceso de clasificación,
+                una mayor altura refleja una mayor certidumbre de que el
+                pixel pertnezca a la clase mostrada. "
+                Notese que los bordes entre clases presentan mayor
+                incertidumbre. """,
+    ], color='secondary')
+    
     alert = dbc.Alert(ALERT_TEXT, color='light')
+
 
     download_button_rasters = html.Div([
             dbc.Button('Descarga a Google Drive',
@@ -131,17 +135,28 @@ def layout(country='', city=''):
             )
     ])
 
-    layout = pageContentLayout(
-        pageTitle='Cobertura de suelo',
-        alerts=[
-            alert,
-            download_button_rasters
-        ],
-        content=[
-            maps,
-            lines
-        ]
-    )
+    tabs = [
+        dbc.Tab(
+            lines,
+            label="Gráficas",
+            id="tab-plots",
+            tab_id="tabPlots",
+        ),
+        dbc.Tab(
+            html.Div([map_info_alert, alert]),
+            label="Info",
+            id="tab-info",
+            tab_id="tabInfo",
+        ),
+        dbc.Tab(
+            html.Div([download_button_rasters]),
+            label="Descargables",
+            id="tab-download",
+            tab_id="tabDownload",
+        )
+    ]
+
+    layout = newPageLayout(maps, tabs)
 
     return layout
 

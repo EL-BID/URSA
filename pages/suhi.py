@@ -428,7 +428,7 @@ def layout(country="", city=""):
     # ), ]
     # )
 
-    map_and_checks = html.Div(
+    map = html.Div(
         [
             html.Div(map_legend, className="position-absolute fixed-bottom right-0"),
             dcc.Graph(figure=temp_map, style={"height": "100%"}),
@@ -522,8 +522,35 @@ def layout(country="", city=""):
                 target="tooltip-target04",
             )
     ])
-    
-    layout = newPageLayout(map_and_checks, [right_side(globalUrbanMeanTemp)], plots, [welcomeAlert, mapIntroAlert], [download_button, download_button_rasters])
+
+    tabs = [
+        dbc.Tab(
+            [right_side(globalUrbanMeanTemp)],
+            label="Controles",
+            id="tab-controls",
+            tab_id="tabControls",
+        ),
+        dbc.Tab(
+            plots,
+            label="Gráficas",
+            id="tab-plots",
+            tab_id="tabPlots",
+        ),
+        dbc.Tab(
+            html.Div([welcomeAlert, mapIntroAlert]),
+            label="Info",
+            id="tab-info",
+            tab_id="tabInfo",
+        ),
+        dbc.Tab(
+            html.Div([download_button, download_button_rasters]),
+            label="Descargables",
+            id="tab-download",
+            tab_id="tabDownload",
+        )
+    ]
+
+    layout = newPageLayout(map, tabs)
 
     return layout
 
