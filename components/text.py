@@ -1,4 +1,4 @@
-from dash import html
+from dash import html, dcc
 import dash_bootstrap_components as dbc
 
 FIG_STYLE = {
@@ -27,7 +27,7 @@ def figureWithDescription(fig, text, title='Default title (change me)'):
 
     return html.Div(
         [
-            html.H3(title, style={'margin-bottom': '15px'}),
+            html.H3(title, style={'margin': '50px 0'}),
             html.Div(
                 [
                     html.Div([
@@ -49,3 +49,9 @@ def figureWithDescription(fig, text, title='Default title (change me)'):
         style=BLOCK_STYLE,
     )
 
+
+def mapComponent(title, mapFig):
+    return html.Div([
+        html.H4(title),
+        dcc.Graph(figure=mapFig, style={"height": "85%"}),
+    ], style={"height": "100%", "margin-bottom" : "50px"})

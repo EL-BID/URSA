@@ -15,12 +15,12 @@ def pageContentLayout(pageTitle, alerts, content):
 
     return html.Div(result)
 
-def newPageLayout(map, tabs):
+def newPageLayout(maps, tabs):
     return dbc.Container(
         [
             dbc.Row(
                 [
-                    dbc.Col(map, id="map-col", style={"height": "88vh"}),
+                    dbc.Col(maps, id="map-col", style={"height": "88vh"}),
                     dbc.Col(
                         dbc.Button(
                             html.I(

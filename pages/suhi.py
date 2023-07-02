@@ -550,7 +550,7 @@ def layout(country="", city=""):
         )
     ]
 
-    layout = newPageLayout(map, tabs)
+    layout = newPageLayout([map], tabs)
 
     return layout
 

@@ -1,3 +1,4 @@
+from hashlib import new
 import dash
 from dash import html, dcc, callback, Input, Output
 import dash_bootstrap_components as dbc
@@ -13,8 +14,8 @@ from ghsl import (
     plot_growth
 )
 from caching_utils import make_cache_dir
-from components.text import figureWithDescription
-from components.page import pageContentLayout
+from components.text import figureWithDescription, mapComponent
+from components.page import newPageLayout, pageContentLayout
 
 path_fua = Path('./data/output/cities/')
 path_cache : Path = Path('')
@@ -191,16 +192,9 @@ LINE_GRAPH_TEXT_4 = """El proceso de urbanización y crecimiento urbano va
 dejando huecos conforme la ciudad se expande territorialmente. Los mapas
 presentados anteriormente mostraron la proporción de suelo construido en
 cada celda e identificaban las celdas urbanizadas. Este gráfico de líneas
-compara ambos elementos y su cambio en el tiempo. Las
-fracciones se presentan para toda la zona metropolitana y también desglosadas
-por tipo de urbanización, central y en la periferia."""
+compara ambos elementos y su cambio en el tiempo. Las fracciones se presentan para toda la zona metropolitana y también desglosadas por tipo de urbanización, central y en la periferia.""" 
 
-LINE_GRAPH_TEXT_5 = """Finalmente, contando con las áreas de superficie
-construida y urbana y la población por año, es posible calcular la evolución
-de la densidad poblacional a través del tiempo. En este caso, se presenta la
-densidad de población, representada como número de personas por superficie
-urbanizada en kilométros cuadrados."""
-
+LINE_GRAPH_TEXT_5 = """Finalmente, contando con las áreas de superficie construida y urbana y la población por año, es posible calcular la evolución de la densidad poblacional a través del tiempo. En este caso, se presenta la densidad de población, representada como número de personas por superficie urbanizada en kilométros cuadrados."""
 
 LINE_GRAPH_TEXT_6 = """El gráfico de líneas muestra la densidad poblacional,
 pero en este caso calculada como el número de personas sobre la superficie
@@ -300,27 +294,23 @@ def layout(country='', city=''):
     )
 
     maps = html.Div([
-        figureWithDescription(
-            dcc.Graph(figure=map1),
-            MAP_HIST_BUILTUP_EXPANDED_TEXT,
-            'Año en el que aparece la construcción'
+        mapComponent(
+            'Año en el que aparece la construcción',
+            map1
         ),
-        figureWithDescription(
-            dcc.Graph(figure=map2),
-            MAP_HIST_URBAN_EXPANDED_TEXT,
-            'Año en el que se considera celda urbana'
+        mapComponent(
+            'Año en el que se considera celda urbana',
+            map2
         ),
-        figureWithDescription(
-            dcc.Graph(figure=map3),
-            MAP_BUILT_F_EXPANDED_TEXT,
-            'Fracción de construcción 2020'
+        mapComponent(
+            'Fracción de construcción 2020',
+            map3
         ),
-        figureWithDescription(
-            dcc.Graph(figure=map4),
-            MAP_POP_EXPANDED_TEXT,
-            'Habitantes por celda'
+        mapComponent(
+            'Habitantes por celda',
+            map4
         ),
-    ])
+    ], style={"height": "90vh", "overflow": "scroll"})
 
     lines = html.Div([
         figureWithDescription(
@@ -353,9 +343,24 @@ def layout(country='', city=''):
             LINE_GRAPH_TEXT_6,
             'Densidad de Población (por Superficie de Construcción) por Tipo de Urbanización (1975-2020)'
         ),
-        ])
+        ], style={"height": "82vh", "overflow": "scroll"})
+
     welcomeAlert = dbc.Alert(WELCOME_TEXT, color='secondary')
     mapIntroAlert = dbc.Alert(MAP_INTRO_TEXT, color='light')
+    constructionYearMapInfoAlert = dbc.Alert([
+        html.H4('Año en el que aparece la construcción'),
+        MAP_HIST_BUILTUP_EXPANDED_TEXT
+    ], color='light')
+    urbanCellYearMapInfoAlert = dbc.Alert([
+        html.H4('Año en el que se considera celda urbana'),
+        MAP_HIST_URBAN_EXPANDED_TEXT ], color='light')
+    contstructionFractionMapInfoAlert = dbc.Alert([
+        html.H4('Fracción de construcción 2020'),
+        MAP_BUILT_F_EXPANDED_TEXT ], color='light')
+    inhabitantsFractionMapInfoAlert = dbc.Alert([ 
+        html.H4('Habitantes por celda'),
+        MAP_POP_EXPANDED_TEXT ], color='light')
+            
 
     download_button = html.Div([
             dbc.Button('Descargar a disco',
@@ -382,18 +387,35 @@ def layout(country='', city=''):
     ])
 
 
-    layout = pageContentLayout(
-        pageTitle='Crecimiento histórico',
-        alerts=[
-            welcomeAlert,
-            mapIntroAlert,
-            download_button
-        ],
-        content=[
-            maps,
+    tabs = [
+        dbc.Tab(
             lines,
-        ]
-    )
+            label="Gráficas",
+            id="tab-plots",
+            tab_id="tabPlots",
+        ),
+        dbc.Tab(
+            html.Div([
+                welcomeAlert,
+                mapIntroAlert,
+                constructionYearMapInfoAlert,
+                urbanCellYearMapInfoAlert,
+                contstructionFractionMapInfoAlert,
+                inhabitantsFractionMapInfoAlert
+            ]),
+            label="Info",
+            id="tab-info",
+            tab_id="tabInfo",
+        ),
+        dbc.Tab(
+            html.Div([download_button]),
+            label="Descargables",
+            id="tab-download",
+            tab_id="tabDownload",
+        )
+    ]
+
+    layout = newPageLayout(maps, tabs)
 
     return layout
 
