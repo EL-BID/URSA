@@ -1,4 +1,5 @@
-from dash import html
+import dash
+from dash import html, callback, Output, Input
 import dash_bootstrap_components as dbc
 
 from utils.image_utils import b64_image
@@ -75,3 +76,27 @@ navbar = dbc.Nav(
     vertical=True,
     pills=True,
 )
+
+# Define the callback
+@callback(
+    Output("page-title", "children"),
+    Output("page-title", "title"),
+    Input("growth_link", "n_clicks"),
+    Input("lc_link", "n_clicks"),
+    Input("sleuth_link", "n_clicks"),
+    Input("suhi_link", "n_clicks"),
+)
+def update_title(growth_clicks, lc_clicks, sleuth_clicks, suhi_clicks):
+    ctx = dash.callback_context
+    triggered_id = ctx.triggered[0]["prop_id"].split(".")[0]
+
+    if triggered_id == "growth_link":
+        return "Crecimiento histórico", "Crecimiento histórico"
+    elif triggered_id == "lc_link":
+        return "Cobertura de suelo", "Cobertura de suelo"
+    elif triggered_id == "sleuth_link":
+        return "Escenarios del futuro", "Escenarios del futuro"
+    elif triggered_id == "suhi_link":
+        return "Islas de calor", "Islas de calor"
+    else:
+        return "Home", ""

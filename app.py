@@ -18,10 +18,6 @@ sys.path.append("./utils")
 
 data_path = Path("./data")
 
-CONTENT_STYLE = {
-    "color": "gray",
-}
-
 HEADER_STYLE = {"text-align": "center", "margin": "50px"}
 
 app = Dash(
@@ -35,7 +31,6 @@ content = dcc.Loading(
         html.Div(
             [dash.page_container],
             id="content",
-            style=CONTENT_STYLE,
         ),
     ],
     id="loading-spinner",
@@ -62,12 +57,13 @@ app.layout = dbc.Container(
                 ),
                 width=2
             ),
-            dbc.Col(country_selector, width=5)]),
+            dbc.Col(country_selector, className="d-flex justify-content-center align-items-center", width=5),
+            dbc.Col(id ="page-title", className="d-flex justify-content-center align-items-center", style={"font-size": "2rem"})]),
         dbc.Row(
             [dbc.Col(navbar, className="col-auto"), dbc.Col(content)],
         ),
     ],
-    style={"backgroundColor": "#FBFBFB"},
+    style={"backgroundColor": "#FBFBFB", "color": "gray"},
     fluid=True,
 )
 
