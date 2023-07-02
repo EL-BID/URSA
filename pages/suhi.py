@@ -9,7 +9,7 @@ from caching_utils import make_cache_dir
 import heat_islands as ht
 import raster_utils as ru
 from components.text import figureWithDescription
-from components.page import pageContentLayout
+from components.page import newPageLayout
 
 path_fua = Path("./data/output/cities/")
 
@@ -428,7 +428,6 @@ def layout(country="", city=""):
         [
             dbc.Row(
                 [
-                    right_side(globalUrbanMeanTemp),
                     figureWithDescription(
                         dcc.Graph(figure=areas_plot),
                         HISTOGRAMA_TEXT,
@@ -476,68 +475,7 @@ def layout(country="", city=""):
         ]
     )
 
-    layout = dbc.Container(
-        [
-            dbc.Row(
-                [
-                    dbc.Col(map_and_checks, id="map-col", style={"height": "88vh"}),
-                    dbc.Col(
-                        dbc.Button(
-                            html.I(
-                                className="bi bi-arrow-right-short", id="toggle-icon"
-                            ),
-                            id="toggle-button",
-                            color="secondary",
-                            className="d-flex align-items-center justify-content-center",
-                            style={"width": "15px", "height": "500px"},
-                        ),
-                        className="col-auto d-flex align-items-center",
-                    ),
-                    dbc.Col(
-                        [
-                            dbc.Tabs(
-                                [
-                                    dbc.Tab(
-                                        plots,
-                                        label="Gráficas",
-                                        id="tab-1",
-                                        tab_id="tabPlots",
-                                    ),
-                                    dbc.Tab(
-                                        html.Div(
-                                            [
-                                                welcomeAlert,
-                                                mapIntroAlert,
-                                            ]
-                                        ),
-                                        label="Info",
-                                        id="tab-info",
-                                        tab_id="tabInfo",
-                                    ),
-                                    dbc.Tab(
-                                        html.Div(
-                                            [download_button, download_button_rasters]
-                                        ),
-                                        label="Descargables",
-                                        id="tab-download",
-                                        tab_id="tabDownload",
-                                    ),
-                                ],
-                                id="tabs",
-                                active_tab="tabPlots",
-                                className="mt-3",
-                            ),
-                            html.Div(id="tab-content"),
-                        ],
-                        id="plots-col",
-                        width=6,  # Adjust the width as needed
-                    ),
-                ],
-            ),
-        ],
-        className="p-0 m-0", 
-        fluid=True,
-    )
+    layout = newPageLayout(map_and_checks, [right_side(globalUrbanMeanTemp)], plots, [welcomeAlert, mapIntroAlert], [download_button, download_button_rasters])
 
     return layout
 
@@ -623,16 +561,3 @@ def download_rasters(n_clicks):
         )
 
     return "Status de la Descarga: {}".format(globalTask.status()["state"])
-
-
-@callback(
-    Output("plots-col", "style"),
-    Output("toggle-icon", "className"),
-    Output("map-col", "width"),
-    Output("plots-col", "width"),
-    Input("toggle-button", "n_clicks"),
-)
-def toggle_plots(n_clicks):
-    if n_clicks and n_clicks % 2 != 0:
-        return {"display": "none"}, "bi bi-arrow-left-short", 11, 0
-    return {"display": "block"}, "bi bi-arrow-right-short", 7, 4

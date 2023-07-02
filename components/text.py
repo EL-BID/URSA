@@ -12,28 +12,41 @@ BLOCK_STYLE = {
 
 
 def figureWithDescription(fig, text, title='Default title (change me)'):
+    info_id = f"{title.lower().replace(' ', '-')}-info"
+
+    tooltip = dbc.Tooltip(
+        text,
+        target=info_id,
+        placement="top",
+    )
+
+    info_button = html.I(
+        id=info_id,
+        # color="light",
+        className="bi bi-info-circle",
+    )
+
     return html.Div(
         [
             html.H3(title, style={'margin-bottom': '15px'}),
             html.Div(
-                fig,
-                style=FIG_STYLE
+                [
+                    html.Div([
+                        fig,
+                        html.Div(
+                        [
+                            info_button,
+                            tooltip,
+                        ],
+                        className="position-absolute top-0 start-0",
+                    )],
+                    className="position-relative",
+                    )
+                ],
+                style=FIG_STYLE,
             ),
-            text,
             html.Hr(),
         ],
-        style=BLOCK_STYLE
+        style=BLOCK_STYLE,
     )
 
-def figureWithDescriptionOnTheSide(fig, text):
-    return dbc.Row(
-        [
-            dbc.Col(
-                fig,
-                width=8,
-                style=FIG_STYLE
-            ),
-            dbc.Col(text, width=4)
-        ],
-        style=BLOCK_STYLE
-    )
