@@ -26,7 +26,6 @@ def newPageLayout(maps, tabs):
                             html.I(
                                 className="bi bi-arrow-right-short", 
                                 id="toggle-icon",
-                                style={"font-size": "1.3rem"}
                             ),
                             id="toggle-button",
                             color="secondary",
@@ -42,12 +41,10 @@ def newPageLayout(maps, tabs):
                                 tabs,
                                 id="tabs",
                                 active_tab=tabs[0].tab_id,
-                                className="mt-3",
                             ),
                             html.Div(id="tab-content"),
                         ],
                         id="plots-col",
-                        width=6,
                     ),
                 ],
             ),
@@ -66,4 +63,4 @@ def newPageLayout(maps, tabs):
 def toggle_plots(n_clicks):
     if n_clicks and n_clicks % 2 != 0:
         return {"display": "none"}, "bi bi-arrow-left-short", 11, 0
-    return {"display": "block"}, "bi bi-arrow-right-short", 6, 5
+    return {"display": "block"}, "bi bi-arrow-right-short", 6, 5 

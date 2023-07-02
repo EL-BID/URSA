@@ -9,6 +9,9 @@ FIG_STYLE = {
 
 BLOCK_STYLE = {
     'height': '100%',
+    'backgroundColor': 'white',
+    'box-shadow': 'rgba(0, 0, 0, 0.1) 0px 0px 5px 0px, rgba(0, 0, 0, 0.1) 0px 0px 1px 0px',
+    'margin-bottom': '30px'
 }
 
 
@@ -28,16 +31,14 @@ def figureWithDescription(fig, text, title='Default title (change me)'):
 
     return html.Div(
         [
-            html.Div(
-                [
-                    html.Div(html.H4(title), className="d-inline p-0 m-0", style={"font-size": "1.2rem"}),
-                    " ",
-                    info_button,
-                    tooltip,
-                    html.Hr(),
-                    fig,
-
-                ], style=FIG_STYLE)
+            html.Div([
+                html.H4(title, className="d-inline p-0 m-0"),
+                " ",
+                info_button,
+            ], className="p-2", style={"font-size": "1.2rem"}),
+            tooltip,
+            html.Hr(),
+            fig,
         ],
         style=BLOCK_STYLE,
     )

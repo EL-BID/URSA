@@ -58,7 +58,7 @@ app.layout = dbc.Container(
                 width=2
             ),
             dbc.Col(country_selector, className="d-flex justify-content-center align-items-center", width=5),
-            dbc.Col(id ="page-title", className="d-flex justify-content-center align-items-center", style={"font-size": "2rem"})]),
+            dbc.Col(id ="page-title", className="d-flex justify-content-center align-items-center", style={"fontSize": "2rem"})]),
         dbc.Row(
             [dbc.Col(navbar, className="col-auto"), dbc.Col(content)],
         ),
@@ -122,4 +122,4 @@ if __name__ == "__main__":
         print("Unexpected error:", sys.exc_info()[0])
         print("¡Error desconocido en la autenticación!")
         raise
-    app.run_server(host='0.0.0.0', debug=True)
+    app.run_server(host='0.0.0.0', debug=False)
