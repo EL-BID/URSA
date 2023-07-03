@@ -99,4 +99,4 @@ def update_title(growth_clicks, lc_clicks, sleuth_clicks, suhi_clicks):
     elif triggered_id == "suhi_link":
         return "Islas de calor", "Islas de calor"
     else:
-        return "Home", ""
+        return "Inicio", ""

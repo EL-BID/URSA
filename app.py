@@ -47,7 +47,7 @@ app.layout = dbc.Container(
                     alt="Home",
                     src=b64_image(BID_LOGO_PATH),
                     style={
-                        "height": "40px",
+                        "height": "30px",
                         "width": "auto",
                         "margin": "15px 0px",
                         "cursor": "pointer"

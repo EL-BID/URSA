@@ -9,7 +9,7 @@ dash.register_page(
 
 layout = html.Div(
     children=[
-        html.H1(children='Bienvenido'),
+        html.H1(children='Bienvenida'),
         html.Div(
             children=[
                 html.P(
