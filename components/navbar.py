@@ -58,7 +58,7 @@ navbar = dbc.Nav(
                     href="/sleuth",
                     style=NAV_LINK_STYLE,
                 ),
-                dbc.Tooltip("Escenarios del futuro", target="sleuth_link"),
+                dbc.Tooltip("Escenarios de futuro", target="sleuth_link"),
             ]
         ),
         dbc.NavItem(
@@ -95,7 +95,7 @@ def update_title(growth_clicks, lc_clicks, sleuth_clicks, suhi_clicks):
     elif triggered_id == "lc_link":
         return "Cobertura de suelo", "Cobertura de suelo"
     elif triggered_id == "sleuth_link":
-        return "Escenarios del futuro", "Escenarios del futuro"
+        return "Escenarios de futuro", "Escenarios del futuro"
     elif triggered_id == "suhi_link":
         return "Islas de calor", "Islas de calor"
     else:

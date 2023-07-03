@@ -2,7 +2,6 @@ from dash import html, dcc
 import dash_bootstrap_components as dbc
 
 BLOCK_STYLE = {
-    'height': '100%',
     'backgroundColor': 'white',
     'boxShadow': 'rgba(0, 0, 0, 0.1) 0px 0px 5px 0px, rgba(0, 0, 0, 0.1) 0px 0px 1px 0px',
     'margin': '30px 30px'
@@ -20,18 +19,16 @@ def figureWithDescription(fig, text, title='Default title (change me)'):
 
     info_button = html.I(
         id=info_id,
-        className="bi bi-info-circle d-inline",
+        className="bi bi-info-circle text-info",
     )
 
-    return html.Div(
+    return dbc.Container(
         [
-            html.Div([
-                html.H4(title, className="d-inline p-0 m-0"),
-                " ",
-                info_button,
-            ], className="p-2", style={"font-size": "1.2rem"}),
-            tooltip,
-            html.Hr(),
+            dbc.Row([
+                dbc.Col([ info_button, tooltip], width=2),
+                dbc.Col(html.H4(title), width=10),
+            ], className="p-2 d-flex justify-content-center align-items-center"),
+            html.Hr(className="mt-2 mb-2"),
             fig,
         ],
         style=BLOCK_STYLE,
