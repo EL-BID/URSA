@@ -1,5 +1,4 @@
 cache
-*.png
 *.bmp
 .ipynb_checkpoints/
 __pycache__/
