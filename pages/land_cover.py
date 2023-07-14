@@ -41,6 +41,53 @@ ALERT_TEXT = html.Div(
     ]
 )
 
+DRIVE_TEXT = html.Div(
+        html.P([
+            html.H4('Descarga de Datos'),
+            html.H5('¿Cómo se realiza la descarga?'),
+            "La información procesada en la sección Cobertura de Suelo se realiza principalmente mediante de Google Earth Engine. De esta manera, la descarga de los datos empleados, debido a su tamaño, es a través del Google Drive de la cuenta empleada en la autenticación de Google Earth Engine.",
+            html.Br(),
+            html.Br(),
+            html.H5('¿Dónde se descarga el archivo?'),
+            "La descarga del raster con nombre 'dynamic_world_raster.tif' se hará al directorio raíz del Google Drive de la cuenta empleada.",
+            html.Br(),
+            html.Br(),
+            html.H5('¿Cuales son los estados de la descarga?'),
+            "Los estados de la tarea de descarga son los siguientes:",
+            html.Ul(
+        [
+            html.Li(
+                "UNSUBMITTED, tarea pendiente en el cliente."
+            ),
+            html.Li(
+                "READY, tarea en cola en el servidor."
+            ),
+            html.Li(
+                "RUNNING, tarea en ejecución."
+            ),
+            html.Li(
+                "COMPLETED, tarea completada exitosamente."
+            ),
+            html.Li(
+                "FAILED, tarea completada con errores."
+            ),
+            html.Li(
+                "CANCEL_REQUESTED, tarea ejecución pero se ha solicitado su cancelación."
+            ),
+            html.Li(
+                "CANCELED, tarea cancelada."
+            ),
+        ]
+            ),
+            html.Br(),
+            html.Br(),
+            html.H5('¿Es posible hacer descargas simultáneas?'),
+            "URSA únicamente permite la ejecución de una tarea de descarga a la vez. Espere a que se complete la tarea antes de crear una nueva. Esto puede tomar varios minutos."
+        ]
+        )
+        )
+
+
 globalCountry = ''
 globalCity = ''
 globalTask = None
@@ -110,6 +157,7 @@ def layout(country='', city=''):
     
     alert = dbc.Alert(ALERT_TEXT, color='light')
 
+    download_info = dbc.Alert(DRIVE_TEXT, color = 'secondary')
 
     download_button_rasters = html.Div([
             dbc.Button('Descarga a Google Drive',
@@ -130,7 +178,7 @@ def layout(country='', city=''):
 
               }),
             dbc.Tooltip(
-                "Descarga los archivos Raster a tu Google Drive, en este caso la información es procesada en GGE y la única opción de descarga es a esta carpeta en el directorio raíz.",
+                "Descarga los archivos Raster a Google Drive. En este caso la información es procesada en Google Earth Engine y la única opción de descarga es al directorio raíz de tu Google Drive.",
                 target="tooltip-target02",
             )
     ])
@@ -149,7 +197,7 @@ def layout(country='', city=''):
             tab_id="tabInfo",
         ),
         dbc.Tab(
-            html.Div([download_button_rasters]),
+            html.Div([download_info, download_button_rasters]),
             label="Descargables",
             id="tab-download",
             tab_id="tabDownload",

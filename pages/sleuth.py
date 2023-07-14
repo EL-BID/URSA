@@ -15,7 +15,27 @@ dash.register_page(
     path_template='sleuth/<country>/<city>'
 )
 
+def layout(country='', city=''):
 
+    if not city or not country:
+        return 'No city selected'
+
+    country = unquote(country)
+    city = unquote(city)
+    path_cache : Path = make_cache_dir(f'./data/cache/{country}-{city}')
+
+    layout = html.Div(
+        [
+            html.H2(
+                '¡Esta pestaña se encuentra en desarrollo!'
+            )
+
+        ]
+    )
+
+    return layout
+
+'''
 def layout(country='', city=''):
 
     if not city or not country:
@@ -90,3 +110,4 @@ def get_data(n_clicks, fpath):
 )
 def get_scen(n_clicks, fpath):
     return dcc.send_file(fpath)
+'''

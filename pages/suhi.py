@@ -216,6 +216,69 @@ STRATEGIES = {
     },
 }
 
+DRIVE_TEXT = html.Div(
+        html.P([
+            html.H4('Descarga de Datos'),
+            "La información procesada en la sección Islas de Calor se realiza empleando Google Earth Engine. De esta manera, la descarga de los datos empleados, debido a su tamaño, es a través del Google Drive de la cuenta empleada en la autenticación de Google Earth Engine.",
+            html.Br(),
+            html.Br(),
+            "La descarga del raster con nombre 'suhi_raster.tif' se hará al directorio raíz de Google Drive.",
+            html.Br(),
+            html.Br(),
+            "Los estados de la tarea de descarga son los siguientes: 'UNSUBMITTED, la tarea no se ha enviado al cliente; 'READY', tarea lista para enviarse al servidor; 'RUNNING', tarea en ejecución; 'COMPLETED', tarea completada exitosamente; 'FAILED', completada con errores; 'CANCEL_REQUESTED', en ejecución pero se ha solicitado su cancelación; y 'CANCELED', tarea cancelada.",
+            html.Br(),
+            html.Br(),
+            "URSA únicamente permite la ejecución de una tarea de descarga a la vez. Espere a que se complete la tarea antes de crear una nueva. Esto puede tomar varios minutos."
+        ]
+        )
+        )
+
+DRIVE_TEXT = html.Div(
+        html.P([
+            html.H4('Descarga de Datos'),
+            html.H5('¿Cómo se realiza la descarga?'),
+            "La información procesada en la sección Islas de Calor se realiza incluyendo Google Earth Engine. De esta manera, la descarga de los datos empleados, debido a su tamaño, es a través del Google Drive de la cuenta empleada en la autenticación de Google Earth Engine en el caso del raster y al disco local en el caso de los datos tabulares para hacer la visualizaciones.",
+            html.Br(),
+            html.Br(),
+            html.H5('¿Dónde se descarga el archivo?'),
+            "La descarga del raster con nombre 'suhi_raster.tif' se hará al directorio raíz del Google Drive de la cuenta empleada. Por otro lado, el archivo descargado a disco es 'city-country-suhi-data.csv', reemplazando 'city' por la ciudad y 'country' por el país analizado, respectivamente.",
+            html.Br(),
+            html.Br(),
+            html.H5('¿Cuales son los estados de la descarga?'),
+            "Los estados de la tarea de descarga son los siguientes:",
+            html.Ul(
+        [
+            html.Li(
+                "UNSUBMITTED, tarea pendiente en el cliente."
+            ),
+            html.Li(
+                "READY, tarea en cola en el servidor."
+            ),
+            html.Li(
+                "RUNNING, tarea en ejecución."
+            ),
+            html.Li(
+                "COMPLETED, tarea completada exitosamente."
+            ),
+            html.Li(
+                "FAILED, tarea completada con errores."
+            ),
+            html.Li(
+                "CANCEL_REQUESTED, tarea ejecución pero se ha solicitado su cancelación."
+            ),
+            html.Li(
+                "CANCELED, tarea cancelada."
+            ),
+        ]
+            ),
+            html.Br(),
+            html.Br(),
+            html.H5('¿Es posible hacer descargas simultáneas?'),
+            "URSA únicamente permite la ejecución de una tarea de descarga a la vez. Espere a que se complete la tarea antes de crear una nueva. Esto puede tomar varios minutos."
+        ]
+        )
+        )
+
 globalCountry = ""
 globalCity = ""
 globalPathCache = Path()
@@ -474,6 +537,7 @@ def layout(country="", city=""):
 
     welcomeAlert = dbc.Alert(WELCOME_CONTENT, color="secondary")
     mapIntroAlert = dbc.Alert(MAP_INTRO_TEXT, color="light")
+    download_info = dbc.Alert(DRIVE_TEXT, color = 'secondary')
 
     download_button = html.Div([
             dbc.Button('Descargar a disco',
@@ -518,7 +582,7 @@ def layout(country="", city=""):
 
               }),
             dbc.Tooltip(
-                "Descarga los archivos Raster a tu Google Drive, en este caso la información es procesada en GGE y la única opción de descarga es a esta carpeta en el directorio raíz.",
+                "Descarga los archivos Raster a Google Drive. En este caso la información es procesada en Google Earth Engine y la única opción de descarga es al directorio raíz de tu Google Drive.",
                 target="tooltip-target04",
             )
     ])
@@ -543,7 +607,7 @@ def layout(country="", city=""):
             tab_id="tabInfo",
         ),
         dbc.Tab(
-            html.Div([download_button, download_button_rasters]),
+            html.Div([download_info, download_button,download_button_rasters]),
             label="Descargables",
             id="tab-download",
             tab_id="tabDownload",
