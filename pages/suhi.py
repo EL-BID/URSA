@@ -3,19 +3,19 @@ from dash import html, dcc, callback, Input, Output
 import dash_bootstrap_components as dbc
 from urllib.parse import unquote
 from pathlib import Path
+import pandas as pd
 
-import sys
-sys.path.append('./src')
+from caching_utils import make_cache_dir
 import heat_islands as ht
+import raster_utils as ru
 from components.text import figureWithDescription
-from components.text import figureWithDescriptionOnTheSide
-from components.page import pageContent
+from components.page import newPageLayout
 
-path_fua = Path('./data/output/cities/')
+path_fua = Path("./data/output/cities/")
 
 dash.register_page(
     __name__,
-    title='SUHI',
+    title='URSA',
     path_template='suhi/<country>/<city>'
 )
 
@@ -128,6 +128,8 @@ LINE_TEXT = (
     "Para evaluar esto, generamos “donas” concéntricas con radios "
     "crecientes. Con esto, calculamos la media de la SUHII de todos los "
     "pixeles contenidos en cada dona, y la graficamos en esta imagen. "
+    "El gráfico muestra el diferencial de temperatura en ese radio específico"
+    "y no de forma acumulada"
     "Se puede apreciar el gradiente de disminución de la temperatura "
     "promedio conforme incrementamos el radio de las “donas”, "
     "esto es, conforme nos alejamos del centro de la zona urbana."
@@ -140,7 +142,9 @@ AREA_TEXT = (
     "Típicamente, lo que ocurre es que cerca del centro de la ciudad, "
     "la gran mayoría del suelo está cubierto de suelo construido; "
     "entre más nos alejamos, más disminuye esta categoría y aumenta "
-    "la fracción de cobertura verde. "
+    "la fracción de cobertura verde."
+    "Cabe destacar que la composición de uso de suelo en cada radio o distancia"
+    "no es acumulada, sino que es específica para esa dona en particular. "
     "Finalmente, cerca de los bordes de la ciudad, podemos observar una "
     "mezcla de varias coberturas, como xsparte del proceso de urbanización."
 )
@@ -159,131 +163,164 @@ RESULT_STYLE = {
 }
 
 STRATEGIES = {
-    'strat-vegetacion': {
-        'title': 'Reintroducción de vegetación',
-        'description': ('Reintroducir vegetación a al menos 16% del área '
-                        'urbana a través de parques, jardines y camellones'
-                        ' puede generar un enfriamiento de 1.07 °C promedio.'),
-        'mitigation': 1.07,
-        'area_fraction': 0.16
+    "strat-vegetacion": {
+        "title": "Reintroducción de vegetación",
+        "description": (
+            "Reintroducir vegetación a al menos 16% del área "
+            "urbana a través de parques, jardines y camellones"
+            " puede generar un enfriamiento de 1.07 °C promedio."
+        ),
+        "mitigation": 1.07,
+        "area_fraction": 0.16,
     },
-    'strat-techos-verdes': {
-        'title': 'Instalación de techos verdes',
-        'description': ('Instalar techos verdes en 50% de la superficie '
-                        'de techo disponible reduce un promedio de 0.083°C'),
-        'mitigation': 0.083,
-        'area_fraction': 0.5
+    "strat-techos-verdes": {
+        "title": "Instalación de techos verdes",
+        "description": (
+            "Instalar techos verdes en 50% de la superficie "
+            "de techo disponible reduce un promedio de 0.083°C"
+        ),
+        "mitigation": 0.083,
+        "area_fraction": 0.5,
     },
-    'strat-techos-frescos': {
-        'title': 'Instalación de techos frescos',
-        'description': ('Incrementar el albedo a 0.5 en el 50% de los techos '
-                        'de la ciudad  por medio de materiales reflectores en '
-                        'los techos reduce la temperatura un promedio de '
-                        '0.078°C'),
-        'mitigation': 0.078,
-        'area_fraction': 0.5
+    "strat-techos-frescos": {
+        "title": "Instalación de techos frescos",
+        "description": (
+            "Incrementar el albedo a 0.5 en el 50% de los techos "
+            "de la ciudad  por medio de materiales reflectores en "
+            "los techos reduce la temperatura un promedio de "
+            "0.078°C"
+        ),
+        "mitigation": 0.078,
+        "area_fraction": 0.5,
     },
-    'strat-pavimento-concreto': {
-        'title': 'Instalación de pavimentos de concreto',
-        'description': ('Cambiar los pavimentos de asfalto por pavimentos '
-                        'de concreto tiene la capacidad de reducir un '
-                        'promedio de 0.39ºC.'),
-        'mitigation': 0.39,
-        'area_fraction': 1.0
+    "strat-pavimento-concreto": {
+        "title": "Instalación de pavimentos de concreto",
+        "description": (
+            "Cambiar los pavimentos de asfalto por pavimentos "
+            "de concreto tiene la capacidad de reducir un "
+            "promedio de 0.39ºC."
+        ),
+        "mitigation": 0.39,
+        "area_fraction": 1.0,
     },
-    'strat-pavimento-reflector': {
-        'title': 'Instalación de pavimentos reflectores',
-        'description': ('Incrementar el albedo en 0.2 en todos los '
-                        'pavimentos de la ciudad mediante materiales o '
-                        'pinturas reflectoras en tiene la capacidad de '
-                        'reducir la temperatura en 1.39 °C promedio'),
-        'mitigation': 1.39,
-        'area_fraction': 1.0
-    }
+    "strat-pavimento-reflector": {
+        "title": "Instalación de pavimentos reflectores",
+        "description": (
+            "Incrementar el albedo en 0.2 en todos los "
+            "pavimentos de la ciudad mediante materiales o "
+            "pinturas reflectoras en tiene la capacidad de "
+            "reducir la temperatura en 1.39 °C promedio"
+        ),
+        "mitigation": 1.39,
+        "area_fraction": 1.0,
+    },
 }
 
-globalCountry = ''
-globalCity = ''
-globalPathCache = ''
+DRIVE_TEXT = html.Div(
+        html.P([
+            html.H4('Descarga de Datos'),
+            "La información procesada en la sección Islas de Calor se realiza empleando Google Earth Engine. De esta manera, la descarga de los datos empleados, debido a su tamaño, es a través del Google Drive de la cuenta empleada en la autenticación de Google Earth Engine.",
+            html.Br(),
+            html.Br(),
+            "La descarga del raster con nombre 'suhi_raster.tif' se hará al directorio raíz de Google Drive.",
+            html.Br(),
+            html.Br(),
+            "Los estados de la tarea de descarga son los siguientes: 'UNSUBMITTED, la tarea no se ha enviado al cliente; 'READY', tarea lista para enviarse al servidor; 'RUNNING', tarea en ejecución; 'COMPLETED', tarea completada exitosamente; 'FAILED', completada con errores; 'CANCEL_REQUESTED', en ejecución pero se ha solicitado su cancelación; y 'CANCELED', tarea cancelada.",
+            html.Br(),
+            html.Br(),
+            "URSA únicamente permite la ejecución de una tarea de descarga a la vez. Espere a que se complete la tarea antes de crear una nueva. Esto puede tomar varios minutos."
+        ]
+        )
+        )
+
+DRIVE_TEXT = html.Div(
+        html.P([
+            html.H4('Descarga de Datos'),
+            html.H5('¿Cómo se realiza la descarga?'),
+            "La información procesada en la sección Islas de Calor se realiza incluyendo Google Earth Engine. De esta manera, la descarga de los datos empleados, debido a su tamaño, es a través del Google Drive de la cuenta empleada en la autenticación de Google Earth Engine en el caso del raster y al disco local en el caso de los datos tabulares para hacer la visualizaciones.",
+            html.Br(),
+            html.Br(),
+            html.H5('¿Dónde se descarga el archivo?'),
+            "La descarga del raster con nombre 'suhi_raster.tif' se hará al directorio raíz del Google Drive de la cuenta empleada. Por otro lado, el archivo descargado a disco es 'city-country-suhi-data.csv', reemplazando 'city' por la ciudad y 'country' por el país analizado, respectivamente.",
+            html.Br(),
+            html.Br(),
+            html.H5('¿Cuales son los estados de la descarga?'),
+            "Los estados de la tarea de descarga son los siguientes:",
+            html.Ul(
+        [
+            html.Li(
+                "UNSUBMITTED, tarea pendiente en el cliente."
+            ),
+            html.Li(
+                "READY, tarea en cola en el servidor."
+            ),
+            html.Li(
+                "RUNNING, tarea en ejecución."
+            ),
+            html.Li(
+                "COMPLETED, tarea completada exitosamente."
+            ),
+            html.Li(
+                "FAILED, tarea completada con errores."
+            ),
+            html.Li(
+                "CANCEL_REQUESTED, tarea ejecución pero se ha solicitado su cancelación."
+            ),
+            html.Li(
+                "CANCELED, tarea cancelada."
+            ),
+        ]
+            ),
+            html.Br(),
+            html.Br(),
+            html.H5('¿Es posible hacer descargas simultáneas?'),
+            "URSA únicamente permite la ejecución de una tarea de descarga a la vez. Espere a que se complete la tarea antes de crear una nueva. Esto puede tomar varios minutos."
+        ]
+        )
+        )
+
+globalCountry = ""
+globalCity = ""
+globalPathCache = Path()
 globalUrbanMeanTemp = None
+globalTask = None
 
 
 def format_temp(temp):
-    return f'{round(temp, 1)} °C'
+    return f"{round(temp, 2)} °C"
 
 
 def meanTempView(urban_mean_temperature):
+    title = html.P("Temperatura promedio", style=SUBTITLE_STYLE)
 
-    col1 = dbc.Col(
-        [
-            html.P(
-                "Temperatura promedio",
-                style=SUBTITLE_STYLE
-            ),
-            html.P(
-                f"{format_temp(urban_mean_temperature)}",
-                id="urban_mean_temperature",
-                style=MEAN_TEMPERATURE_STYLE,
-            ),
-        ]
+    paragraph1 = html.P(
+        f"{format_temp(urban_mean_temperature)}",
+        id="urban_mean_temperature",
+        style=MEAN_TEMPERATURE_STYLE,
     )
 
-    col2 = dbc.Col(
+    paragraph2 = html.P(
         [
-            html.P(
-                [
-                    (
-                        "* Datos obtenidos para el año 2022 a partir de "
-                        "la imagen satelital "
-                    ),
-                    html.A(
-                        "USGS Landsat 8 Level 2, Collection 2, Tier 1",
-                        href=(
-                            "https://developers.google.com/earth-engine"
-                            "/datasets/catalog/LANDSAT_LC08_C02_T1_L2"
-                        ),
-                    ),
-                ],
-                style={"fontSize": "0.8rem"},
-            )
-        ]
+            ("* Datos obtenidos para el año 2022 a partir de " "la imagen satelital "),
+            html.A(
+                "USGS Landsat 8 Level 2, Collection 2, Tier 1",
+                href=(
+                    "https://developers.google.com/earth-engine"
+                    "/datasets/catalog/LANDSAT_LC08_C02_T1_L2"
+                ),
+            ),
+        ],
+        style={"fontSize": "0.8rem"},
     )
 
     return html.Div(
         [
-            html.Div(
-                [
-                    dbc.Row(
-                        [
-                            col1,
-                            col2,
-                        ],
-                        style={"margin-bottom": "15px"},
-                    ),
-                ]
-            )
-        ]
+            title,
+            paragraph1,
+            paragraph2,
+        ],
+        style={"margin-bottom": "15px"},
     )
-
-
-# def resultsView(urban_mean_temperature):
-#     return html.Div(
-#         [
-#             html.Div(
-#                 [
-#                     html.Div(
-#                         'Temperatura promedio',
-#                         style=SUBTITLE_STYLE
-#                     ),
-#                     html.Div(
-#                         f'{urban_mean_temperature}',
-#                         id='urban_mean_temperature',
-#                         style=MEAN_TEMPERATURE_STYLE
-#                     )
-#                 ]
-#             )
-#         ]
-#     )
 
 
 impactView = html.Div(
@@ -348,33 +385,55 @@ strategyList = html.Div(
 
 def right_side(urban_mean_temperature):
     return html.Div(
-        [
-            meanTempView(urban_mean_temperature),
-            strategyList,
-            impactView
-        ],
+        [meanTempView(urban_mean_temperature), strategyList, impactView],
     )
 
 
-# def text_box(urban_mean_temperature):
-#     return html.Div(
-#         [
-#             resultsView(urban_mean_temperature),
-#             strategyList,
-#             impactView
-#         ],
-#     )
+legend_colors = {
+    "Muy frío": "#2166AC",
+    "Frío": "#67A9CF",
+    "Ligeramente frío": "#D1E5F0",
+    "Templado": "#F7F7F7",
+    "Ligeramente cálido": "#FDDBC7",
+    "Caliente": "#EF8A62",
+    "Muy caliente": "#B2182B",
+}
+
+map_legend = html.Div(
+    [
+        html.Div(
+            [
+                html.Div(
+                    "",
+                    style={
+                        "height": "10px",
+                        "width": "10px",
+                        "backgroundColor": f"{value}",
+                        "margin-right": "5px",
+                    },
+                ),
+                html.Div(
+                    key,
+                    className="font-weight-light text-white",
+                    style={"font-size": "13px"},
+                ),
+            ],
+            className="d-flex align-items-center m-1",
+        )
+        for key, value in legend_colors.items()
+    ],
+    className="d-flex justify-content-around flex-column",
+    style={"width": "fit-content", "backgroundColor": "rgba(0,0,0,0.35)"},
+)
 
 
-def layout(country='', city=''):
-
+def layout(country="", city=""):
     if not city or not country:
-        return 'No city selected'
+        return "No city selected"
 
     country = unquote(country)
     city = unquote(city)
-    path_cache = Path(f'./data/cache/{country}-{city}')
-    path_cache.mkdir(exist_ok=True)
+    path_cache: Path = make_cache_dir(f"./data/cache/{country}-{city}")
 
     global globalCity
     global globalCountry
@@ -385,50 +444,60 @@ def layout(country='', city=''):
     globalCity = city
     globalPathCache = path_cache
     globalUrbanMeanTemp = ht.get_urban_mean(
-        globalCity, globalCountry, path_fua, 'Qall', 2022, globalPathCache)
+        globalCity, globalCountry, path_fua, "Qall", 2022, globalPathCache
+    )
 
-    season = 'Qall'
+    season = "Qall"
     year = 2022
 
-    temp_map = ht.plot_cat_map(country, city, path_fua, path_cache,
-                               season, year)
+    temp_map = ht.plot_cat_map(country, city, path_fua, path_cache, season, year)
 
-    areas_plot = ht.plot_temp_areas(country, city, path_fua, path_cache,
-                                    season, year)
-    temps_by_lc_plot = ht.plot_temp_by_lc(country, city, path_fua, path_cache,
-                                          season, year)
-    radial_temp_plot = ht.plot_radial_temperature(
-        country, city, path_fua, path_cache,
-        season, year)
-    radial_lc_plot = ht.plot_radial_lc(
-        country, city, path_fua, path_cache,
-        season, year)
+    areas_plot = ht.plot_temp_areas(country, city, path_fua, path_cache, season, year)
+    temps_by_lc_plot = ht.plot_temp_by_lc(
+        country, city, path_fua, path_cache, season, year
+    )
+    # radial_temp_plot = ht.plot_radial_temperature(
+    # country, city, path_fua, path_cache,
+    # season, year)
+    # radial_lc_plot = ht.plot_radial_lc(
+    # country, city, path_fua, path_cache,
+    # season, year)
 
     globalUrbanMeanTemp = ht.get_urban_mean(
-        globalCity, globalCountry, path_fua, 'Qall', 2022, globalPathCache)
+        globalCity, globalCountry, path_fua, "Qall", 2022, globalPathCache
+    )
 
-    map_and_checks = html.Div(
+    # map_and_checks = html.Div(
+    # [
+    # figureWithDescription(
+    # dbc.Row(
+    # [
+    # dbc.Col(
+    # [
+    # map_legend,
+    # dcc.Graph(figure=temp_map, style={"height": "95%"}),
+    # ],
+    # width=8,
+    # ),
+    # # dbc.Col(
+    # # right_side(globalUrbanMeanTemp),
+    # # width=4,
+    # # style={"padding": "15px"},
+    # # ),
+    # ]
+    # ),
+    # MAP_TEXT,
+    # "Categoría de temperatura en islas de calor",
+    # ), ]
+    # )
+
+    map = html.Div(
         [
-            figureWithDescription(
-                dbc.Row(
-                    [
-                        dbc.Col(
-                            dcc.Graph(
-                                figure=temp_map,
-                                style={"height": "100%"}
-                            ),
-                            width=8,
-                        ),
-                        dbc.Col(
-                            right_side(globalUrbanMeanTemp),
-                            width=4,
-                            style={"padding": "15px"},
-                        ),
-                    ]
-                ),
-                MAP_TEXT,
-            ),
-        ]
+            html.Div(map_legend, className="position-absolute fixed-bottom right-0"),
+            dcc.Graph(figure=temp_map, style={"height": "100%"}),
+        ],
+        className="position-relative",
+        style={"height": "100%"},
     )
 
     plots = html.Div(
@@ -437,81 +506,133 @@ def layout(country='', city=''):
                 [
                     figureWithDescription(
                         dcc.Graph(figure=areas_plot),
-                        HISTOGRAMA_TEXT
+                        HISTOGRAMA_TEXT,
+                        "Frecuencia de la superficie (Km²) de análisis por categoría de temperatura",
                     ),
                     figureWithDescription(
                         dcc.Graph(figure=temps_by_lc_plot),
-                        BARS_TEXT
+                        BARS_TEXT,
+                        "Fracción de uso de suelo por categoría de temperatura",
                     ),
-                ]
+                ],
+                style={"overflow": "scroll", "height": "82vh"},
             ),
-            dbc.Row(
-                [
-                    figureWithDescription(
-                        dcc.Graph(figure=radial_temp_plot),
-                        LINE_TEXT
-                    ),
-                    figureWithDescription(
-                        dcc.Graph(figure=radial_lc_plot),
-                        AREA_TEXT),
-                ]
-            ),
-        ]
+            # dbc.Row(
+            # [
+            # figureWithDescription(
+            # dcc.Graph(figure=radial_temp_plot),
+            # LINE_TEXT,
+            # 'Diferencia entre la temperatura urbana y la rural promedio por anillo concéntrico respecto al centro de la ciudad'
+            # ),
+            # figureWithDescription(
+            # dcc.Graph(figure=radial_lc_plot),
+            # AREA_TEXT,
+            # 'Tipo de uso de suelo por anillo concéntrico respecto al centro de la ciudad'
+            # )
+            # ]
+            # ),
+        ],
+        id="plots",
     )
 
     welcomeAlert = dbc.Alert(WELCOME_CONTENT, color="secondary")
     mapIntroAlert = dbc.Alert(MAP_INTRO_TEXT, color="light")
+    download_info = dbc.Alert(DRIVE_TEXT, color = 'secondary')
 
-    layout = pageContent(
-        pageTitle="Islas de calor",
-        alerts=[welcomeAlert, mapIntroAlert],
-        content=[
-            map_and_checks,
+    download_button = html.Div([
+            dbc.Button('Descargar a disco',
+                        id='btn-csv',
+                        color='light'),
+            dcc.Download(id="download-dataframe-csv"),
+            html.Span(
+              "?",
+              id="tooltip-target03",
+              style={
+                     "textAlign": "center", 
+                     "color": "white",
+                     "height": 25,
+                     "width": 25,
+                     "background-color": "#bbb",
+                     "border-radius": "50%",
+                     "display": "inline-block"
+
+              }),
+            dbc.Tooltip(
+                "Descarga el archivo .csv, que alimenta las visualizaciones, localmente en tu carpeta de Descargas.",
+                target="tooltip-target03",
+            )
+    ])
+
+    download_button_rasters = html.Div([
+            dbc.Button('Descarga a Google Drive',
+                        id='btn-rasters-suhi',
+                        color='light'),
+            html.Span(id="btn-rasters-suhi-output", style={"verticalAlign": "middle"}),
+            html.Span(
+              "?",
+              id="tooltip-target04",
+              style={
+                     "textAlign": "center", 
+                     "color": "white",
+                     "height": 25,
+                     "width": 25,
+                     "background-color": "#bbb",
+                     "border-radius": "50%",
+                     "display": "inline-block"
+
+              }),
+            dbc.Tooltip(
+                "Descarga los archivos Raster a Google Drive. En este caso la información es procesada en Google Earth Engine y la única opción de descarga es al directorio raíz de tu Google Drive.",
+                target="tooltip-target04",
+            )
+    ])
+
+    tabs = [
+        dbc.Tab(
+            [right_side(globalUrbanMeanTemp)],
+            label="Controles",
+            id="tab-controls",
+            tab_id="tabControls",
+        ),
+        dbc.Tab(
             plots,
-        ],
-    )
+            label="Gráficas",
+            id="tab-plots",
+            tab_id="tabPlots",
+        ),
+        dbc.Tab(
+            html.Div([welcomeAlert, mapIntroAlert]),
+            label="Info",
+            id="tab-info",
+            tab_id="tabInfo",
+        ),
+        dbc.Tab(
+            html.Div([download_info, download_button,download_button_rasters]),
+            label="Descargables",
+            id="tab-download",
+            tab_id="tabDownload",
+        )
+    ]
+
+    layout = newPageLayout([map], tabs)
 
     return layout
 
 
-# @callback(
-#     Output('impact-result-degrees', 'children'),
-#     Output('impact-mitigated-degrees', 'children'),
-#     Input('strategy-checklist', 'value')
-# )
-# def update_mitigation_degrees(values):
-#     global globalUrbanMeanTemp
-#     if globalUrbanMeanTemp is None:
-#         print('here inside calculating globalUrbanMeanTemp')
-#         globalUrbanMeanTemp = ht.get_urban_mean(globalCity,
-#                                                 globalCountry,
-#                                                 path_fua,
-#                                                 'Qall', 2022,
-#                                                 globalPathCache)
-#     mitigatedDegrees = 0
-#     for strategyId in values:
-#         mitigatedDegrees += STRATEGIES[strategyId]['mitigation']
-#     mitigatedUrbanTemperature = globalUrbanMeanTemp - mitigatedDegrees
-#     return format_temp(mitigatedUrbanTemperature), format_temp(mitigatedDegrees)
-
-
 @callback(
-    Output('impact-result-square-kilometers', 'children'),
-    Output('impact-result-kilometers', 'children'),
-    Output('impact-result-degrees', 'children'),
-    Output('impact-mitigated-degrees', 'children'),
-    Input('strategy-checklist', 'value')
+    Output("impact-result-square-kilometers", "children"),
+    Output("impact-result-kilometers", "children"),
+    Output("impact-result-degrees", "children"),
+    Output("impact-mitigated-degrees", "children"),
+    Input("strategy-checklist", "value"),
 )
 def update_mitigation_kilometers(values):
     global globalUrbanMeanTemp
 
     if globalUrbanMeanTemp is None:
-        print('here inside calculating globalUrbanMeanTemp')
-        globalUrbanMeanTemp = ht.get_urban_mean(globalCity,
-                                                globalCountry,
-                                                path_fua,
-                                                'Qall', 2022,
-                                                globalPathCache)
+        globalUrbanMeanTemp = ht.get_urban_mean(
+            globalCity, globalCountry, path_fua, "Qall", 2022, globalPathCache
+        )
 
     df = ht.load_or_get_mit_areas_df(
         globalCity, globalCountry, path_fua, globalPathCache
@@ -523,29 +644,59 @@ def update_mitigation_kilometers(values):
     mitigatedDegrees = 0
     impactedSquareKm = 0
     impactedKm = 0
-    roadsAdded = False
-    buildingsAdded = False
+
     for strategyId in values:
-        areaFraction = STRATEGIES[strategyId]['area_fraction']
-        if not buildingsAdded and (strategyId == 'strat-techos-verdes'
-                                   or strategyId == 'strat-techos-frescos'):
-            impactedSquareKm += area_roofs * areaFraction
-            mitigatedDegrees += STRATEGIES[strategyId]['mitigation']
-            buildingsAdded = True
-        elif not roadsAdded and (strategyId == 'strat-pavimento-concreto'
-                                 or strategyId == 'strat-pavimento-reflector'):
+        mitigatedDegrees += STRATEGIES[strategyId]["mitigation"]
+        areaFraction = STRATEGIES[strategyId]["area_fraction"]
+        if (
+            strategyId == "strat-pavimento-concreto"
+            or strategyId == "strat-pavimento-reflector"
+        ):
             impactedKm += roads_distance
-            mitigatedDegrees += STRATEGIES[strategyId]['mitigation']
-            roadsAdded = True
-        elif strategyId == 'strat-vegetacion':
-            mitigatedDegrees += STRATEGIES[strategyId]['mitigation']
+        elif (
+            strategyId == "strat-techos-verdes" or strategyId == "strat-techos-frescos"
+        ):
+            impactedSquareKm += area_roofs * areaFraction
+        elif strategyId == "strat-vegetacion":
             impactedSquareKm += area_urban * areaFraction
+        else:
+            pass
 
     mitigatedUrbanTemperature = globalUrbanMeanTemp - mitigatedDegrees
 
     return (
-        f'{int(round(impactedSquareKm, 0))} Km²',
-        f'{int(round(impactedKm, 0))} Km',
+        f"{int(round(impactedSquareKm, 0))} Km²",
+        f"{int(round(impactedKm, 0))} Km",
         format_temp(mitigatedUrbanTemperature),
-        format_temp(mitigatedDegrees)
+        format_temp(mitigatedDegrees),
     )
+
+
+@callback(
+    Output("download-dataframe-csv", "data"),
+    Input("btn-csv", "n_clicks"),
+    prevent_initial_call=True,
+)
+def download_file(n_clicks):
+    csv_path = globalPathCache / "land_cover_by_temp.csv"
+    if csv_path.exists():
+        df = pd.read_csv(csv_path)
+        return dcc.send_data_frame(
+            df.to_csv, f"{globalCity}_{globalCountry}-suhi-data.csv"
+        )
+
+
+@callback(
+    Output("btn-rasters-suhi-output", "children"),
+    Input("btn-rasters-suhi", "n_clicks"),
+    prevent_initial_call=True,
+)
+def download_rasters(n_clicks):
+    global globalTask
+
+    if globalTask is None:
+        globalTask = ht.download_cat_suhi(
+            globalCountry, globalCity, path_fua, globalPathCache, "Qall", 2022
+        )
+
+    return "Status de la Descarga: {}".format(globalTask.status()["state"])

@@ -1,0 +1,11 @@
+cache
+*.bmp
+.ipynb_checkpoints/
+__pycache__/
+*.jpg
+notebooks/
+data/cache
+.DS_Store
+*.log
+venv/
+*.vim

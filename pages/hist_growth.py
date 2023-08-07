@@ -1,11 +1,11 @@
+from hashlib import new
 import dash
-from dash import html, dcc
+from dash import html, dcc, callback, Input, Output
 import dash_bootstrap_components as dbc
 from urllib.parse import unquote
 from pathlib import Path
-import sys
+from zipfile import ZipFile
 
-sys.path.append('./src')
 from ghsl import (
     plot_built_agg_img,
     plot_smod_clusters,
@@ -13,14 +13,16 @@ from ghsl import (
     plot_pop_year_img,
     plot_growth
 )
-from components.text import figureWithDescription
-from components.page import pageContent
+from caching_utils import make_cache_dir
+from components.text import figureWithDescription, mapComponent
+from components.page import newPageLayout, pageContentLayout
 
 path_fua = Path('./data/output/cities/')
+path_cache : Path = Path('')
 
 dash.register_page(
     __name__,
-    title='Crecimiento histórico',
+    title='URSA',
     path_template='hist-growth/<country>/<city>'
 )
 
@@ -124,23 +126,23 @@ MAP_POP_EXPANDED_TEXT = (
 )
 
 LINE_GRAPH_TEXT_1 = (
-    "Este primer gráfico de líneas muestra el cambio en la"
-    "superficie urbanizada dentro de la zona de interés del año 1975 al 2020. "
-    "El cambio se desglosa en dos categorías: "
-    "la superficie urbana dentro del cluster urbano principal y "
-    "la superficie urbana en la periferia (desconectada y sin contigüidad "
-    "con la mancha urbana). "
-    "El recuadro con un contorno azul en los mapas delimita la zona de "
-    "análisis en la región metropolitana, a partir del cual se derivan "
-    "ambas categorías de la urbanización. "
-    "La línea en color marrón en el gráfico corresponde a la superficie "
-    "urbana del centro urbano principal, "
-    "misma que se identifica en los mapas como el recuadro con un contorno "
-    "en color marrón. "
-    "La línea amarilla del gráfico representa el cambio por año en la "
-    "superficie urbana en la periferia de la ciudad, "
-    "cuya representación en el mapa se puede identificar como un recuadro "
-    "con un color amarillo."
+    """Este primer gráfico de líneas muestra el cambio en la
+    superficie urbanizada dentro de la zona de interés del año 1975 al 2020.
+    El cambio se desglosa en dos categorías:
+    la superficie urbana dentro del cluster urbano principal y
+    la superficie urbana en la periferia (desconectada y sin contigüidad
+    con la mancha urbana).
+    El recuadro con un contorno azul en los mapas delimita la zona de
+    análisis en la región metropolitana, a partir del cual se derivan
+    ambas categorías de la urbanización.
+    La línea en color marrón en el gráfico corresponde a la superficie
+    urbana del centro urbano principal,
+    misma que se identifica en los mapas como el recuadro con un contorno
+    en color marrón.
+    La línea amarilla del gráfico representa el cambio por año en la
+    superficie urbana en la periferia de la ciudad,
+    cuya representación en el mapa se puede identificar como un recuadro
+    con un color amarillo."""
 )
 
 LINE_GRAPH_TEXT_2 = html.Div(
@@ -190,30 +192,17 @@ LINE_GRAPH_TEXT_4 = """El proceso de urbanización y crecimiento urbano va
 dejando huecos conforme la ciudad se expande territorialmente. Los mapas
 presentados anteriormente mostraron la proporción de suelo construido en
 cada celda e identificaban las celdas urbanizadas. Este gráfico de líneas
-compara ambos elementos y su cambio en el tiempo. Las
-fracciones se presentan para toda la zona metropolitana y también desglosadas
-por tipo de urbanización, central y en la periferia."""
+compara ambos elementos y su cambio en el tiempo. Las fracciones se presentan para toda la zona metropolitana y también desglosadas por tipo de urbanización, central y en la periferia.""" 
 
-LINE_GRAPH_TEXT_5 = (
-    "Finalmente, contando con las áreas de superficie construida y urbana "
-    "y la población por año, es posible calcular la evolución de la "
-    "densidad poblacional a través del tiempo. "
-    "En este caso, se presenta la densidad de población, representada "
-    "como número de personas por superficie urbanizada en kilométros "
-    "cuadrados."
-)
+LINE_GRAPH_TEXT_5 = """Finalmente, contando con las áreas de superficie construida y urbana y la población por año, es posible calcular la evolución de la densidad poblacional a través del tiempo. En este caso, se presenta la densidad de población, representada como número de personas por superficie urbanizada en kilométros cuadrados."""
 
-LINE_GRAPH_TEXT_6 = (
-    "El gráfico de líneas muestra la densidad poblacional, "
-    "pero en este caso calculada como el número de personas sobre "
-    "la superficie construida en kilómetros cuadrados. "
-    "Se puede apreciar la evolución y cambio en la densidad poblacional "
-    "del año 1975 al 2020. "
-    "La densidad por superficie construida –y no urbanizada- es un "
-    "indicador útil para medir el aprovechamiento de la infrainstructura "
-    "en la ciudad: a mayor densidad, hay un uso más intensivo de la "
-    "misma infraestructura."
-)
+LINE_GRAPH_TEXT_6 = """El gráfico de líneas muestra la densidad poblacional,
+pero en este caso calculada como el número de personas sobre la superficie
+construida en kilómetros cuadrados. Se puede apreciar la evolución y cambio
+en la densidad poblacional del año 1975 al 2020. La densidad por superficie
+construida –y no urbanizada- es un indicador útil para medir el aprovechamiento
+de la infrainstructura en la ciudad: a mayor densidad, hay un uso más intensivo
+de la misma infraestructura. """
 
 
 def layout(country='', city=''):
@@ -223,8 +212,8 @@ def layout(country='', city=''):
 
     country = unquote(country)
     city = unquote(city)
-    path_cache = Path(f'./data/cache/{country}-{city}')
-    path_cache.mkdir(exist_ok=True)
+    global path_cache
+    path_cache = make_cache_dir(f'./data/cache/{country}-{city}')
 
     # Load figures
     map1 = plot_built_agg_img(country, city, path_fua, path_cache)
@@ -305,63 +294,151 @@ def layout(country='', city=''):
     )
 
     maps = html.Div([
-        figureWithDescription(
-            dcc.Graph(figure=map1),
-            MAP_HIST_BUILTUP_EXPANDED_TEXT
+        mapComponent(
+            'Año en el que aparece la construcción',
+            map1
         ),
-        figureWithDescription(
-            dcc.Graph(figure=map2),
-            MAP_HIST_URBAN_EXPANDED_TEXT
+        mapComponent(
+            'Año en el que se considera celda urbana',
+            map2
         ),
-        figureWithDescription(
-            dcc.Graph(figure=map3),
-            MAP_BUILT_F_EXPANDED_TEXT
+        mapComponent(
+            'Fracción de construcción 2020',
+            map3
         ),
-        figureWithDescription(
-            dcc.Graph(figure=map4),
-            MAP_POP_EXPANDED_TEXT
+        mapComponent(
+            'Habitantes por celda',
+            map4
         ),
-    ])
+    ], style={"height": "90vh", "overflow": "scroll"})
 
     lines = html.Div([
         figureWithDescription(
             dcc.Graph(figure=lines1),
-            LINE_GRAPH_TEXT_1
+            LINE_GRAPH_TEXT_1,
+            'Superficie del Área Urbana por Tipo de Urbanización (1975-2020)'
         ),
         figureWithDescription(
             dcc.Graph(figure=lines2),
-            LINE_GRAPH_TEXT_2
+            LINE_GRAPH_TEXT_2,
+            'Superficie del Área Construida por Tipo de Urbanización (1975-2020)'
         ),
         figureWithDescription(
             dcc.Graph(figure=lines3),
-            LINE_GRAPH_TEXT_3
+            LINE_GRAPH_TEXT_3,
+            'Población Total del Área Urbana por Tipo de Urbanización (1975-2020)'
         ),
         figureWithDescription(
             dcc.Graph(figure=lines4),
-            LINE_GRAPH_TEXT_4
+            LINE_GRAPH_TEXT_4,
+            'Densidad de Construcción por Tipo de Urbanización (1975-2020)'
         ),
         figureWithDescription(
             dcc.Graph(figure=lines5),
-            LINE_GRAPH_TEXT_5
+            LINE_GRAPH_TEXT_5,
+            'Densidad de Población por Tipo de Urbanización (1975-2020)'
         ),
         figureWithDescription(
             dcc.Graph(figure=lines6),
-            LINE_GRAPH_TEXT_6
+            LINE_GRAPH_TEXT_6,
+            'Densidad de Población (por Superficie de Construcción) por Tipo de Urbanización (1975-2020)'
         ),
-        ])
+        ], style={"height": "82vh", "overflow": "scroll"})
+
     welcomeAlert = dbc.Alert(WELCOME_TEXT, color='secondary')
     mapIntroAlert = dbc.Alert(MAP_INTRO_TEXT, color='light')
-    layout = pageContent(
-        pageTitle='Crecimiento histórico',
-        alerts=[
-            welcomeAlert,
-            mapIntroAlert
-        ],
-        content=[
-            maps,
-            html.Hr(),
+    constructionYearMapInfoAlert = dbc.Alert([
+        html.H4('Año en el que aparece la construcción'),
+        MAP_HIST_BUILTUP_EXPANDED_TEXT
+    ], color='light')
+    urbanCellYearMapInfoAlert = dbc.Alert([
+        html.H4('Año en el que se considera celda urbana'),
+        MAP_HIST_URBAN_EXPANDED_TEXT ], color='light')
+    contstructionFractionMapInfoAlert = dbc.Alert([
+        html.H4('Fracción de construcción 2020'),
+        MAP_BUILT_F_EXPANDED_TEXT ], color='light')
+    inhabitantsFractionMapInfoAlert = dbc.Alert([ 
+        html.H4('Habitantes por celda'),
+        MAP_POP_EXPANDED_TEXT ], color='light')
+            
+
+    download_button = html.Div([
+            dbc.Button('Descargar a disco',
+                        id='btn-download-rasters',
+                        color='light'),
+            dcc.Download(id="download-rasters-zip"),
+            html.Span(
+              "?",
+              id="tooltip-target01",
+              style={
+                     "textAlign": "center", 
+                     "color": "white",
+                     "height": 25,
+                     "width": 25,
+                     "background-color": "#bbb",
+                     "border-radius": "50%",
+                     "display": "inline-block"
+
+              }),
+            dbc.Tooltip(
+                "Descarga los archivos Raster localmente en tu carpeta de Descargas.",
+                target="tooltip-target01",
+            )
+    ])
+
+
+    tabs = [
+        dbc.Tab(
             lines,
-        ]
-    )
+            label="Gráficas",
+            id="tab-plots",
+            tab_id="tabPlots",
+        ),
+        dbc.Tab(
+            html.Div([
+                welcomeAlert,
+                mapIntroAlert,
+                constructionYearMapInfoAlert,
+                urbanCellYearMapInfoAlert,
+                contstructionFractionMapInfoAlert,
+                inhabitantsFractionMapInfoAlert
+            ]),
+            label="Info",
+            id="tab-info",
+            tab_id="tabInfo",
+        ),
+        dbc.Tab(
+            html.Div([download_button]),
+            label="Descargables",
+            id="tab-download",
+            tab_id="tabDownload",
+        )
+    ]
+
+    layout = newPageLayout(maps, tabs)
 
     return layout
+
+@callback(
+    Output('download-rasters-zip', 'data'),
+    Input('btn-download-rasters', 'n_clicks'),
+    prevent_initial_call=True
+)
+def download_file(n_clicks):
+    rasters : list[str] = [
+         'GHS_BUILT_S_100.tif',
+         #'GHS_LAND_100.tif',
+         'GHS_POP_100.tif',
+         'GHS_SMOD_1000.tif',
+         #'dou.tif',
+         #'protected.tif',
+         #'slope.tif'
+    ]
+
+
+    zip_file_name : str = f'hist-growth-rasters.zip'
+    def write_archive(bytes_io):
+        with ZipFile(bytes_io, mode="w") as zip_object:
+            for raster_file_name in rasters:
+                zip_object.write((path_cache / raster_file_name), raster_file_name)
+    return dcc.send_bytes(write_archive, zip_file_name)

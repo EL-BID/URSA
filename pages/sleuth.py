@@ -2,18 +2,18 @@ import dash
 from dash import html, dcc, callback, Input, Output, State
 from urllib.parse import unquote
 from pathlib import Path
-import sys
-sys.path.append('./src')
+import dash_bootstrap_components as dbc
+
+from caching_utils import make_cache_dir
 import sleuth_prep as prep
 
 path_fua = Path('./data/output/cities/')
 
 dash.register_page(
     __name__,
-    title='SLEUTH',
+    title='URSA',
     path_template='sleuth/<country>/<city>'
 )
-
 
 def layout(country='', city=''):
 
@@ -22,8 +22,28 @@ def layout(country='', city=''):
 
     country = unquote(country)
     city = unquote(city)
-    path_cache = Path(f'./data/cache/{country}-{city}')
-    path_cache.mkdir(exist_ok=True)
+    path_cache : Path = make_cache_dir(f'./data/cache/{country}-{city}')
+
+    layout = html.Div(
+        [
+            html.H2(
+                '¡Esta pestaña se encuentra en desarrollo!'
+            )
+
+        ]
+    )
+
+    return layout
+
+'''
+def layout(country='', city=''):
+
+    if not city or not country:
+        return 'No city selected'
+
+    country = unquote(country)
+    city = unquote(city)
+    path_cache : Path = make_cache_dir(f'./data/cache/{country}-{city}')
 
     fpath = prep.load_or_prep_rasters(country, city, path_fua, path_cache)
     scen_path = prep.create_scenario_file(
@@ -44,7 +64,23 @@ def layout(country='', city=''):
                      children=str(fpath)),
             html.Button("Descarga datos", id="btn-download-sleuth"),
             dcc.Download(id="download-sleuth"),
+            html.Span(
+              "?",
+              id="tooltip-target",
+              style={
+                     "textAlign": "center", 
+                     "color": "white",
+                     "height": 25,
+                     "width": 25,
+                     "background-color": "#bbb",
+                     "border-radius": "50%",
+                     "display": "inline-block"
 
+              }),
+            dbc.Tooltip(
+                "Descarga los archivos Raster localmente en tu carpeta de Descargas.",
+                target="tooltip-target",
+            ),
             html.Div(id='scen-path-div', style={'display': 'none'},
                      children=str(scen_path)),
             html.Button("Descarga archivo config", id="btn-download-config"),
@@ -74,3 +110,4 @@ def get_data(n_clicks, fpath):
 )
 def get_scen(n_clicks, fpath):
     return dcc.send_file(fpath)
+'''

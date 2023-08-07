@@ -141,6 +141,79 @@ def plot_map_season(country, city, path_fua,
     return Map
 
 
+
+def download_map_season(country, city, path_fua,
+                    season, year):
+    """Plots Dynamic World temporal composite on map for year and season.
+
+    Season can one of the four seasons or 'all' for a yearly aggregate.
+    """
+
+    assert season in ['Q1', 'Q2', 'Q3', 'Q4', 'Qall']
+    assert 2016 <= year <= 2023
+
+    vis_params = {
+        'min': 0,
+        'max': 8,
+        'palette': [
+            '#419BDF', '#397D49', '#88B053', '#7A87C6', '#E49635', '#DFC35A',
+            '#C4281B', '#A59B8F', '#B39FE1'
+        ]
+    }
+
+    bbox_latlon, uc_latlon, fua_latlon = ru.get_bbox(
+        city, country, path_fua,
+        proj='EPSG:4326')
+    bbox_ee = ru.bbox_to_ee(bbox_latlon)
+
+    start_date, end_date = date_format(season, year)
+
+    # Filter the Dynamic World NRT collection
+    dw_col = ee.ImageCollection('GOOGLE/DYNAMICWORLD/V1')
+    dw_col = dw_col.filterDate(start_date, end_date)
+    dw_col = dw_col.filterBounds(bbox_ee)
+
+    # Create a Mode Composite
+    dw_lbl = dw_col.select('label')
+    dw_lbl = dw_lbl.reduce(ee.Reducer.mode())
+
+    # Create a Top-1 Probability Hillshade Visualization
+    probability_bands = [
+        'water', 'trees', 'grass', 'flooded_vegetation', 'crops',
+        'shrub_and_scrub', 'built', 'bare', 'snow_and_ice'
+    ]
+
+    # Select probability bands
+    probability_col = dw_col.select(probability_bands)
+
+    # Create a multi-band image with the average pixel-wise probability
+    # for each band across the time-period
+    mean_probability = probability_col.reduce(ee.Reducer.mean())
+
+    # Composites have a default projection that is not suitable
+    # for hillshade computation.
+    # Set a EPSG:3857 projection with 10m scale
+    projection = ee.Projection('EPSG:3857').atScale(10)
+    mean_probability = mean_probability.setDefaultProjection(projection)
+
+    # Create the Top1 Probability Hillshade.
+    top1_probability = mean_probability.reduce(ee.Reducer.max())
+    top1_confidence = top1_probability.multiply(100).int()
+    hillshade = ee.Terrain.hillshade(top1_confidence).divide(255)
+    rgb_image = dw_lbl.visualize(**vis_params).divide(255)
+    probability_hillshade = rgb_image.multiply(hillshade)
+
+    task = ee.batch.Export.image.toDrive(image          = probability_hillshade,
+                                         description    = 'dynamic_world_raster',
+                                         scale          = 10,
+                                         region         = bbox_ee,
+                                         crs            = projection,
+                                         fileFormat = 'GeoTIFF')
+    task.start()
+    return task
+
+
+
 def get_cover_df(country, city, path_fua, path_cache):
 
     print("Downloading land cover time series from GEE ...")

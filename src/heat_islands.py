@@ -218,6 +218,28 @@ def get_cat_suhi(bbox_ee, start_date, end_date, path_cache,
     return cat_img
 
 
+def download_cat_suhi(country, city, path_fua, path_cache,
+                    season, year):
+
+    bbox_latlon, uc_latlon, fua_latlon = ru.get_bbox(
+        city, country, path_fua,
+        proj='EPSG:4326')
+    bbox_ee = ru.bbox_to_ee(bbox_latlon)
+
+    start_date, end_date = date_format(season, year)
+
+    cat_img = get_cat_suhi(bbox_ee, start_date, end_date, path_cache)
+
+    task = ee.batch.Export.image.toDrive(image          = cat_img,
+                                         description    = 'suhi_raster',
+                                         scale          = cat_img.projection().nominalScale() ,
+                                         region         = bbox_ee,
+                                         crs            = cat_img.projection(),
+                                         fileFormat = 'GeoTIFF')
+    task.start()
+    return task
+
+
 def make_offsets(
         s_mean: float,
         s_std: float,
@@ -315,25 +337,6 @@ def plot_cat_map(country, city, path_fua, path_cache,
                  vis_params,
                  'SUHI',
                  opacity=0.6)
-    # Map.update_layout(
-    #     height=600)
-
-    # Create dummy legend
-    poly = Polygon([(0, 0), (1e-3, 1e-3), (-1e-3, -1e-3)])
-    gdf = gpd.GeoDataFrame(
-        {'geometry': [poly]*7,
-         'Clases': colors.keys()},
-        crs=4326).reset_index()
-    fig = px.choropleth_mapbox(
-        gdf,
-        geojson=gdf.geometry,
-        locations='index',
-        mapbox_style='carto-positron',
-        color='Clases',
-        color_discrete_map=colors
-    )
-
-    Map.add_traces(fig.data)
 
     Map.layout.mapbox.layers[0].sourceattribution = (
         'LandSat'
@@ -462,17 +465,29 @@ def plot_temp_areas(country, city, path_fua, path_cache,
 
     df_t_areas = load_or_get_t_areas(bbox_ee, start_date, end_date, path_cache)
 
+    custom_colors = {
+        1: "#2166AC",
+        2: "#67A9CF",
+        3: "#D1E5F0",
+        4: "#F7F7F7",
+        5: "#FDDBC7",
+        6: "#EF8A62",
+        7: "#B2182B",
+    }
+
     fig = px.bar(
-        df_t_areas.rename(columns={'urban': 'Urbana', 'rural': 'Rural'}),
+        df_t_areas.rename(columns={'total': 'Area'}),
         x=[k for i, k in enumerate(colors.keys()) if i+1 in df_t_areas.index],
-        y=['Urbana', 'Rural'],
-        color_discrete_sequence=['gray', 'green'])
+        y='Area',
+        color=[k for i, k in enumerate(colors.keys()) if i+1 in df_t_areas.index],
+        color_discrete_map=colors
+    )
 
     fig.update_layout(
         # title="Plot Title",
         xaxis_title="Clase de temperatura",
         yaxis_title="Área (km²)",
-        legend_title="Región",
+        legend_title="Temperatura",
     )
 
     return fig
@@ -510,6 +525,7 @@ def make_donuts(bbox_ee, proj, bbox_latlon, uc_latlon, width=100):
 
     donuts_df = gpd.GeoDataFrame(discs)
     donuts_df.columns = ["geometry"]
+    donuts_df.set_geometry("geometry", inplace=True)
     donuts_df = donuts_df.set_crs(proj)
     donuts_df = donuts_df.to_crs("EPSG:4326")
 
@@ -566,8 +582,8 @@ def plot_radial_temperature(country, city, path_fua, path_cache,
                               bbox_latlon, uc_latlon)
 
     fig = px.line(
-        x=df["radius"],
-        y=df["reduced"],
+        x=df["radius"].map(lambda x: round(x, 1)),
+        y=df["reduced"].map(lambda x: round(x, 1)),
         labels={
             "x": "Radio (km)",
             "y": "Diferencia con respecto a la temperatura rural (°C)",
@@ -641,8 +657,10 @@ def plot_radial_lc(country, city, path_fua, path_cache,
     df = load_or_get_radial_lc(bbox_ee, start_date, end_date, path_cache,
                                bbox_latlon, uc_latlon)
 
+    df.round(1)
     colors = [wc.COVER_PALETTE_NAME_MAP[x] for x in df.columns]
     x = list(df.index)
+    map(lambda x: round(x, 1), x)
 
     fig = go.Figure()
     for col, color in zip(df.columns, colors):
