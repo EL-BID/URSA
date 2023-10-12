@@ -208,6 +208,7 @@ def download_map_season(country, city, path_fua,
                                          scale          = 10,
                                          region         = bbox_ee,
                                          crs            = projection,
+                                         maxPixels      = 1e10,
                                          fileFormat = 'GeoTIFF')
     task.start()
     return task

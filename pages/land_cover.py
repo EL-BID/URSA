@@ -1,5 +1,5 @@
 import dash
-from dash import html, dcc, callback, Input, Output
+from dash import html, dcc, callback, Input, Output, State
 import dash_bootstrap_components as dbc
 from urllib.parse import unquote
 from pathlib import Path
@@ -10,6 +10,9 @@ from caching_utils import make_cache_dir
 from dynamic_world import plot_map_season, plot_lc_year, plot_lc_time_series, download_map_season
 from components.text import figureWithDescription
 from components.page import newPageLayout
+
+import datetime
+start_time = None
 
 path_fua = Path('./data/output/cities/')
 
@@ -38,6 +41,26 @@ ALERT_TEXT = html.Div(
             "Dynamic World posee datos de cobertura de suelo desde el "
             "año 2016."
         ),
+        ("Las correspondencias y colores canónicos de cada etiqueta pueden revisarse en el siguiente "),
+        html.A(
+                "enlace",
+                href="https://developers.google.com/earth-engine/datasets/catalog/GOOGLE_DYNAMICWORLD_V1#bands"
+            ),
+            (":"),
+        html.Ul(
+            [
+                html.Li("0: Agua"),
+                html.Li("1: Árboles"),
+                html.Li("2: Pasto"),
+                html.Li("3: Vegetación inundada"),
+                html.Li("4: Cultivos"),
+                html.Li("5: Arbustos y maleza"),
+                html.Li("6: Construido"),
+                html.Li("7: Baldío"),
+                html.Li("8: Nieve y hielo"),
+                
+            ]
+        )
     ]
 )
 
@@ -163,7 +186,6 @@ def layout(country='', city=''):
             dbc.Button('Descarga a Google Drive',
                         id='btn-rasters',
                         color='light'),
-            html.Span(id="btn-rasters-output", style={"verticalAlign": "middle"}),
             html.Span(
               "?",
               id="tooltip-target02",
@@ -180,7 +202,9 @@ def layout(country='', city=''):
             dbc.Tooltip(
                 "Descarga los archivos Raster a Google Drive. En este caso la información es procesada en Google Earth Engine y la única opción de descarga es al directorio raíz de tu Google Drive.",
                 target="tooltip-target02",
-            )
+            ),
+            html.Span(id="btn-rasters-output", style={"verticalAlign": "middle"}),
+            dcc.Interval(id='interval-component', interval=10000, n_intervals=0, disabled=True),
     ])
 
     tabs = [
@@ -208,6 +232,7 @@ def layout(country='', city=''):
 
     return layout
 
+"""
 @callback(
     Output('btn-rasters-output', 'children'),
     Input('btn-rasters', 'n_clicks'),
@@ -220,3 +245,37 @@ def download_rasters(n_clicks):
         globalTask = download_map_season(globalCountry, globalCity, path_fua,'Qall', 2022)
 
     return "Status de la Descarga: {}".format(globalTask.status()["state"])
+"""
+
+@callback(
+    Output('btn-rasters-output', 'children'),
+    Output('interval-component', 'disabled'),
+    Input('btn-rasters', 'n_clicks'),
+    Input('interval-component', 'n_intervals'),
+    State('interval-component', 'disabled'),
+    State('btn-rasters', 'n_clicks'),
+    State('interval-component', 'n_intervals'),
+    prevent_initial_call=True
+)
+def download_rasters(n_clicks, n_intervals, current_interval_disabled, btn_clicks, interval_intervals):
+    global globalTask, start_time, interval_disabled
+    
+    if n_clicks is None:
+        return dash.no_update, dash.no_update
+
+    if globalTask is None:
+        globalTask = download_map_season(globalCountry, globalCity, path_fua, 'Qall', 2022)
+        start_time = datetime.datetime.now()
+        interval_disabled = False
+
+    status = globalTask.status()["state"]
+    current_time = datetime.datetime.now()
+    time_elapsed = (current_time - start_time).total_seconds()
+    print(status)
+    if status in ("UNSUBMITTED", "READY", "RUNNING", "CANCEL_REQUESTED"):
+        return f"Status de la Descarga: {status}, Tiempo transcurrido: {int(time_elapsed)} segundos", False
+    elif status in ("COMPLETED", "FAILED", "CANCELED"):
+        interval_disabled = True
+        return f"Status de la Descarga: {status}, Tiempo transcurrido: {int(time_elapsed)} segundos", True
+    else:
+        return f"Status de la Descarga: {status}, Tiempo transcurrido: {int(time_elapsed)} segundos", interval_disabled

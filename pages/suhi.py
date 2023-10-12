@@ -1,5 +1,5 @@
 import dash
-from dash import html, dcc, callback, Input, Output
+from dash import html, dcc, callback, Input, Output, State
 import dash_bootstrap_components as dbc
 from urllib.parse import unquote
 from pathlib import Path
@@ -10,6 +10,9 @@ import heat_islands as ht
 import raster_utils as ru
 from components.text import figureWithDescription
 from components.page import newPageLayout
+
+import datetime
+start_time_suhi = None
 
 path_fua = Path("./data/output/cities/")
 
@@ -567,7 +570,6 @@ def layout(country="", city=""):
             dbc.Button('Descarga a Google Drive',
                         id='btn-rasters-suhi',
                         color='light'),
-            html.Span(id="btn-rasters-suhi-output", style={"verticalAlign": "middle"}),
             html.Span(
               "?",
               id="tooltip-target04",
@@ -584,7 +586,9 @@ def layout(country="", city=""):
             dbc.Tooltip(
                 "Descarga los archivos Raster a Google Drive. En este caso la información es procesada en Google Earth Engine y la única opción de descarga es al directorio raíz de tu Google Drive.",
                 target="tooltip-target04",
-            )
+            ),
+            html.Span(id="btn-rasters-suhi-output", style={"verticalAlign": "middle"}),
+            dcc.Interval(id='interval-component-suhi', interval=10000, n_intervals=0, disabled=True),
     ])
 
     tabs = [
@@ -687,16 +691,36 @@ def download_file(n_clicks):
 
 
 @callback(
-    Output("btn-rasters-suhi-output", "children"),
-    Input("btn-rasters-suhi", "n_clicks"),
-    prevent_initial_call=True,
+    Output('btn-rasters-suhi-output', 'children'),
+    Output('interval-component-suhi', 'disabled'),
+    Input('btn-rasters-suhi', 'n_clicks'),
+    Input('interval-component-suhi', 'n_intervals'),
+    State('interval-component-suhi', 'disabled'),
+    State('btn-rasters-suhi', 'n_clicks'),
+    State('interval-component-suhi', 'n_intervals'),
+    prevent_initial_call=True
 )
-def download_rasters(n_clicks):
-    global globalTask
+def download_rasters(n_clicks, n_intervals, current_interval_disabled, btn_clicks, interval_intervals):
+    global globalTask, start_time, interval_disabled
+    
+    if n_clicks is None:
+        return dash.no_update, dash.no_update
 
     if globalTask is None:
         globalTask = ht.download_cat_suhi(
             globalCountry, globalCity, path_fua, globalPathCache, "Qall", 2022
         )
+        start_time = datetime.datetime.now()
+        interval_disabled = False
 
-    return "Status de la Descarga: {}".format(globalTask.status()["state"])
+    status = globalTask.status()["state"]
+    current_time = datetime.datetime.now()
+    time_elapsed = (current_time - start_time).total_seconds()
+    print(status)
+    if status in ("UNSUBMITTED", "READY", "RUNNING", "CANCEL_REQUESTED"):
+        return f"Status de la Descarga: {status}, Tiempo transcurrido: {int(time_elapsed)} segundos", False
+    elif status in ("COMPLETED", "FAILED", "CANCELED"):
+        interval_disabled = True
+        return f"Status de la Descarga: {status}, Tiempo transcurrido: {int(time_elapsed)} segundos", True
+    else:
+        return f"Status de la Descarga: {status}, Tiempo transcurrido: {int(time_elapsed)} segundos", interval_disabled
