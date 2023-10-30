@@ -1,25 +1,31 @@
 import dash
-from dash import html, dcc, callback, Input, Output, State
+import dateutil
+import ee
+
 import dash_bootstrap_components as dbc
-from urllib.parse import unquote
-from pathlib import Path
 import pandas as pd
+import ursa.heat_islands as ht
+import ursa.utils.geometry as ug
 
-from caching_utils import make_cache_dir
-import heat_islands as ht
-import raster_utils as ru
 from components.text import figureWithDescription
-from components.page import newPageLayout
+from components.page import new_page_layout
+from dash import html, dcc, callback, Input, Output, State
+from datetime import datetime, timezone
+from layouts.common import generate_drive_text
+from pathlib import Path
+from shapely.geometry import shape
 
-import datetime
+
 start_time_suhi = None
+
+SEASON = "Qall"
+YEAR = 2022
 
 path_fua = Path("./data/output/cities/")
 
 dash.register_page(
     __name__,
-    title='URSA',
-    path_template='suhi/<country>/<city>'
+    title="URSA",
 )
 
 WELCOME_CONTENT = [
@@ -28,10 +34,7 @@ WELCOME_CONTENT = [
             "Este apartado muestra un análisis sobre ",
             html.Strong("islas de calor"),
             " y el potencial impacto de estrategias de mitigación. La ",
-            html.A(
-                "metodología",
-                href="https://www.mdpi.com/2072-4292/11/1/48"
-            ),
+            html.A("metodología", href="https://www.mdpi.com/2072-4292/11/1/48"),
             (
                 " (Zhou et al., 2018) para identificar islas de calor "
                 "consiste en contrastar la temperatura promedio anual de un "
@@ -152,18 +155,11 @@ AREA_TEXT = (
     "mezcla de varias coberturas, como xsparte del proceso de urbanización."
 )
 
-MEAN_TEMPERATURE_STYLE = {
-    'font-weight': 'lighter',
-    'font-size': '3rem'
-}
+MEAN_TEMPERATURE_STYLE = {"font-weight": "lighter", "font-size": "3rem"}
 
-SUBTITLE_STYLE = {
-    'font-size': '100'
-}
+SUBTITLE_STYLE = {"font-size": "100"}
 
-RESULT_STYLE = {
-    'font-weight': 'lighter'
-}
+RESULT_STYLE = {"font-weight": "lighter"}
 
 STRATEGIES = {
     "strat-vegetacion": {
@@ -219,111 +215,9 @@ STRATEGIES = {
     },
 }
 
-DRIVE_TEXT = html.Div(
-        html.P([
-            html.H4('Descarga de Datos'),
-            "La información procesada en la sección Islas de Calor se realiza empleando Google Earth Engine. De esta manera, la descarga de los datos empleados, debido a su tamaño, es a través del Google Drive de la cuenta empleada en la autenticación de Google Earth Engine.",
-            html.Br(),
-            html.Br(),
-            "La descarga del raster con nombre 'suhi_raster.tif' se hará al directorio raíz de Google Drive.",
-            html.Br(),
-            html.Br(),
-            "Los estados de la tarea de descarga son los siguientes: 'UNSUBMITTED, la tarea no se ha enviado al cliente; 'READY', tarea lista para enviarse al servidor; 'RUNNING', tarea en ejecución; 'COMPLETED', tarea completada exitosamente; 'FAILED', completada con errores; 'CANCEL_REQUESTED', en ejecución pero se ha solicitado su cancelación; y 'CANCELED', tarea cancelada.",
-            html.Br(),
-            html.Br(),
-            "URSA únicamente permite la ejecución de una tarea de descarga a la vez. Espere a que se complete la tarea antes de crear una nueva. Esto puede tomar varios minutos."
-        ]
-        )
-        )
-
-DRIVE_TEXT = html.Div(
-        html.P([
-            html.H4('Descarga de Datos'),
-            html.H5('¿Cómo se realiza la descarga?'),
-            "La información procesada en la sección Islas de Calor se realiza incluyendo Google Earth Engine. De esta manera, la descarga de los datos empleados, debido a su tamaño, es a través del Google Drive de la cuenta empleada en la autenticación de Google Earth Engine en el caso del raster y al disco local en el caso de los datos tabulares para hacer la visualizaciones.",
-            html.Br(),
-            html.Br(),
-            html.H5('¿Dónde se descarga el archivo?'),
-            "La descarga del raster con nombre 'suhi_raster.tif' se hará al directorio raíz del Google Drive de la cuenta empleada. Por otro lado, el archivo descargado a disco es 'city-country-suhi-data.csv', reemplazando 'city' por la ciudad y 'country' por el país analizado, respectivamente.",
-            html.Br(),
-            html.Br(),
-            html.H5('¿Cuales son los estados de la descarga?'),
-            "Los estados de la tarea de descarga son los siguientes:",
-            html.Ul(
-        [
-            html.Li(
-                "UNSUBMITTED, tarea pendiente en el cliente."
-            ),
-            html.Li(
-                "READY, tarea en cola en el servidor."
-            ),
-            html.Li(
-                "RUNNING, tarea en ejecución."
-            ),
-            html.Li(
-                "COMPLETED, tarea completada exitosamente."
-            ),
-            html.Li(
-                "FAILED, tarea completada con errores."
-            ),
-            html.Li(
-                "CANCEL_REQUESTED, tarea ejecución pero se ha solicitado su cancelación."
-            ),
-            html.Li(
-                "CANCELED, tarea cancelada."
-            ),
-        ]
-            ),
-            html.Br(),
-            html.Br(),
-            html.H5('¿Es posible hacer descargas simultáneas?'),
-            "URSA únicamente permite la ejecución de una tarea de descarga a la vez. Espere a que se complete la tarea antes de crear una nueva. Esto puede tomar varios minutos."
-        ]
-        )
-        )
-
-globalCountry = ""
-globalCity = ""
-globalPathCache = Path()
-globalUrbanMeanTemp = None
-globalTask = None
-
 
 def format_temp(temp):
     return f"{round(temp, 2)} °C"
-
-
-def meanTempView(urban_mean_temperature):
-    title = html.P("Temperatura promedio", style=SUBTITLE_STYLE)
-
-    paragraph1 = html.P(
-        f"{format_temp(urban_mean_temperature)}",
-        id="urban_mean_temperature",
-        style=MEAN_TEMPERATURE_STYLE,
-    )
-
-    paragraph2 = html.P(
-        [
-            ("* Datos obtenidos para el año 2022 a partir de " "la imagen satelital "),
-            html.A(
-                "USGS Landsat 8 Level 2, Collection 2, Tier 1",
-                href=(
-                    "https://developers.google.com/earth-engine"
-                    "/datasets/catalog/LANDSAT_LC08_C02_T1_L2"
-                ),
-            ),
-        ],
-        style={"fontSize": "0.8rem"},
-    )
-
-    return html.Div(
-        [
-            title,
-            paragraph1,
-            paragraph2,
-        ],
-        style={"margin-bottom": "15px"},
-    )
 
 
 impactView = html.Div(
@@ -385,13 +279,6 @@ strategyList = html.Div(
     ]
 )
 
-
-def right_side(urban_mean_temperature):
-    return html.Div(
-        [meanTempView(urban_mean_temperature), strategyList, impactView],
-    )
-
-
 legend_colors = {
     "Muy frío": "#2166AC",
     "Frío": "#67A9CF",
@@ -429,198 +316,165 @@ map_legend = html.Div(
     style={"width": "fit-content", "backgroundColor": "rgba(0,0,0,0.35)"},
 )
 
+map = html.Div(
+    [
+        html.Div(map_legend, className="position-absolute fixed-bottom right-0"),
+        dcc.Graph(style={"height": "100%"}, id="suhi-graph-temp-map"),
+    ],
+    className="position-relative",
+    style={"height": "100%"},
+)
 
-def layout(country="", city=""):
-    if not city or not country:
-        return "No city selected"
+plots = html.Div(
+    [
+        dbc.Row(
+            [
+                figureWithDescription(
+                    dcc.Graph(id="suhi-graph-areas"),
+                    HISTOGRAMA_TEXT,
+                    "Frecuencia de la superficie (Km²) de análisis por categoría de temperatura",
+                ),
+                figureWithDescription(
+                    dcc.Graph(id="suhi-graph-temp-lc"),
+                    BARS_TEXT,
+                    "Fracción de uso de suelo por categoría de temperatura",
+                ),
+            ],
+            style={"overflow": "scroll", "height": "82vh"},
+        ),
+    ],
+    id="plots",
+)
 
-    country = unquote(country)
-    city = unquote(city)
-    path_cache: Path = make_cache_dir(f"./data/cache/{country}-{city}")
+welcomeAlert = dbc.Alert(WELCOME_CONTENT, color="secondary")
+mapIntroAlert = dbc.Alert(MAP_INTRO_TEXT, color="light")
 
-    global globalCity
-    global globalCountry
-    global globalPathCache
-    global globalUrbanMeanTemp
-
-    globalCountry = country
-    globalCity = city
-    globalPathCache = path_cache
-    globalUrbanMeanTemp = ht.get_urban_mean(
-        globalCity, globalCountry, path_fua, "Qall", 2022, globalPathCache
-    )
-
-    season = "Qall"
-    year = 2022
-
-    temp_map = ht.plot_cat_map(country, city, path_fua, path_cache, season, year)
-
-    areas_plot = ht.plot_temp_areas(country, city, path_fua, path_cache, season, year)
-    temps_by_lc_plot = ht.plot_temp_by_lc(
-        country, city, path_fua, path_cache, season, year
-    )
-    # radial_temp_plot = ht.plot_radial_temperature(
-    # country, city, path_fua, path_cache,
-    # season, year)
-    # radial_lc_plot = ht.plot_radial_lc(
-    # country, city, path_fua, path_cache,
-    # season, year)
-
-    globalUrbanMeanTemp = ht.get_urban_mean(
-        globalCity, globalCountry, path_fua, "Qall", 2022, globalPathCache
-    )
-
-    # map_and_checks = html.Div(
-    # [
-    # figureWithDescription(
-    # dbc.Row(
-    # [
-    # dbc.Col(
-    # [
-    # map_legend,
-    # dcc.Graph(figure=temp_map, style={"height": "95%"}),
-    # ],
-    # width=8,
-    # ),
-    # # dbc.Col(
-    # # right_side(globalUrbanMeanTemp),
-    # # width=4,
-    # # style={"padding": "15px"},
-    # # ),
-    # ]
-    # ),
-    # MAP_TEXT,
-    # "Categoría de temperatura en islas de calor",
-    # ), ]
-    # )
-
-    map = html.Div(
+tabs = [
+    dbc.Tab(
+        html.Div(
+            [
+                html.Div(
+                    [
+                        html.P("Temperatura promedio", style=SUBTITLE_STYLE),
+                        html.P(
+                            id="suhi-p-urban-temp",
+                            style=MEAN_TEMPERATURE_STYLE,
+                        ),
+                        html.P(
+                            [
+                                (
+                                    "* Datos obtenidos para el año 2022 a partir de "
+                                    "la imagen satelital "
+                                ),
+                                html.A(
+                                    "USGS Landsat 8 Level 2, Collection 2, Tier 1",
+                                    href=(
+                                        "https://developers.google.com/earth-engine"
+                                        "/datasets/catalog/LANDSAT_LC08_C02_T1_L2"
+                                    ),
+                                ),
+                            ],
+                            style={"fontSize": "0.8rem"},
+                        ),
+                    ],
+                    style={"margin-bottom": "15px"},
+                ),
+                strategyList,
+                impactView,
+            ],
+        ),
+        label="Controles",
+        id="tab-controls",
+        tab_id="tabControls",
+    ),
+    dbc.Tab(
+        plots,
+        label="Gráficas",
+        id="tab-plots",
+        tab_id="tabPlots",
+    ),
+    dbc.Tab(
+        html.Div([welcomeAlert, mapIntroAlert]),
+        label="Info",
+        id="tab-info",
+        tab_id="tabInfo",
+    ),
+    dbc.Tab(
         [
-            html.Div(map_legend, className="position-absolute fixed-bottom right-0"),
-            dcc.Graph(figure=temp_map, style={"height": "100%"}),
-        ],
-        className="position-relative",
-        style={"height": "100%"},
-    )
-
-    plots = html.Div(
-        [
-            dbc.Row(
+            generate_drive_text(
+                how="La información procesada en la sección Islas de Calor se realiza incluyendo Google Earth Engine. De esta manera, la descarga de los datos empleados, debido a su tamaño, es a través del Google Drive de la cuenta empleada en la autenticación de Google Earth Engine en el caso del raster y al disco local en el caso de los datos tabulares para hacer la visualizaciones.",
+                where="La descarga del raster con nombre 'suhi_raster.tif' se hará al directorio raíz del Google Drive de la cuenta empleada. Por otro lado, el archivo descargado a disco es 'city-country-suhi-data.csv', reemplazando 'city' por la ciudad y 'country' por el país analizado, respectivamente.",
+            ),
+            dbc.Container(
                 [
-                    figureWithDescription(
-                        dcc.Graph(figure=areas_plot),
-                        HISTOGRAMA_TEXT,
-                        "Frecuencia de la superficie (Km²) de análisis por categoría de temperatura",
+                    dbc.Row(
+                        [
+                            dbc.Col(
+                                dbc.Button(
+                                    "Descargar rasters",
+                                    id="suhi-btn-download-rasters",
+                                    color="light",
+                                    title="Descarga los archivos Raster a Google Drive. En este caso la información es procesada en Google Earth Engine y la única opción de descarga es al directorio raíz de tu Google Drive.",
+                                ),
+                                width=4,
+                            ),
+                            dbc.Col(
+                                dbc.Button(
+                                    "Cancelar ejecución",
+                                    id="suhi-btn-stop-task",
+                                    color="danger",
+                                    style={"display": "none"},
+                                ),
+                                width=4,
+                            ),
+                        ],
+                        justify="center",
                     ),
-                    figureWithDescription(
-                        dcc.Graph(figure=temps_by_lc_plot),
-                        BARS_TEXT,
-                        "Fracción de uso de suelo por categoría de temperatura",
+                    dbc.Row(
+                        [
+                            dbc.Col(
+                                dbc.Button(
+                                    "Descargar CSV",
+                                    id="suhi-btn-download-csv",
+                                    color="light",
+                                    title="Descarga el archivo .csv, que alimenta las visualizaciones, localmente en tu carpeta de Descargas.",
+                                ),
+                                width=4,
+                            ),
+                            dbc.Col(width=4),
+                        ],
+                        justify="center",
+                    ),
+                    dbc.Row(
+                        dbc.Col(html.Span(id="suhi-span-rasters-output"), width=3),
+                        justify="center",
                     ),
                 ],
-                style={"overflow": "scroll", "height": "82vh"},
             ),
-            # dbc.Row(
-            # [
-            # figureWithDescription(
-            # dcc.Graph(figure=radial_temp_plot),
-            # LINE_TEXT,
-            # 'Diferencia entre la temperatura urbana y la rural promedio por anillo concéntrico respecto al centro de la ciudad'
-            # ),
-            # figureWithDescription(
-            # dcc.Graph(figure=radial_lc_plot),
-            # AREA_TEXT,
-            # 'Tipo de uso de suelo por anillo concéntrico respecto al centro de la ciudad'
-            # )
-            # ]
-            # ),
         ],
-        id="plots",
-    )
+        label="Descargables",
+    ),
+]
 
-    welcomeAlert = dbc.Alert(WELCOME_CONTENT, color="secondary")
-    mapIntroAlert = dbc.Alert(MAP_INTRO_TEXT, color="light")
-    download_info = dbc.Alert(DRIVE_TEXT, color = 'secondary')
-
-    download_button = html.Div([
-            dbc.Button('Descargar a disco',
-                        id='btn-csv',
-                        color='light'),
-            dcc.Download(id="download-dataframe-csv"),
-            html.Span(
-              "?",
-              id="tooltip-target03",
-              style={
-                     "textAlign": "center", 
-                     "color": "white",
-                     "height": 25,
-                     "width": 25,
-                     "background-color": "#bbb",
-                     "border-radius": "50%",
-                     "display": "inline-block"
-
-              }),
-            dbc.Tooltip(
-                "Descarga el archivo .csv, que alimenta las visualizaciones, localmente en tu carpeta de Descargas.",
-                target="tooltip-target03",
-            )
-    ])
-
-    download_button_rasters = html.Div([
-            dbc.Button('Descarga a Google Drive',
-                        id='btn-rasters-suhi',
-                        color='light'),
-            html.Span(
-              "?",
-              id="tooltip-target04",
-              style={
-                     "textAlign": "center", 
-                     "color": "white",
-                     "height": 25,
-                     "width": 25,
-                     "background-color": "#bbb",
-                     "border-radius": "50%",
-                     "display": "inline-block"
-
-              }),
-            dbc.Tooltip(
-                "Descarga los archivos Raster a Google Drive. En este caso la información es procesada en Google Earth Engine y la única opción de descarga es al directorio raíz de tu Google Drive.",
-                target="tooltip-target04",
-            ),
-            html.Span(id="btn-rasters-suhi-output", style={"verticalAlign": "middle"}),
-            dcc.Interval(id='interval-component-suhi', interval=10000, n_intervals=0, disabled=True),
-    ])
-
-    tabs = [
-        dbc.Tab(
-            [right_side(globalUrbanMeanTemp)],
-            label="Controles",
-            id="tab-controls",
-            tab_id="tabControls",
-        ),
-        dbc.Tab(
-            plots,
-            label="Gráficas",
-            id="tab-plots",
-            tab_id="tabPlots",
-        ),
-        dbc.Tab(
-            html.Div([welcomeAlert, mapIntroAlert]),
-            label="Info",
-            id="tab-info",
-            tab_id="tabInfo",
-        ),
-        dbc.Tab(
-            html.Div([download_info, download_button,download_button_rasters]),
-            label="Descargables",
-            id="tab-download",
-            tab_id="tabDownload",
+layout = new_page_layout(
+    [map],
+    tabs,
+    stores=[
+        dcc.Store("suhi-store-task-name"),
+        dcc.Interval(id="suhi-interval", interval=10000, n_intervals=0, disabled=True),
+        dcc.Download(id="download-dataframe-csv"),
+        dcc.Location(id="suhi-location"),
+    ],
+    alerts=[
+        dbc.Alert(
+            "Algunas gráficas no pudieron ser generadas. Considere cambiar la bounding box de análisis.",
+            id="suhi-alert",
+            is_open=False,
+            dismissable=True,
+            color="warning",
         )
-    ]
-
-    layout = newPageLayout([map], tabs)
-
-    return layout
+    ],
+)
 
 
 @callback(
@@ -628,19 +482,35 @@ def layout(country="", city=""):
     Output("impact-result-kilometers", "children"),
     Output("impact-result-degrees", "children"),
     Output("impact-mitigated-degrees", "children"),
+    Output("suhi-p-urban-temp", "children"),
+    Output("suhi-location", "pathname"),
+    Output("suhi-alert", "is_open"),
     Input("strategy-checklist", "value"),
+    State("global-store-hash", "data"),
+    State("global-store-bbox-latlon", "data"),
+    State("global-store-uc-latlon", "data"),
 )
-def update_mitigation_kilometers(values):
-    global globalUrbanMeanTemp
+def update_mitigation_kilometers(values, id_hash, bbox_latlon, uc_latlon):
+    if id_hash is None:
+        return [dash.no_update] * 5 + ["/", dash.no_update]
 
-    if globalUrbanMeanTemp is None:
-        globalUrbanMeanTemp = ht.get_urban_mean(
-            globalCity, globalCountry, path_fua, "Qall", 2022, globalPathCache
+    path_cache = Path(f"./data/cache/{id_hash}")
+
+    bbox_latlon = shape(bbox_latlon)
+    uc_latlon = shape(uc_latlon)
+
+    bbox_mollweide = ug.latlon_to_mollweide(bbox_latlon)
+    uc_mollweide = ug.latlon_to_mollweide(uc_latlon)
+
+    try:
+        df = ht.load_or_get_mit_areas_df(
+            bbox_latlon, bbox_mollweide, uc_mollweide.centroid, path_cache
         )
+    except Exception:
+        return [dash.no_update] * 6 + [True]
 
-    df = ht.load_or_get_mit_areas_df(
-        globalCity, globalCountry, path_fua, globalPathCache
-    )
+    urban_mean_temp = ht.get_urban_mean(bbox_latlon, "Qall", 2022, path_cache)
+
     area_roofs = df.roofs.item()
     area_urban = df.urban.item()
     roads_distance = df.roads.item()
@@ -666,61 +536,123 @@ def update_mitigation_kilometers(values):
         else:
             pass
 
-    mitigatedUrbanTemperature = globalUrbanMeanTemp - mitigatedDegrees
+    mitigatedUrbanTemperature = urban_mean_temp - mitigatedDegrees
 
     return (
         f"{int(round(impactedSquareKm, 0))} Km²",
         f"{int(round(impactedKm, 0))} Km",
         format_temp(mitigatedUrbanTemperature),
         format_temp(mitigatedDegrees),
+        format_temp(urban_mean_temp),
+        dash.no_update,
+        dash.no_update,
     )
 
 
 @callback(
     Output("download-dataframe-csv", "data"),
-    Input("btn-csv", "n_clicks"),
+    Input("suhi-btn-download-csv", "n_clicks"),
+    State("global-store-hash", "data"),
     prevent_initial_call=True,
 )
-def download_file(n_clicks):
-    csv_path = globalPathCache / "land_cover_by_temp.csv"
+def download_file(n_clicks, id_hash):
+    path_cache = Path(f"./data/cache/{id_hash}")
+    csv_path = path_cache / "land_cover_by_temp.csv"
     if csv_path.exists():
         df = pd.read_csv(csv_path)
-        return dcc.send_data_frame(
-            df.to_csv, f"{globalCity}_{globalCountry}-suhi-data.csv"
-        )
+        return dcc.send_data_frame(df.to_csv, "suhi_data.csv")
 
 
 @callback(
-    Output('btn-rasters-suhi-output', 'children'),
-    Output('interval-component-suhi', 'disabled'),
-    Input('btn-rasters-suhi', 'n_clicks'),
-    Input('interval-component-suhi', 'n_intervals'),
-    State('interval-component-suhi', 'disabled'),
-    State('btn-rasters-suhi', 'n_clicks'),
-    State('interval-component-suhi', 'n_intervals'),
-    prevent_initial_call=True
+    Output("suhi-interval", "disabled", allow_duplicate=True),
+    Output("suhi-store-task-name", "data"),
+    Output("suhi-btn-stop-task", "style", allow_duplicate=True),
+    Output("suhi-span-rasters-output", "children", allow_duplicate=True),
+    Input("suhi-btn-download-rasters", "n_clicks"),
+    State("global-store-hash", "data"),
+    State("global-store-bbox-latlon", "data"),
+    State("suhi-store-task-name", "data"),
+    prevent_initial_call=True,
 )
-def download_rasters(n_clicks, n_intervals, current_interval_disabled, btn_clicks, interval_intervals):
-    global globalTask, start_time, interval_disabled
-    
-    if n_clicks is None:
-        return dash.no_update, dash.no_update
+def start_download(n_clicks, id_hash, bbox_latlon, task_name):
+    if n_clicks is None or n_clicks == 0:
+        return dash.no_update, dash.no_update, dash.no_update
 
-    if globalTask is None:
-        globalTask = ht.download_cat_suhi(
-            globalCountry, globalCity, path_fua, globalPathCache, "Qall", 2022
-        )
-        start_time = datetime.datetime.now()
-        interval_disabled = False
+    path_cache = Path(f"./data/cache/{id_hash}")
 
-    status = globalTask.status()["state"]
-    current_time = datetime.datetime.now()
-    time_elapsed = (current_time - start_time).total_seconds()
-    print(status)
-    if status in ("UNSUBMITTED", "READY", "RUNNING", "CANCEL_REQUESTED"):
-        return f"Status de la Descarga: {status}, Tiempo transcurrido: {int(time_elapsed)} segundos", False
-    elif status in ("COMPLETED", "FAILED", "CANCELED"):
-        interval_disabled = True
-        return f"Status de la Descarga: {status}, Tiempo transcurrido: {int(time_elapsed)} segundos", True
+    if task_name is None:
+        bbox_latlon = shape(bbox_latlon)
+        task = ht.download_cat_suhi(bbox_latlon, path_cache, "Qall", 2022)
+        status = task.status()
+        return (False, status["name"], {"display": "block"}, "Iniciando descarga")
     else:
-        return f"Status de la Descarga: {status}, Tiempo transcurrido: {int(time_elapsed)} segundos", interval_disabled
+        return (dash.no_update, dash.no_update, dash.no_update, dash.no_update)
+
+
+@callback(
+    Output("suhi-span-rasters-output", "children", allow_duplicate=True),
+    Input("suhi-interval", "n_intervals"),
+    State("suhi-store-task-name", "data"),
+    prevent_initial_call=True,
+)
+def download_rasters(n_intervals, task_name):
+    task_metadata = ee.data.getOperation(task_name)["metadata"]
+    state = task_metadata["state"]
+
+    start_time = task_metadata["createTime"]
+    start_time = dateutil.parser.isoparse(start_time)
+
+    current_time = datetime.now(timezone.utc)
+    time_elapsed = (current_time - start_time).total_seconds()
+
+    if state in ("UNSUBMITTED", "READY", "RUNNING", "CANCEL_REQUESTED"):
+        return f"Status de la Descarga: {state}, Tiempo transcurrido: {int(time_elapsed)} segundos"
+    elif state in ("COMPLETED", "FAILED", "CANCELLED"):
+        return f"Status de la Descarga: {state}, Tiempo transcurrido: {int(time_elapsed)} segundos"
+
+
+@callback(
+    Output("suhi-graph-temp-map", "figure"),
+    Output("suhi-graph-areas", "figure"),
+    Output("suhi-graph-temp-lc", "figure"),
+    Input("global-store-hash", "data"),
+    Input("global-store-bbox-latlon", "data"),
+    Input("global-store-fua-latlon", "data"),
+)
+def generate_maps(id_hash, bbox_latlon, fua_latlon):
+    path_cache = Path(f"./data/cache/{id_hash}")
+
+    bbox_latlon = shape(bbox_latlon)
+    fua_latlon = shape(fua_latlon)
+
+    try:
+        temp_map = ht.plot_cat_map(
+            bbox_latlon, fua_latlon.centroid, path_cache, SEASON, YEAR
+        )
+    except Exception:
+        temp_map = dash.no_update
+
+    try:
+        areas_plot = ht.plot_temp_areas(bbox_latlon, path_cache, SEASON, YEAR)
+    except Exception:
+        areas_plot = dash.no_update
+
+    try:
+        temps_by_lc_plot = ht.plot_temp_by_lc(bbox_latlon, path_cache, SEASON, YEAR)
+    except Exception:
+        temps_by_lc_plot = dash.no_update
+
+    return temp_map, areas_plot, temps_by_lc_plot
+
+
+@callback(
+    Output("suhi-btn-stop-task", "style"),
+    Output("suhi-interval", "disabled"),
+    Output("suhi-span-rasters-output", "children"),
+    Input("suhi-btn-stop-task", "n_clicks"),
+    State("suhi-store-task-name", "data"),
+    prevent_initial_call=True,
+)
+def stop_task(n_clicks, task_id):
+    ee.data.cancelOperation(task_id)
+    return {"display": "none"}, True, "Descarga cancelada"

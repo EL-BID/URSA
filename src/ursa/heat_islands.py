@@ -1,37 +1,35 @@
 import ee
-# import numpy as np
+import json
+
 import geemap.plotlymap as geemap
-import raster_utils as ru
-import pandas as pd
 import geopandas as gpd
-from shapely.geometry import Polygon
+import pandas as pd
+import ursa.ghsl as ghsl
+import ursa.utils.raster as ru
 import plotly.express as px
 import plotly.graph_objects as go
+import ursa.world_cover as wc
+
 from typing import Tuple, List
-import json
-import world_cover as wc
-import ghsl
-from sleuth_prep import load_roads_osm
+from ursa.sleuth_prep import load_roads_osm
 
 MAX_PIXELS = 1e10
 
 colors = {
-    'Muy frío': "#2166AC",
-    'Frío': "#67A9CF",
-    'Ligeramente frío': "#D1E5F0",
-    'Templado': "#F7F7F7",
-    'Ligeramente cálido': "#FDDBC7",
-    'Caliente': "#EF8A62",
-    'Muy caliente': "#B2182B",
+    "Muy frío": "#2166AC",
+    "Frío": "#67A9CF",
+    "Ligeramente frío": "#D1E5F0",
+    "Templado": "#F7F7F7",
+    "Ligeramente cálido": "#FDDBC7",
+    "Caliente": "#EF8A62",
+    "Muy caliente": "#B2182B",
 }
 
-TEMP_CAT_MAP = {i+1: n for i, n in enumerate(colors.keys())}
+TEMP_CAT_MAP = {i + 1: n for i, n in enumerate(colors.keys())}
 
-RdBu7 = ["#2166AC", "#67A9CF", "#D1E5F0", "#F7F7F7",
-         "#FDDBC7", "#EF8A62", "#B2182B"]
+RdBu7 = ["#2166AC", "#67A9CF", "#D1E5F0", "#F7F7F7", "#FDDBC7", "#EF8A62", "#B2182B"]
 
-RdBu7k = ["#2166AC", "#67A9CF", "#D1E5F0", "#808080",
-          "#FDDBC7", "#EF8A62", "#B2182B"]
+RdBu7k = ["#2166AC", "#67A9CF", "#D1E5F0", "#808080", "#FDDBC7", "#EF8A62", "#B2182B"]
 
 TEMP_NAMES = list(TEMP_CAT_MAP.values())
 
@@ -41,25 +39,23 @@ TEMP_PALETTE_MAP_INV = {value: key for key, value in TEMP_PALETTE_MAP.items()}
 
 TEMP_PALETTE_MAP_K = {x: y for x, y in zip(TEMP_NAMES, RdBu7k)}
 
-TEMP_PALETTE_MAP_INV_K = {
-    value: key for key, value in TEMP_PALETTE_MAP_K.items()
-}
+TEMP_PALETTE_MAP_INV_K = {value: key for key, value in TEMP_PALETTE_MAP_K.items()}
 
 
 def date_format(season, year):
     sdict = {
-        'Q1': [f'{year}-3-1', f'{year}-5-31'],
-        'Q2': [f'{year}-6-1', f'{year}-8-31'],
-        'Q3': [f'{year}-9-1', f'{year}-11-30'],
-        'Q4': [f'{year}-12-1', f'{year + 1}-2-29'],
-        'Qall': [f'{year}-1-1', f'{year}-12-31']
+        "Q1": [f"{year}-3-1", f"{year}-5-31"],
+        "Q2": [f"{year}-6-1", f"{year}-8-31"],
+        "Q3": [f"{year}-9-1", f"{year}-11-30"],
+        "Q4": [f"{year}-12-1", f"{year + 1}-2-29"],
+        "Qall": [f"{year}-1-1", f"{year}-12-31"],
     }
 
     return sdict[season]
 
 
 def fmask(image):
-    qa = image.select('QA_PIXEL')
+    qa = image.select("QA_PIXEL")
 
     dilated_cloud_bit = 1
     cloud_bit = 3
@@ -77,22 +73,17 @@ def prep_img(img):
     img = fmask(img)
     img = img.select(["ST_B10"])
     img = ee.Image(img.copyProperties(orig, orig.propertyNames()))
-    img = img.set({'epsg': orig.projection().crs()})
+    img = img.set({"epsg": orig.projection().crs()})
     return img  # .resample("bicubic")
 
 
 def get_lst(bbox_ee, start_date, end_date, reducer=None):
-
     if reducer is None:
         reducer = ee.Reducer.mean()
 
     collection = ee.ImageCollection("LANDSAT/LC08/C02/T1_L2")
 
-    filtered = (
-        collection
-        .filterDate(start_date, end_date)
-        .filterBounds(bbox_ee)
-    )
+    filtered = collection.filterDate(start_date, end_date).filterBounds(bbox_ee)
 
     if filtered.size().getInfo() == 0:
         raise Exception("No measurements for given date and location found.")
@@ -100,9 +91,7 @@ def get_lst(bbox_ee, start_date, end_date, reducer=None):
     projection = filtered.first().projection()
     preped = filtered.map(prep_img)
     reduced = (
-        preped.reduce(reducer)
-        .setDefaultProjection(projection)
-        .select([0], ['ST_B10'])
+        preped.reduce(reducer).setDefaultProjection(projection).select([0], ["ST_B10"])
     )
     reduced = reduced.multiply(0.00341802).add(149 - 273.15)
 
@@ -114,8 +103,8 @@ def get_temps(lst, masks, path_cache):
 
     t_dict = {}
 
-    for nmask in ['total', 'rural', 'urban']:
-        if nmask == 'total':
+    for nmask in ["total", "rural", "urban"]:
+        if nmask == "total":
             mask = None
         else:
             mask = masks[nmask]
@@ -126,33 +115,29 @@ def get_temps(lst, masks, path_cache):
             lst_masked = lst
 
         mean = lst_masked.reduceRegion(
-            ee.Reducer.mean(),
-            bestEffort=False,
-            maxPixels=MAX_PIXELS
+            ee.Reducer.mean(), bestEffort=False, maxPixels=MAX_PIXELS
         ).getInfo()["ST_B10"]
 
         std = lst_masked.reduceRegion(
-            ee.Reducer.stdDev(),
-            bestEffort=False,
-            maxPixels=MAX_PIXELS
+            ee.Reducer.stdDev(), bestEffort=False, maxPixels=MAX_PIXELS
         ).getInfo()["ST_B10"]
 
-        t_dict[f'{nmask}_mean'] = mean
-        t_dict[f'{nmask}_std'] = std
+        t_dict[f"{nmask}_mean"] = mean
+        t_dict[f"{nmask}_std"] = std
 
         t_df = pd.DataFrame(t_dict, index=[0])
-        t_df.to_csv(path_cache / 'temperatures.csv', index=False)
+        t_df.to_csv(path_cache / "temperatures.csv", index=False)
 
     return t_df
 
 
-def load_or_get_temps(bbox_ee, start_date, end_date, path_cache,
-                      reducer=None, force=False):
-
+def load_or_get_temps(
+    bbox_ee, start_date, end_date, path_cache, reducer=None, force=False
+):
     if reducer is None:
         reducer = ee.Reducer.mean()
 
-    fpath = path_cache / 'temperatures.csv'
+    fpath = path_cache / "temperatures.csv"
     if fpath.exists() and not force:
         df = pd.read_csv(fpath)
     else:
@@ -163,20 +148,17 @@ def load_or_get_temps(bbox_ee, start_date, end_date, path_cache,
     return df
 
 
-def get_suhi(bbox_ee, start_date, end_date, path_cache,
-             reducer=None):
-
+def get_suhi(bbox_ee, start_date, end_date, path_cache, reducer=None):
     if reducer is None:
         reducer = ee.Reducer.mean()
 
     lst, proj = get_lst(bbox_ee, start_date, end_date, reducer)
     lc, masks = wc.get_cover_and_masks(bbox_ee, proj)
 
-    temps = load_or_get_temps(bbox_ee, start_date, end_date,
-                              path_cache, reducer)
-    rural_lst_mean = temps['rural_mean'].item()
+    temps = load_or_get_temps(bbox_ee, start_date, end_date, path_cache, reducer)
+    rural_lst_mean = temps["rural_mean"].item()
 
-    unwanted_mask = masks['unwanted']
+    unwanted_mask = masks["unwanted"]
 
     suhi = lst.subtract(rural_lst_mean)
     suhi = suhi.updateMask(unwanted_mask)
@@ -184,10 +166,8 @@ def get_suhi(bbox_ee, start_date, end_date, path_cache,
     return suhi
 
 
-def get_cat_suhi(bbox_ee, start_date, end_date, path_cache,
-                 reducer=None):
-
-    print('Generatin temperature discrete image ...')
+def get_cat_suhi(bbox_ee, start_date, end_date, path_cache, reducer=None):
+    print("Generating temperature discrete image ...")
 
     if reducer is None:
         reducer = ee.Reducer.mean()
@@ -196,75 +176,57 @@ def get_cat_suhi(bbox_ee, start_date, end_date, path_cache,
 
     cat_img = ee.Image(0).setDefaultProjection(img_suhi.projection())
 
-    temps = load_or_get_temps(bbox_ee, start_date, end_date,
-                              path_cache, reducer)
-    std = temps['total_std'].item()
+    temps = load_or_get_temps(bbox_ee, start_date, end_date, path_cache, reducer)
+    std = temps["total_std"].item()
 
     offsets = make_offsets(0, std)
 
     cat_img = cat_img.where(img_suhi.lt(offsets[0][0]), 1)
 
     for i, (start, end) in enumerate(offsets):
-        cat_img = cat_img.where(
-            img_suhi.gte(start).And(img_suhi.lt(end)),
-            i + 2
-        )
+        cat_img = cat_img.where(img_suhi.gte(start).And(img_suhi.lt(end)), i + 2)
 
     cat_img = cat_img.where(img_suhi.gte(offsets[-1][1]), i + 3)
     cat_img = cat_img.updateMask(cat_img.neq(0))
 
-    print('Done.')
+    print("Done.")
 
     return cat_img
 
 
-def download_cat_suhi(country, city, path_fua, path_cache,
-                    season, year):
-
-    bbox_latlon, uc_latlon, fua_latlon = ru.get_bbox(
-        city, country, path_fua,
-        proj='EPSG:4326')
+def download_cat_suhi(bbox_latlon, path_cache, season, year):
     bbox_ee = ru.bbox_to_ee(bbox_latlon)
 
     start_date, end_date = date_format(season, year)
 
     cat_img = get_cat_suhi(bbox_ee, start_date, end_date, path_cache)
 
-    task = ee.batch.Export.image.toDrive(image          = cat_img,
-                                         description    = 'suhi_raster',
-                                         scale          = cat_img.projection().nominalScale() ,
-                                         region         = bbox_ee,
-                                         crs            = cat_img.projection(),
-                                         fileFormat = 'GeoTIFF')
+    task = ee.batch.Export.image.toDrive(
+        image=cat_img,
+        description="suhi_raster",
+        scale=cat_img.projection().nominalScale(),
+        region=bbox_ee,
+        crs=cat_img.projection(),
+        fileFormat="GeoTIFF",
+    )
     task.start()
     return task
 
 
-def make_offsets(
-        s_mean: float,
-        s_std: float,
-        n: int = 3) -> List[Tuple[float, float]]:
-
-    offsets = [(1., 1.)] * (2 * n - 1)
+def make_offsets(s_mean: float, s_std: float, n: int = 3) -> List[Tuple[float, float]]:
+    offsets = [(1.0, 1.0)] * (2 * n - 1)
     for i in range(n - 1):
-        offsets[n - i - 2] = (
-            s_mean - (i + 1.5) * s_std,
-            s_mean - (i + 0.5) * s_std
-        )
-        offsets[n + i] = (
-            s_mean + (i + 0.5) * s_std,
-            s_mean + (i + 1.5) * s_std
-        )
+        offsets[n - i - 2] = (s_mean - (i + 1.5) * s_std, s_mean - (i + 0.5) * s_std)
+        offsets[n + i] = (s_mean + (i + 0.5) * s_std, s_mean + (i + 1.5) * s_std)
     offsets[n - 1] = (s_mean - 0.5 * s_std, s_mean + 0.5 * s_std)
 
     return offsets
 
 
 def get_temperature_areas(img_cat, masks, bbox, path_cache):
-
     dict_list = {}
-    for nmask in ['total', 'rural', 'urban']:
-        if nmask == 'total':
+    for nmask in ["total", "rural", "urban"]:
+        if nmask == "total":
             mask = None
         else:
             mask = masks[nmask]
@@ -282,23 +244,21 @@ def get_temperature_areas(img_cat, masks, bbox, path_cache):
             geometry=bbox,
             maxPixels=MAX_PIXELS,
         ).getInfo()["groups"]
-        area = {x['group']: x["sum"]/1e6 for x in area}
+        area = {x["group"]: x["sum"] / 1e6 for x in area}
         dict_list[nmask] = area
 
     df = pd.DataFrame(dict_list)
-    df.index.name = 'clase'
+    df.index.name = "clase"
 
-    df.to_csv(path_cache / 'temp_areas.csv')
+    df.to_csv(path_cache / "temp_areas.csv")
 
     return df
 
 
-def load_or_get_t_areas(bbox_ee, start_date, end_date, path_cache,
-                        force=False):
-
-    fpath = path_cache / 'temp_areas.csv'
+def load_or_get_t_areas(bbox_ee, start_date, end_date, path_cache, force=False):
+    fpath = path_cache / "temp_areas.csv"
     if fpath.exists() and not force:
-        df = pd.read_csv(fpath, index_col='clase')
+        df = pd.read_csv(fpath, index_col="clase")
     else:
         img_cat = get_cat_suhi(bbox_ee, start_date, end_date, path_cache)
         proj = img_cat.projection()
@@ -308,20 +268,11 @@ def load_or_get_t_areas(bbox_ee, start_date, end_date, path_cache,
     return df
 
 
-def plot_cat_map(country, city, path_fua, path_cache,
-                 season, year):
+def plot_cat_map(bbox_latlon, fua_latlon_centroid, path_cache, season, year):
+    print("Generating temperature map ...")
 
-    print('Generating temperature map ...')
+    vis_params = {"min": 0, "max": 7, "palette": ["#000000"] + list(colors.values())}
 
-    vis_params = {
-        'min': 0,
-        'max': 7,
-        'palette': ['#000000'] + list(colors.values())
-    }
-
-    bbox_latlon, uc_latlon, fua_latlon = ru.get_bbox(
-        city, country, path_fua,
-        proj='EPSG:4326')
     bbox_ee = ru.bbox_to_ee(bbox_latlon)
 
     start_date, end_date = date_format(season, year)
@@ -330,25 +281,18 @@ def plot_cat_map(country, city, path_fua, path_cache,
 
     Map = geemap.Map(basemap="carto-positron")
 
-    centroid = fua_latlon.geometry.iloc[0].centroid
-    Map.set_center(centroid.y, centroid.x, zoom=10)
+    Map.set_center(fua_latlon_centroid.y, fua_latlon_centroid.x, zoom=10)
 
-    Map.addLayer(img_cat.clip(bbox_ee),
-                 vis_params,
-                 'SUHI',
-                 opacity=0.6)
+    Map.addLayer(img_cat.clip(bbox_ee), vis_params, "SUHI", opacity=0.6)
 
-    Map.layout.mapbox.layers[0].sourceattribution = (
-        'LandSat'
-        ' | Google Earth Engine')
+    Map.layout.mapbox.layers[0].sourceattribution = "LandSat" " | Google Earth Engine"
 
-    print('Done.')
+    print("Done.")
 
     return Map
 
 
 def get_land_usage_dataframe(bbox_ee, start_date, end_date, path_cache):
-
     img_cat = get_cat_suhi(bbox_ee, start_date, end_date, path_cache)
     proj = img_cat.projection()
 
@@ -361,14 +305,13 @@ def get_land_usage_dataframe(bbox_ee, start_date, end_date, path_cache):
 
     histograms = img_area.reduceRegion(
         (
-            ee.Reducer
-            .sum()
+            ee.Reducer.sum()
             .group(groupField=1, groupName="temperature_code")
             .group(groupField=2, groupName="land_code")
         ),
         bestEffort=False,
         geometry=bbox_ee,
-        maxPixels=MAX_PIXELS
+        maxPixels=MAX_PIXELS,
     ).getInfo()
 
     hist_flat = []
@@ -383,10 +326,9 @@ def get_land_usage_dataframe(bbox_ee, start_date, end_date, path_cache):
 
     df = pd.DataFrame(hist_flat)
     df = df.set_index(["temperature_code", "land_code"])
-    df = df.groupby(
-        "temperature_code",
-        group_keys=False
-    )["sum"].apply(lambda x: x/x.sum())
+    df = df.groupby("temperature_code", group_keys=False)["sum"].apply(
+        lambda x: x / x.sum()
+    )
     df = df.reset_index()
     df["Temperature"] = df["temperature_code"].map(TEMP_CAT_MAP)
     df["Land type"] = df["land_code"].map(wc.COVER_MAP)
@@ -398,20 +340,17 @@ def get_land_usage_dataframe(bbox_ee, start_date, end_date, path_cache):
     df = df[df["land_code"].isin(names)]
     df["Temperature"] = pd.Categorical(df["Temperature"], TEMP_NAMES)
 
-    df.to_csv(path_cache / 'land_cover_by_temp.csv', index=False)
+    df.to_csv(path_cache / "land_cover_by_temp.csv", index=False)
 
     return df
 
 
-def load_or_get_land_usage_df(bbox_ee, start_date, end_date, path_cache,
-                              force=False):
-
-    fpath = path_cache / 'land_cover_by_temp.csv'
+def load_or_get_land_usage_df(bbox_ee, start_date, end_date, path_cache, force=False):
+    fpath = path_cache / "land_cover_by_temp.csv"
     if fpath.exists() and not force:
         df = pd.read_csv(fpath)
     else:
-        df = get_land_usage_dataframe(
-            bbox_ee, start_date, end_date, path_cache)
+        df = get_land_usage_dataframe(bbox_ee, start_date, end_date, path_cache)
 
     return df
 
@@ -422,12 +361,7 @@ def plot_t_hist():
     pass
 
 
-def plot_temp_by_lc(country, city, path_fua, path_cache,
-                    season, year):
-
-    bbox_latlon, uc_latlon, fua_latlon = ru.get_bbox(
-        city, country, path_fua,
-        proj='EPSG:4326')
+def plot_temp_by_lc(bbox_latlon, path_cache, season, year):
     bbox_ee = ru.bbox_to_ee(bbox_latlon)
 
     start_date, end_date = date_format(season, year)
@@ -436,11 +370,11 @@ def plot_temp_by_lc(country, city, path_fua, path_cache,
 
     fig = px.bar(
         data_frame=df,
-        x='Temperature',
-        y='sum',
-        color='Land type',
+        x="Temperature",
+        y="sum",
+        color="Land type",
         color_discrete_map=wc.COVER_PALETTE_NAME_MAP,
-        labels={'sum': 'Usage'}
+        labels={"sum": "Usage"},
     )
 
     fig.update_layout(
@@ -453,34 +387,19 @@ def plot_temp_by_lc(country, city, path_fua, path_cache,
     return fig
 
 
-def plot_temp_areas(country, city, path_fua, path_cache,
-                    season, year):
-
-    bbox_latlon, uc_latlon, fua_latlon = ru.get_bbox(
-        city, country, path_fua,
-        proj='EPSG:4326')
+def plot_temp_areas(bbox_latlon, path_cache, season, year):
     bbox_ee = ru.bbox_to_ee(bbox_latlon)
 
     start_date, end_date = date_format(season, year)
 
     df_t_areas = load_or_get_t_areas(bbox_ee, start_date, end_date, path_cache)
 
-    custom_colors = {
-        1: "#2166AC",
-        2: "#67A9CF",
-        3: "#D1E5F0",
-        4: "#F7F7F7",
-        5: "#FDDBC7",
-        6: "#EF8A62",
-        7: "#B2182B",
-    }
-
     fig = px.bar(
-        df_t_areas.rename(columns={'total': 'Area'}),
-        x=[k for i, k in enumerate(colors.keys()) if i+1 in df_t_areas.index],
-        y='Area',
-        color=[k for i, k in enumerate(colors.keys()) if i+1 in df_t_areas.index],
-        color_discrete_map=colors
+        df_t_areas.rename(columns={"total": "Area"}),
+        x=[k for i, k in enumerate(colors.keys()) if i + 1 in df_t_areas.index],
+        y="Area",
+        color=[k for i, k in enumerate(colors.keys()) if i + 1 in df_t_areas.index],
+        color_discrete_map=colors,
     )
 
     fig.update_layout(
@@ -494,9 +413,8 @@ def plot_temp_areas(country, city, path_fua, path_cache,
 
 
 def make_donuts(bbox_ee, proj, bbox_latlon, uc_latlon, width=100):
-
     # Set projection
-    bbox_utm = gpd.GeoSeries(bbox_latlon).set_crs(4326).to_crs(proj)
+    bbox_utm = gpd.GeoSeries(bbox_latlon).set_crs("EPSG:4326").to_crs(proj)
     uc_utm = uc_latlon.to_crs(proj)
 
     # Set center of disks as the center of the
@@ -534,52 +452,48 @@ def make_donuts(bbox_ee, proj, bbox_latlon, uc_latlon, width=100):
     return radii, donuts_ee
 
 
-def get_radial_f(bbox_ee, suhi, bbox_latlon, uc_latlon, path_cache,
-                 width=100):
-
-    proj_str = suhi.projection().getInfo()['crs']
+def get_radial_f(bbox_ee, suhi, bbox_latlon, uc_latlon, path_cache, width=100):
+    proj_str = suhi.projection().getInfo()["crs"]
     radii, donuts_ee = make_donuts(bbox_ee, proj_str, bbox_latlon, uc_latlon)
 
     reduced = suhi.reduceRegions(
         donuts_ee,
         ee.Reducer.mean(),
     )
-    reduced = reduced.aggregate_array('mean')
+    reduced = reduced.aggregate_array("mean")
     reduced = reduced.getInfo()
 
-    df = pd.DataFrame({'radius': radii, 'reduced': reduced})
+    df = pd.DataFrame({"radius": radii, "reduced": reduced})
 
-    df.to_csv(path_cache / 'radial_function.csv', index=False)
+    df.to_csv(path_cache / "radial_function.csv", index=False)
 
     return df
 
 
-def load_or_get_radial_f(bbox_ee, start_date, end_date, path_cache,
-                         bbox_latlon, uc_latlon, force=False):
-
-    fpath = path_cache / 'radial_function.csv'
+def load_or_get_radial_f(
+    bbox_ee, start_date, end_date, path_cache, bbox_latlon, uc_latlon, force=False
+):
+    fpath = path_cache / "radial_function.csv"
     if fpath.exists() and not force:
         df = pd.read_csv(fpath)
     else:
         img_suhi = get_suhi(bbox_ee, start_date, end_date, path_cache)
-        df = get_radial_f(
-            bbox_ee, img_suhi, bbox_latlon, uc_latlon, path_cache)
+        df = get_radial_f(bbox_ee, img_suhi, bbox_latlon, uc_latlon, path_cache)
 
     return df
 
 
-def plot_radial_temperature(country, city, path_fua, path_cache,
-                            season, year):
-
+def plot_radial_temperature(country, city, path_fua, path_cache, season, year):
     bbox_latlon, uc_latlon, fua_latlon = ru.get_bbox(
-        city, country, path_fua,
-        proj='EPSG:4326')
+        city, country, path_fua, proj="EPSG:4326"
+    )
     bbox_ee = ru.bbox_to_ee(bbox_latlon)
 
     start_date, end_date = date_format(season, year)
 
-    df = load_or_get_radial_f(bbox_ee, start_date, end_date, path_cache,
-                              bbox_latlon, uc_latlon)
+    df = load_or_get_radial_f(
+        bbox_ee, start_date, end_date, path_cache, bbox_latlon, uc_latlon
+    )
 
     fig = px.line(
         x=df["radius"].map(lambda x: round(x, 1)),
@@ -587,17 +501,15 @@ def plot_radial_temperature(country, city, path_fua, path_cache,
         labels={
             "x": "Radio (km)",
             "y": "Diferencia con respecto a la temperatura rural (°C)",
-        }
+        },
     )
 
     return fig
 
 
-def get_radial_lc(bbox_ee, lc, bbox_latlon, uc_latlon, path_cache,
-                  width=100):
-
+def get_radial_lc(bbox_ee, lc, bbox_latlon, uc_latlon, path_cache, width=100):
     proj = lc.projection()
-    proj_str = proj.getInfo()['crs']
+    proj_str = proj.getInfo()["crs"]
     radii, donuts_ee = make_donuts(bbox_ee, proj_str, bbox_latlon, uc_latlon)
 
     img_area = lc.pixelArea().setDefaultProjection(proj)
@@ -607,7 +519,7 @@ def get_radial_lc(bbox_ee, lc, bbox_latlon, uc_latlon, path_cache,
         donuts_ee,
         ee.Reducer.sum().group(groupField=1),
     )
-    reduced = reduced.aggregate_array('groups')
+    reduced = reduced.aggregate_array("groups")
     reduced = reduced.getInfo()
 
     reduced_land_flat = []
@@ -619,43 +531,41 @@ def get_radial_lc(bbox_ee, lc, bbox_latlon, uc_latlon, path_cache,
 
     df = pd.DataFrame(reduced_land_flat)
     df = df.set_index(["group", "x"])
-    df = df.groupby("x", group_keys=False).apply(lambda x: x/x.sum())
+    df = df.groupby("x", group_keys=False).apply(lambda x: x / x.sum())
     df = df.reset_index()
     df["Land type"] = df["group"].map(wc.COVER_MAP)
 
     test = df.pivot(index="x", columns="Land type", values="sum")
-    test.to_csv(path_cache / 'radial_lc.csv')
+    test.to_csv(path_cache / "radial_lc.csv")
 
     return test
 
 
-def load_or_get_radial_lc(bbox_ee, start_date, end_date, path_cache,
-                          bbox_latlon, uc_latlon, force=False):
-
-    fpath = path_cache / 'radial_lc.csv'
+def load_or_get_radial_lc(
+    bbox_ee, start_date, end_date, path_cache, bbox_latlon, uc_latlon, force=False
+):
+    fpath = path_cache / "radial_lc.csv"
     if fpath.exists() and not force:
-        df = pd.read_csv(fpath, index_col='x')
+        df = pd.read_csv(fpath, index_col="x")
     else:
         suhi = get_suhi(bbox_ee, start_date, end_date, path_cache)
         lc, masks = wc.get_cover_and_masks(bbox_ee, suhi.projection())
-        df = get_radial_lc(bbox_ee, lc, bbox_latlon, uc_latlon, path_cache,
-                           width=100)
+        df = get_radial_lc(bbox_ee, lc, bbox_latlon, uc_latlon, path_cache, width=100)
 
     return df
 
 
-def plot_radial_lc(country, city, path_fua, path_cache,
-                   season, year):
-
+def plot_radial_lc(country, city, path_fua, path_cache, season, year):
     bbox_latlon, uc_latlon, fua_latlon = ru.get_bbox(
-        city, country, path_fua,
-        proj='EPSG:4326')
+        city, country, path_fua, proj="EPSG:4326"
+    )
     bbox_ee = ru.bbox_to_ee(bbox_latlon)
 
     start_date, end_date = date_format(season, year)
 
-    df = load_or_get_radial_lc(bbox_ee, start_date, end_date, path_cache,
-                               bbox_latlon, uc_latlon)
+    df = load_or_get_radial_lc(
+        bbox_ee, start_date, end_date, path_cache, bbox_latlon, uc_latlon
+    )
 
     df.round(1)
     colors = [wc.COVER_PALETTE_NAME_MAP[x] for x in df.columns]
@@ -664,42 +574,37 @@ def plot_radial_lc(country, city, path_fua, path_cache,
 
     fig = go.Figure()
     for col, color in zip(df.columns, colors):
-        fig.add_trace(go.Scatter(
-            x=x,
-            y=df[col],
-            stackgroup="one",
-            line_color=color,
-            hoveron="points",
-            line_width=0,
-            name=col,
-            opacity=1
-        ))
+        fig.add_trace(
+            go.Scatter(
+                x=x,
+                y=df[col],
+                stackgroup="one",
+                line_color=color,
+                hoveron="points",
+                line_width=0,
+                name=col,
+                opacity=1,
+            )
+        )
     fig.update_layout(
         xaxis_title="Radio (km)",
         yaxis_title="Porcentaje",
         yaxis_range=(0, 1),
-        yaxis=dict(
-            tickformat=".0%"
-        )
+        yaxis=dict(tickformat=".0%"),
     )
 
     return fig
 
 
-def get_urban_mean(city, country, path_fua, season, year, path_cache,
-                   reducer=None):
+def get_urban_mean(bbox_latlon, season, year, path_cache, reducer=None):
     if reducer is None:
         reducer = ee.Reducer.mean()
 
-    bbox_latlon, uc_latlon, fua_latlon = ru.get_bbox(
-        city, country, path_fua,
-        proj='EPSG:4326')
     bbox_ee = ru.bbox_to_ee(bbox_latlon)
     start_date, end_date = date_format(season, year)
 
-    temps = load_or_get_temps(bbox_ee, start_date, end_date,
-                              path_cache, reducer)
-    return temps['urban_mean'].item()
+    temps = load_or_get_temps(bbox_ee, start_date, end_date, path_cache, reducer)
+    return temps["urban_mean"].item()
 
 
 country_name_map = {
@@ -709,87 +614,69 @@ country_name_map = {
     "ElSalvador": "El_Salvador",
     "PuertoRico": "Puerto_Rico",
     "TrinidadandTobago": "Trinidad_and_Tobago",
-    "UnitedStates": "US"
+    "UnitedStates": "US",
 }
 
 
 def add_area(feature):
-    return feature.set(
-        {"area": feature.geometry().area()}
+    return feature.set({"area": feature.geometry().area()})
+
+
+def get_mit_areas_df(bbox_latlon, bbox_mollweide, uc_mollweide_centroid, path_cache):
+    smod = ghsl.load_or_download(
+        bbox_mollweide, "SMOD", data_path=path_cache, resolution=1000
     )
-
-
-def get_mit_areas_df(city, country, path_fua, path_cache):
-    print('Generating mitigation areas...')
-    bbox_latlon, uc_latlon, fua_latlon = ru.get_bbox(
-        city, country, path_fua,
-        proj='EPSG:4326')
-    bbox_mollweide, uc_mollweide, fua_mollweide = ru.get_bbox(
-        city, country, path_fua,
-        proj='ESRI:54009')
-
-    # bbox_ee = ru.bbox_to_ee(bbox_latlon)
-
-    smod = ghsl.load_or_download(bbox_mollweide, 'SMOD',
-                                 data_path=path_cache, resolution=1000)
-    smod_gdf = ghsl.smod_polygons(
-        smod, uc_mollweide.iloc[0].geometry.centroid)#.to_crs('EPSG:4326')
-    clusters_gdf = smod_gdf[smod_gdf['class'] == 2]
+    smod_gdf = ghsl.smod_polygons(smod, uc_mollweide_centroid)
+    clusters_gdf = smod_gdf[smod_gdf["class"] == 2]
     main_cluster = clusters_gdf[clusters_gdf.is_main]
 
     cluster_mollweide = main_cluster[main_cluster.year == 2020]
-    cluster_latlon = cluster_mollweide.to_crs('EPSG:4326').geometry.iloc[0]
-    # main_cluster[main_cluster.year == 2020].geometry.iloc[0]
+    cluster_latlon = cluster_mollweide.to_crs("EPSG:4326").geometry.iloc[0]
     cluster_ee = ru.bbox_to_ee(cluster_latlon)
 
-    # roof_area = calculate_building_area(country, cluster_ee)
     roof_area = calculate_building_area(
         bbox_mollweide, path_cache, cluster_mollweide.geometry
     )
-    print(f'Roofs: {roof_area}')
+    print(f"Roofs: {roof_area}")
     urban_area = calculate_urban_area(cluster_ee)
-    print(f'Urban: {urban_area}')
+    print(f"Urban: {urban_area}")
     road_lenght = calculate_road_area(bbox_latlon, path_cache, cluster_latlon)
-    print(f'Roads: {road_lenght}')
+    print(f"Roads: {road_lenght}")
 
     df = pd.DataFrame(
-        {
-            'roofs': roof_area,
-            'urban': urban_area,
-            'roads': road_lenght
-        },
-        index=[0]
+        {"roofs": roof_area, "urban": urban_area, "roads": road_lenght}, index=[0]
     )
 
-    df.to_csv(path_cache / 'mitigation_areas.csv', index=False)
+    df.to_csv(path_cache / "mitigation_areas.csv", index=False)
 
-    print('Done.')
+    print("Done.")
 
     return df
 
 
-def load_or_get_mit_areas_df(city, country, path_fua, path_cache,
-                             force=False):
-
-    fpath = path_cache / 'mitigation_areas.csv'
+def load_or_get_mit_areas_df(
+    bbox_latlon, bbox_mollweide, uc_mollweide_centroid, path_cache, force=False
+):
+    fpath = path_cache / "mitigation_areas.csv"
     if fpath.exists() and not force:
         df = pd.read_csv(fpath)
     else:
-        df = get_mit_areas_df(city, country, path_fua, path_cache)
-
+        df = get_mit_areas_df(
+            bbox_latlon, bbox_mollweide, uc_mollweide_centroid, path_cache
+        )
     return df
 
 
 def calculate_building_area(bbox_mollweide, path_cache, cluster):
-
-    built = ghsl.load_or_download(bbox_mollweide, 'BUILT_S',
-                                  data_path=path_cache, resolution=100)
+    built = ghsl.load_or_download(
+        bbox_mollweide, "BUILT_S", data_path=path_cache, resolution=100
+    )
 
     b_2020 = built.sel(band=2020)
 
     b_2020.rio.set_nodata(0)
 
-    area = b_2020.rio.clip(cluster.geometry).sum().item()/1e6
+    area = b_2020.rio.clip(cluster.geometry).sum().item() / 1e6
 
     return area
 
@@ -814,7 +701,7 @@ def calculate_building_area(bbox_mollweide, path_cache, cluster):
 def calculate_urban_area(bbox):
     lc, masks = wc.get_cover_and_masks(bbox, None)
 
-    urban_mask = masks['urban']
+    urban_mask = masks["urban"]
     img = (
         urban_mask.pixelArea()
         .setDefaultProjection(urban_mask.projection())
@@ -832,10 +719,9 @@ def calculate_urban_area(bbox):
 
 
 def calculate_road_area(bbox, path_cache, cluster):
-
-    edges = load_roads_osm(bbox, path_cache).to_crs('EPSG:4326')
+    edges = load_roads_osm(bbox, path_cache).to_crs("EPSG:4326")
     pip = edges.within(cluster)
 
-    total_lenght = edges[pip]['length'].sum()/1000
+    total_lenght = edges[pip]["length"].sum() / 1000
 
     return total_lenght

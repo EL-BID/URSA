@@ -91,6 +91,31 @@
   color: gray;
 }
 
+.card.main-info {
+  background-color: #95a5a6 !important;
+  border: none !important;
+  color: #fff !important;
+  margin-top: 0.5rem !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.card.supp-info {
+  background-color: #f0f4f4 !important;
+  border: none !important;
+  margin-top: 0.5rem !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.span.my-tooltip {
+  text-align: center;
+  color: #000;
+  height: 25px;
+  width: 25px;
+  background-color: #bbb;
+  border-radius: 50%;
+  display: inline-block;
+}
+
 @keyframes fadein {
   from {
     opacity: 0;
