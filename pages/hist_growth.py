@@ -379,10 +379,10 @@ def generate_lines(id_hash, bbox_latlon, uc_latlon):
     path_cache = Path(f"./data/cache/{str(id_hash)}")
 
     bbox_latlon = shape(bbox_latlon)
-    bbox_mollweide = ug.latlon_to_mollweide(bbox_latlon).envelope
+    bbox_mollweide = ug.reproject_geometry(bbox_latlon, "ESRI:54009").envelope
 
     uc_latlon = shape(uc_latlon)
-    uc_mollweide = ug.latlon_to_mollweide(uc_latlon)
+    uc_mollweide = ug.reproject_geometry(uc_latlon, "ESRI:54009")
 
     centroid_mollweide = uc_mollweide.centroid
 

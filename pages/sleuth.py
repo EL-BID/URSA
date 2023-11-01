@@ -1699,7 +1699,7 @@ def download_data(id_hash, bbox_latlon):
     path_cache = Path(f"./data/cache/{id_hash}")
 
     bbox_latlon = shape(bbox_latlon)
-    bbox_mollweide = ug.latlon_to_mollweide(bbox_latlon).envelope
+    bbox_mollweide = ug.reproject_geometry(bbox_latlon, "ESRI:54009").envelope
 
     sp.load_or_prep_rasters(bbox_mollweide, path_cache)
 

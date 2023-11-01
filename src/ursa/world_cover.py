@@ -75,15 +75,6 @@ def get_cover_and_masks(bbox, projection) -> Tuple[ee.Image, dict]:
         lc_cover = lc_cover.reduceResolution(
             reducer=ee.Reducer.mode(), maxPixels=1024
         ).reproject(projection)
-    # else:
-    #     lc_cover = (
-    #         lc_cover
-    #         .reduceResolution(
-    #             reducer=ee.Reducer.mode(),
-    #             maxPixels=1024
-    #         )
-    #         .reproject(crs='EPSG:4326', scale=100)
-    #     )
     masks = get_masks(lc_cover)
     lc_cover = lc_cover.updateMask(masks["unwanted"])
 

@@ -339,6 +339,16 @@ plots = html.Div(
                     BARS_TEXT,
                     "Fracción de uso de suelo por categoría de temperatura",
                 ),
+                figureWithDescription(
+                    dcc.Graph(id="suhi-graph-radial-temp"),
+                    "",
+                    "Temperatura en función de la distancia al centro urbano",
+                ),
+                figureWithDescription(
+                    dcc.Graph(id="suhi-graph-radial-lc"),
+                    "",
+                    "Fracción de uso de suelo en función de la distancia al centro urbano",
+                ),
             ],
             style={"overflow": "scroll", "height": "82vh"},
         ),
@@ -499,8 +509,8 @@ def update_mitigation_kilometers(values, id_hash, bbox_latlon, uc_latlon):
     bbox_latlon = shape(bbox_latlon)
     uc_latlon = shape(uc_latlon)
 
-    bbox_mollweide = ug.latlon_to_mollweide(bbox_latlon)
-    uc_mollweide = ug.latlon_to_mollweide(uc_latlon)
+    bbox_mollweide = ug.reproject_geometry(bbox_latlon, "ESRI:54009")
+    uc_mollweide = ug.reproject_geometry(uc_latlon, "ESRI:54009")
 
     try:
         df = ht.load_or_get_mit_areas_df(
@@ -533,8 +543,6 @@ def update_mitigation_kilometers(values, id_hash, bbox_latlon, uc_latlon):
             impactedSquareKm += area_roofs * areaFraction
         elif strategyId == "strat-vegetacion":
             impactedSquareKm += area_urban * areaFraction
-        else:
-            pass
 
     mitigatedUrbanTemperature = urban_mean_temp - mitigatedDegrees
 
@@ -615,15 +623,22 @@ def download_rasters(n_intervals, task_name):
     Output("suhi-graph-temp-map", "figure"),
     Output("suhi-graph-areas", "figure"),
     Output("suhi-graph-temp-lc", "figure"),
+    Output("suhi-graph-radial-temp", "figure"),
+    Output("suhi-graph-radial-lc", "figure"),
     Input("global-store-hash", "data"),
     Input("global-store-bbox-latlon", "data"),
     Input("global-store-fua-latlon", "data"),
+    Input("global-store-uc-latlon", "data"),
 )
-def generate_maps(id_hash, bbox_latlon, fua_latlon):
+def generate_maps(id_hash, bbox_latlon, fua_latlon, uc_latlon):
+    if id_hash is None:
+        return [dash.no_update] * 5
+
     path_cache = Path(f"./data/cache/{id_hash}")
 
     bbox_latlon = shape(bbox_latlon)
     fua_latlon = shape(fua_latlon)
+    uc_latlon = shape(uc_latlon)
 
     try:
         temp_map = ht.plot_cat_map(
@@ -642,7 +657,13 @@ def generate_maps(id_hash, bbox_latlon, fua_latlon):
     except Exception:
         temps_by_lc_plot = dash.no_update
 
-    return temp_map, areas_plot, temps_by_lc_plot
+    radial_temp_plot = ht.plot_radial_temperature(
+        bbox_latlon, uc_latlon, path_cache, SEASON, YEAR
+    )
+
+    radial_lc_plot = ht.plot_radial_lc(bbox_latlon, uc_latlon, path_cache, SEASON, YEAR)
+
+    return temp_map, areas_plot, temps_by_lc_plot, radial_temp_plot, radial_lc_plot
 
 
 @callback(

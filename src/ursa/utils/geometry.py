@@ -5,11 +5,11 @@ import shapely
 import numpy as np
 
 
-def latlon_to_mollweide(bbox):
+def reproject_geometry(geo, target_crs, start_crs="EPSG:4326"):
     project = pyproj.Transformer.from_proj(
-        pyproj.Proj("EPSG:4326"), pyproj.Proj("ESRI:54009"), always_xy=True
+        pyproj.Proj(start_crs), pyproj.Proj(target_crs), always_xy=True
     )
-    out = shapely.ops.transform(project.transform, bbox)
+    out = shapely.ops.transform(project.transform, geo)
     return out
 
 
