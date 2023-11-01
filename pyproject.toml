@@ -5,7 +5,6 @@ description = ""
 authors = []
 readme = "README.md"
 
-
 [tool.poetry.dependencies]
 python = ">=3.10,<3.12"
 dash = "^2.9.3"
@@ -27,6 +26,7 @@ netcdf4 = "~1.5"
 dash-bootstrap-components = "^1.4.1"
 gdal = [
     { url = "https://download.lfd.uci.edu/pythonlibs/archived/GDAL-3.4.3-cp310-cp310-win_amd64.whl", platform = "win64"},
+    { url = "https://download.lfd.uci.edu/pythonlibs/archived/GDAL-3.4.3-cp310-cp310-win_amd64.whl", platform = "win32"},
     { version = "3.4.3", platform = "linux", source = "pypi" }
 ]
 sleuth-sklearn = {git = "https://github.com/RodolfoFigueroa/sleuth-sklearn/"}
@@ -37,7 +37,6 @@ python-dateutil = "^2.8.2"
 
 [tool.poetry.scripts]
 ursa-make-ghsl = "ursa.make_cities_csv_ghsl:main"
-
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.5.0"
