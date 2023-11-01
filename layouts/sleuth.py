@@ -72,8 +72,17 @@ def calculate_coverage(worldcover, sleuth_predictions, start_year):
     result_df["Year"] = list(range(start_year + 1, start_year + num_samples + 1))
     result_df.set_index("Year", inplace=True)
     result_df = result_df * 100
-    result_df.to_csv("coverage.csv")
     return result_df
+
+
+def load_or_calculate_coverage(worldcover, sleuth_predictions, start_year, path_cache):
+    fpath = path_cache / "coverage.csv"
+    if fpath.exists():
+        df = pd.read_csv(fpath)
+    else:
+        df = calculate_coverage(worldcover, sleuth_predictions, start_year)
+        df.to_csv(fpath)
+    return df
 
 
 def plot_coverage(lc_df, title):
@@ -323,7 +332,7 @@ def summary(id_hash, urban_rasters, years):
         tabs.append(tab)
 
         # Coverage
-        estimate_coverage = calculate_coverage(worldcover, grids, start_year)
+        estimate_coverage = load_or_calculate_coverage(worldcover, grids, start_year, path_cache)
         fig_coverage = plot_coverage(estimate_coverage, f"Expansión {mode}")
         coverage_graphs.append(dcc.Graph(figure=fig_coverage))
 
