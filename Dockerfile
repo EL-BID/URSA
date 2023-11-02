@@ -1,22 +1,23 @@
-FROM jupyter/scipy-notebook
-# FROM condaforge/mambaforge
+FROM condaforge/mambaforge
 
-RUN mamba install -y -c conda-forge geemap dash geocube geopandas numpy osmnx pandas plotly rasterio rioxarray scipy Shapely Unidecode xarray pyyaml netcdf4
+USER root
 
-RUN conda create --name predictor --clone base
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y git
 
-# Make RUN commands use the new environment:
-SHELL ["conda", "run", "-n", "predictor", "/bin/bash", "-c"]
+USER $MAMBA_USER
 
-RUN pip install dash-extensions dash_extensions dash_bootstrap_components dash_gif_component dash_unload_component
+COPY --chown=$MAMBA_USER:$MAMBA_USER env.yaml /tmp/env.yaml
 
-# Installing the gcloud cli
-# RUN mamba install -y google-cloud-sdk
+RUN mamba env create -n ursa -f /tmp/env.yaml && mamba clean --all --yes
 
 RUN mkdir app
 WORKDIR app
 COPY . .
 
+RUN mamba run -n ursa pip install --no-dependencies -e .
+
 EXPOSE 8050
 
-CMD [ "conda", "run", "--no-capture-output", "-n", "predictor", "python", "-u", "app.py" ]
+CMD ["mamba", "run", "--no-capture-output", "-n", "ursa", "python", "-u", "app.py"]
