@@ -1,52 +1,53 @@
 import dash
-from dash import html, dcc, callback, Input, Output, State
+import dateutil.parser
+import ee
+
 import dash_bootstrap_components as dbc
-from urllib.parse import unquote
-from pathlib import Path
+import ursa.dynamic_world as udw
 
-from xarray.core.utils import K
-
-from caching_utils import make_cache_dir
-from dynamic_world import plot_map_season, plot_lc_year, plot_lc_time_series, download_map_season
+from components.page import new_page_layout
 from components.text import figureWithDescription
-from components.page import newPageLayout
+from dash import html, dcc, callback, Input, Output, State
+from datetime import datetime, timezone
+from layouts.common import generate_drive_text
+from pathlib import Path
+from shapely.geometry import shape
 
-import datetime
-start_time = None
-
-path_fua = Path('./data/output/cities/')
+path_fua = Path("./data/output/cities/")
 
 dash.register_page(
     __name__,
-    title='URSA',
-    path_template='land-cover/<country>/<city>'
+    title="URSA",
 )
 
-ALERT_TEXT = html.Div(
+MAIN_TEXT = """El mapa muestra la categoría mas común observada en 2022
+        para cada pixel de 10x10 metros.
+        El relieve refleja la certeza del proceso de clasificación,
+        una mayor altura refleja una mayor certidumbre de que el
+        pixel pertnezca a la clase mostrada.
+        Notese que los bordes entre clases presentan mayor
+        incertidumbre. """
+
+ADDITIONAL_TEXT = html.Div(
     [
-        (
-            "En esta pestaña podrás explorar los tipos de cobertura de suelo "
-            "presentes en el área alrededor de tu ciudad. "
-            "Estos datos de cobertura de suelo provienen del proyecto "
-        ),
+        """En esta pestaña podrás explorar los tipos de cobertura de suelo "
+    presentes en el área alrededor de tu ciudad.
+    Estos datos de cobertura de suelo provienen del proyecto """,
+        html.A("Dynamic World", href="https://dynamicworld.app"),
+        " de Google.",
+        html.Br(),
+        """En Dynamic World, las imágenes satelitales Sentinel son
+    procesadas usando un red neuronal para clasificar cada
+    pixel en una de las 9 posibles categorías de suelo.
+    Dynamic World posee datos de cobertura de suelo desde el
+    año 2016.""",
+        html.Br(),
+        "Las correspondencias y colores canónicos de cada etiqueta pueden revisarse en el siguiente ",
         html.A(
-            "Dynamic World",
-            href="https://dynamicworld.app"
+            "enlace",
+            href="https://developers.google.com/earth-engine/datasets/catalog/GOOGLE_DYNAMICWORLD_V1#bands",
         ),
-        (
-            " de Google. "
-            "En Dynamic World, las imágenes satelitales Sentinel son "
-            "procesadas usando un red neuronal para clasificar cada "
-            "pixel en una de las 9 posibles categorías de suelo. "
-            "Dynamic World posee datos de cobertura de suelo desde el "
-            "año 2016."
-        ),
-        ("Las correspondencias y colores canónicos de cada etiqueta pueden revisarse en el siguiente "),
-        html.A(
-                "enlace",
-                href="https://developers.google.com/earth-engine/datasets/catalog/GOOGLE_DYNAMICWORLD_V1#bands"
-            ),
-            (":"),
+        ":",
         html.Ul(
             [
                 html.Li("0: Agua"),
@@ -58,103 +59,31 @@ ALERT_TEXT = html.Div(
                 html.Li("6: Construido"),
                 html.Li("7: Baldío"),
                 html.Li("8: Nieve y hielo"),
-                
             ]
-        )
+        ),
     ]
 )
 
-DRIVE_TEXT = html.Div(
-        html.P([
-            html.H4('Descarga de Datos'),
-            html.H5('¿Cómo se realiza la descarga?'),
-            "La información procesada en la sección Cobertura de Suelo se realiza principalmente mediante de Google Earth Engine. De esta manera, la descarga de los datos empleados, debido a su tamaño, es a través del Google Drive de la cuenta empleada en la autenticación de Google Earth Engine.",
-            html.Br(),
-            html.Br(),
-            html.H5('¿Dónde se descarga el archivo?'),
-            "La descarga del raster con nombre 'dynamic_world_raster.tif' se hará al directorio raíz del Google Drive de la cuenta empleada.",
-            html.Br(),
-            html.Br(),
-            html.H5('¿Cuales son los estados de la descarga?'),
-            "Los estados de la tarea de descarga son los siguientes:",
-            html.Ul(
-        [
-            html.Li(
-                "UNSUBMITTED, tarea pendiente en el cliente."
-            ),
-            html.Li(
-                "READY, tarea en cola en el servidor."
-            ),
-            html.Li(
-                "RUNNING, tarea en ejecución."
-            ),
-            html.Li(
-                "COMPLETED, tarea completada exitosamente."
-            ),
-            html.Li(
-                "FAILED, tarea completada con errores."
-            ),
-            html.Li(
-                "CANCEL_REQUESTED, tarea ejecución pero se ha solicitado su cancelación."
-            ),
-            html.Li(
-                "CANCELED, tarea cancelada."
-            ),
-        ]
-            ),
-            html.Br(),
-            html.Br(),
-            html.H5('¿Es posible hacer descargas simultáneas?'),
-            "URSA únicamente permite la ejecución de una tarea de descarga a la vez. Espere a que se complete la tarea antes de crear una nueva. Esto puede tomar varios minutos."
-        ]
-        )
-        )
+maps = html.Div(
+    [
+        dcc.Graph(style={"height": "100%"}, id="cover-map-1"),
+    ],
+    style={"height": "100%"},
+)
 
-
-globalCountry = ''
-globalCity = ''
-globalTask = None
-
-def layout(country='', city=''):
-
-    if not city or not country:
-        return 'No city selected'
-
-    global globalCountry
-    global globalCity
-
-    globalTask = None
-    country = unquote(country)
-    
-    city = unquote(city)
-    
-    path_cache : Path = make_cache_dir(f'./data/cache/{country}-{city}')
-
-    globalCountry = country
-    globalCity = city
-
-    # Load figures
-    map1 = plot_map_season(country, city, path_fua,
-                           season='Qall', year=2022)
-    lines1 = plot_lc_year(country, city, path_fua, path_cache)
-    lines2 = plot_lc_time_series(country, city, path_fua, path_cache)
-
-    maps = html.Div([
-        dcc.Graph(figure=map1, style={"height" : "100%"}),
-    ], style={"height": "100%"})
-
-    lines = html.Div([
+lines = html.Div(
+    [
         figureWithDescription(
-            dcc.Graph(figure=lines1),
+            dcc.Graph(id="cover-lines-1"),
             html.P(
                 "El gráfico de barras muestra las superficie en kilómetros "
                 "cuadrados que le corresponde a cada clase de cobertura en "
                 "el año 2022."
             ),
-            'Superficie por Categoría de Uso de Suelo (Año 2022)'
+            "Superficie por Categoría de Uso de Suelo (Año 2022)",
         ),
         figureWithDescription(
-            dcc.Graph(figure=lines2),
+            dcc.Graph(id="cover-lines-2"),
             html.P(
                 "El gráfico de líneas muestra la evolución en el tiempo "
                 "de la cantidad de superficie de cada clase de cobertura "
@@ -163,119 +92,172 @@ def layout(country='', city=''):
                 "o varias clases específicas para observar más claramente "
                 "su comportamiento en el tiempo."
             ),
-            'Cobertura de suelo'
+            "Cobertura de suelo",
         ),
-    ], style={"overflow": "scroll", "height": "82vh"})
-
-    map_info_alert = dbc.Alert([
-        html.H4('Clasificación del Territorio por Categoría de Uso de Suelo (Año 2022)'),
-        """El mapa muestra la categoría mas común observada en 2022
-        para cada pixel de 10x10 metros.
-                El relieve refleja la certeza del proceso de clasificación,
-                una mayor altura refleja una mayor certidumbre de que el
-                pixel pertnezca a la clase mostrada. "
-                Notese que los bordes entre clases presentan mayor
-                incertidumbre. """,
-    ], color='secondary')
-    
-    alert = dbc.Alert(ALERT_TEXT, color='light')
-
-    download_info = dbc.Alert(DRIVE_TEXT, color = 'secondary')
-
-    download_button_rasters = html.Div([
-            dbc.Button('Descarga a Google Drive',
-                        id='btn-rasters',
-                        color='light'),
-            html.Span(
-              "?",
-              id="tooltip-target02",
-              style={
-                     "textAlign": "center", 
-                     "color": "white",
-                     "height": 25,
-                     "width": 25,
-                     "background-color": "#bbb",
-                     "border-radius": "50%",
-                     "display": "inline-block"
-
-              }),
-            dbc.Tooltip(
-                "Descarga los archivos Raster a Google Drive. En este caso la información es procesada en Google Earth Engine y la única opción de descarga es al directorio raíz de tu Google Drive.",
-                target="tooltip-target02",
-            ),
-            html.Span(id="btn-rasters-output", style={"verticalAlign": "middle"}),
-            dcc.Interval(id='interval-component', interval=10000, n_intervals=0, disabled=True),
-    ])
-
-    tabs = [
-        dbc.Tab(
-            lines,
-            label="Gráficas",
-            id="tab-plots",
-            tab_id="tabPlots",
-        ),
-        dbc.Tab(
-            html.Div([map_info_alert, alert]),
-            label="Info",
-            id="tab-info",
-            tab_id="tabInfo",
-        ),
-        dbc.Tab(
-            html.Div([download_info, download_button_rasters]),
-            label="Descargables",
-            id="tab-download",
-            tab_id="tabDownload",
-        )
-    ]
-
-    layout = newPageLayout(maps, tabs)
-
-    return layout
-
-"""
-@callback(
-    Output('btn-rasters-output', 'children'),
-    Input('btn-rasters', 'n_clicks'),
-    prevent_initial_call=True
-    )
-def download_rasters(n_clicks):
-    global globalTask
-
-    if globalTask is None: 
-        globalTask = download_map_season(globalCountry, globalCity, path_fua,'Qall', 2022)
-
-    return "Status de la Descarga: {}".format(globalTask.status()["state"])
-"""
-
-@callback(
-    Output('btn-rasters-output', 'children'),
-    Output('interval-component', 'disabled'),
-    Input('btn-rasters', 'n_clicks'),
-    Input('interval-component', 'n_intervals'),
-    State('interval-component', 'disabled'),
-    State('btn-rasters', 'n_clicks'),
-    State('interval-component', 'n_intervals'),
-    prevent_initial_call=True
+    ],
+    style={"overflow": "scroll", "height": "82vh"},
 )
-def download_rasters(n_clicks, n_intervals, current_interval_disabled, btn_clicks, interval_intervals):
-    global globalTask, start_time, interval_disabled
-    
-    if n_clicks is None:
-        return dash.no_update, dash.no_update
 
-    if globalTask is None:
-        globalTask = download_map_season(globalCountry, globalCity, path_fua, 'Qall', 2022)
-        start_time = datetime.datetime.now()
-        interval_disabled = False
+main_info = dbc.Card(
+    dbc.CardBody(
+        [
+            html.H4(
+                "Clasificación del Territorio por Categoría de Uso de Suelo (Año 2022)"
+            ),
+            MAIN_TEXT,
+        ]
+    ),
+    class_name="main-info",
+)
 
-    status = globalTask.status()["state"]
-    current_time = datetime.datetime.now()
-    time_elapsed = (current_time - start_time).total_seconds()
-    print(status)
-    if status in ("UNSUBMITTED", "READY", "RUNNING", "CANCEL_REQUESTED"):
-        return f"Status de la Descarga: {status}, Tiempo transcurrido: {int(time_elapsed)} segundos", False
-    elif status in ("COMPLETED", "FAILED", "CANCELED"):
-        interval_disabled = True
-        return f"Status de la Descarga: {status}, Tiempo transcurrido: {int(time_elapsed)} segundos", True
+additional_info = dbc.Card(dbc.CardBody(ADDITIONAL_TEXT), class_name="supp-info")
+
+tabs = [
+    dbc.Tab(
+        lines,
+        label="Gráficas",
+        id="tab-plots",
+        tab_id="tabPlots",
+    ),
+    dbc.Tab(
+        html.Div([main_info, additional_info]),
+        label="Info",
+        id="tab-info",
+        tab_id="tabInfo",
+    ),
+    dbc.Tab(
+        [
+            generate_drive_text(
+                how="La información procesada en la sección Cobertura de Suelo se realiza principalmente mediante de Google Earth Engine. De esta manera, la descarga de los datos empleados, debido a su tamaño, es a través del Google Drive de la cuenta empleada en la autenticación de Google Earth Engine.",
+                where="La descarga del raster con nombre 'dynamic_world_raster.tif' se hará al directorio raíz del Google Drive de la cuenta empleada.",
+            ),
+            dbc.Container(
+                [
+                    dbc.Row(
+                        [
+                            dbc.Col(
+                                dbc.Button(
+                                    "Descarga rasters",
+                                    id="lc-btn-download-rasters",
+                                    color="light",
+                                    title="Descarga los archivos Raster a Google Drive. En este caso la información es procesada en Google Earth Engine y la única opción de descarga es al directorio raíz de tu Google Drive.",
+                                ),
+                                width=4,
+                            ),
+                            dbc.Col(
+                                dbc.Button(
+                                    "Cancelar ejecución",
+                                    id="lc-btn-stop-task",
+                                    color="danger",
+                                    style={"display": "none"},
+                                ),
+                                width=4,
+                            ),
+                        ],
+                        justify="center",
+                    ),
+                    dbc.Row(
+                        dbc.Col(html.Span(id="lc-span-rasters-output"), width=3),
+                        justify="center",
+                    ),
+                ],
+            ),
+        ],
+        label="Descargables",
+    ),
+]
+
+layout = new_page_layout(
+    maps,
+    tabs,
+    stores=[
+        dcc.Store(id="lc-store-task-name"),
+        dcc.Interval(id="lc-interval", interval=10000, n_intervals=0, disabled=True),
+        dcc.Location(id="lc-location"),
+    ],
+)
+
+
+@callback(
+    Output("lc-interval", "disabled", allow_duplicate=True),
+    Output("lc-store-task-name", "data"),
+    Output("lc-btn-stop-task", "style", allow_duplicate=True),
+    Output("lc-span-rasters-output", "children", allow_duplicate=True),
+    Input("lc-btn-download-rasters", "n_clicks"),
+    State("global-store-bbox-latlon", "data"),
+    State("lc-store-task-name", "data"),
+    prevent_initial_call=True,
+)
+def start_download(n_clicks, bbox_latlon, task_name):
+    if n_clicks is None or n_clicks == 0:
+        return dash.no_update, dash.no_update, dash.no_update
+
+    if task_name is None:
+        bbox_latlon = shape(bbox_latlon)
+        task = udw.download_map_season(bbox_latlon, "Qall", 2022)
+        status = task.status()
+        return False, status["name"], {"display": "block"}, "Iniciando descarga"
     else:
-        return f"Status de la Descarga: {status}, Tiempo transcurrido: {int(time_elapsed)} segundos", interval_disabled
+        return dash.no_update, dash.no_update, dash.no_update, dash.no_update
+
+
+@callback(
+    Output("lc-span-rasters-output", "children", allow_duplicate=True),
+    Input("lc-interval", "n_intervals"),
+    State("lc-store-task-name", "data"),
+    prevent_initial_call=True,
+)
+def download_rasters(n_intervals, task_name):
+    task_metadata = ee.data.getOperation(task_name)["metadata"]
+    state = task_metadata["state"]
+
+    start_time = task_metadata["createTime"]
+    start_time = dateutil.parser.isoparse(start_time)
+
+    current_time = datetime.now(timezone.utc)
+    time_elapsed = (current_time - start_time).total_seconds()
+
+    if state in ("UNSUBMITTED", "READY", "RUNNING", "CANCEL_REQUESTED"):
+        return f"Status de la Descarga: {state}, Tiempo transcurrido: {int(time_elapsed)} segundos"
+    elif state in ("COMPLETED", "FAILED", "CANCELLED"):
+        return f"Status de la Descarga: {state}, Tiempo transcurrido: {int(time_elapsed)} segundos"
+
+
+@callback(
+    Output("cover-map-1", "figure"),
+    Output("cover-lines-1", "figure"),
+    Output("cover-lines-2", "figure"),
+    Output("lc-location", "pathname"),
+    Input("global-store-hash", "data"),
+    Input("global-store-bbox-latlon", "data"),
+    Input("global-store-fua-latlon", "data"),
+)
+def generate_plots(id_hash, bbox_latlon, fua_latlon):
+    if id_hash is None:
+        return [dash.no_update] * 3 + ["/"]
+
+    path_cache = Path(f"./data/cache/{id_hash}")
+
+    bbox_latlon = shape(bbox_latlon)
+    fua_latlon = shape(fua_latlon)
+
+    map1 = udw.plot_map_season(
+        bbox_latlon, fua_latlon.centroid, season="Qall", year=2022
+    )
+    lines1 = udw.plot_lc_year(bbox_latlon, path_cache)
+    lines2 = udw.plot_lc_time_series(bbox_latlon, path_cache)
+
+    return map1, lines1, lines2, dash.no_update
+
+
+@callback(
+    Output("lc-btn-stop-task", "style"),
+    Output("lc-interval", "disabled"),
+    Output("lc-span-rasters-output", "children"),
+    Input("lc-btn-stop-task", "n_clicks"),
+    State("lc-store-task-name", "data"),
+    prevent_initial_call=True,
+)
+def stop_task(n_clicks, task_id):
+    ee.data.cancelOperation(task_id)
+    return {"display": "none"}, True, "Descarga cancelada"

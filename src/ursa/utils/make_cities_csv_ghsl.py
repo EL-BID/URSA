@@ -5,23 +5,27 @@ import geopandas as gpd
 
 
 def main():
-    data_path = '../data/'
+    data_path = "../data/"
 
-    ifile_path_1 = (data_path +
-                    'input/GHS_STAT_UCDB2015MT_GLOBE_R2019A/'
-                    'GHS_STAT_UCDB2015MT_GLOBE_R2019A_V1_2.gpkg')
+    ifile_path_1 = (
+        data_path + "input/GHS_STAT_UCDB2015MT_GLOBE_R2019A/"
+        "GHS_STAT_UCDB2015MT_GLOBE_R2019A_V1_2.gpkg"
+    )
 
-    ifile_path_2 = (data_path +
-                    'input/GHS_FUA_UCDB2015_GLOBE_R2019A_54009_1K_V1_0/'
-                    'GHS_FUA_UCDB2015_GLOBE_R2019A_54009_1K_V1_0.gpkg')
+    ifile_path_2 = (
+        data_path + "input/GHS_FUA_UCDB2015_GLOBE_R2019A_54009_1K_V1_0/"
+        "GHS_FUA_UCDB2015_GLOBE_R2019A_54009_1K_V1_0.gpkg"
+    )
 
-    ofile_path_1 = (data_path + 'output/cities/cities_uc.gpkg')
-    ofile_path_2 = (data_path + 'output/cities/cities_fua.gpkg')
+    ofile_path_1 = data_path + "output/cities/cities_uc.gpkg"
+    ofile_path_2 = data_path + "output/cities/cities_fua.gpkg"
 
     gdf_uc = gpd.read_file(ifile_path_1)
     gdf_fua = gpd.read_file(ifile_path_2)
     gdf_fua = gdf_fua.to_crs(gdf_uc.crs)
-    gdf_fua.UC_IDs = gdf_fua.UC_IDs.str.split(';').apply(lambda x: [int(xx) - 1 for xx in x])
+    gdf_fua.UC_IDs = gdf_fua.UC_IDs.str.split(";").apply(
+        lambda x: [int(xx) - 1 for xx in x]
+    )
 
     uc_names = []
     uc_geos = []
@@ -54,22 +58,23 @@ def main():
         uc_regions.append(uc_region)
 
     ghsl_fua = gdf_fua.copy()
-    ghsl_fua['UC_name'] = uc_names
-    ghsl_fua['UC_geo'] = uc_geos
-    ghsl_fua['UC_region_L1'] = uc_regions_L1
-    ghsl_fua['UC_region'] = uc_regions
+    ghsl_fua["UC_name"] = uc_names
+    ghsl_fua["UC_geo"] = uc_geos
+    ghsl_fua["UC_region_L1"] = uc_regions_L1
+    ghsl_fua["UC_region"] = uc_regions
     ghsl_fua = ghsl_fua[ghsl_fua.UC_p_2015 > 100000]
-    region = 'Latin America and the Caribbean'
+    region = "Latin America and the Caribbean"
     ghsl_fua = ghsl_fua[ghsl_fua.UC_region_L1 == region]
-    ghsl_fua.drop(columns=['UC_region_L1'], axis=1, inplace=True)
+    ghsl_fua.drop(columns=["UC_region_L1"], axis=1, inplace=True)
 
-    col_dict = {'Cntry_name': 'country', 'UC_region': 'region',
-                'eFUA_name': 'city'}
+    col_dict = {"Cntry_name": "country", "UC_region": "region", "eFUA_name": "city"}
     ghsl_fua.rename(columns=col_dict, inplace=True)
 
-    ghsl_fua.drop(columns=['UC_geo', 'UC_IDs']).to_file(ofile_path_2)
-    ghsl_fua.drop(columns=['geometry', 'UC_IDs']).rename(columns={'UC_geo': 'geometry'}).set_geometry('geometry').to_file(ofile_path_1)
+    ghsl_fua.drop(columns=["UC_geo", "UC_IDs"]).to_file(ofile_path_2)
+    ghsl_fua.drop(columns=["geometry", "UC_IDs"]).rename(
+        columns={"UC_geo": "geometry"}
+    ).set_geometry("geometry").to_file(ofile_path_1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

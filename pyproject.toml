@@ -1,0 +1,43 @@
+[tool.poetry]
+name = "ursa"
+version = "0.1.0"
+description = ""
+authors = []
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.12"
+dash = "^2.9.3"
+geemap = "^0.20.6"
+geocube = "^0.4.0"
+geopandas = "^0.12.2"
+osmnx = "^1.3.0"
+pandas = "^2.0.1"
+plotly = "^5.14.1"
+rasterio = "^1.3.6"
+rioxarray = "^0.14.1"
+scipy = "^1.10.1"
+shapely = "^2.0.1"
+xarray = "^2023.4.2"
+netcdf4 = "~1.5"
+dash-bootstrap-components = "^1.4.1"
+gdal = [
+    { url = "https://download.lfd.uci.edu/pythonlibs/archived/GDAL-3.4.3-cp310-cp310-win_amd64.whl", platform = "win64"},
+    { url = "https://download.lfd.uci.edu/pythonlibs/archived/GDAL-3.4.3-cp310-cp310-win_amd64.whl", platform = "win32"},
+    { version = "3.4.3", platform = "linux", source = "pypi" }
+]
+sleuth-sklearn = {git = "https://github.com/RodolfoFigueroa/sleuth-sklearn/"}
+scikit-learn = "^1.2.2"
+openpyxl = "^3.1.2"
+dash-leaflet = "1.0.9rc1"
+python-dateutil = "^2.8.2"
+
+[tool.poetry.scripts]
+ursa-make-ghsl = "ursa.make_cities_csv_ghsl:main"
+
+[tool.poetry.group.dev.dependencies]
+pre-commit = "^3.5.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
