@@ -94,7 +94,10 @@ def plot_coverage(lc_df, title):
     lc_df = lc_df[column_names_sorted]
 
     # "Urban" se convierte en la primera columna
-    lc_df = lc_df[["Urban"] + [col for col in lc_df.columns if col != "Urban"]]
+    lc_df = lc_df[
+        ["Urban"]
+        + [col for col in lc_df.columns if (col != "Urban") and (col != "Year")]
+    ]
 
     fig = px.area(lc_df, color_discrete_map=WORLD_COVER_COLOR, markers=True)
 
@@ -332,7 +335,9 @@ def summary(id_hash, urban_rasters, years):
         tabs.append(tab)
 
         # Coverage
-        estimate_coverage = load_or_calculate_coverage(worldcover, grids, start_year, path_cache)
+        estimate_coverage = load_or_calculate_coverage(
+            worldcover, grids, start_year, path_cache
+        )
         fig_coverage = plot_coverage(estimate_coverage, f"Expansión {mode}")
         coverage_graphs.append(dcc.Graph(figure=fig_coverage))
 
@@ -347,64 +352,31 @@ def summary(id_hash, urban_rasters, years):
     base = df.loc[(df["Año"] == 2020) & (df["Categoría"] == "Observaciones")][
         "Porcentaje de urbanización"
     ].values[0]
-    prediccion_inercial = df.loc[
-        (df["Año"] == 2050) & (df["Categoría"] == "Expansión inercial")
-    ]["Porcentaje de urbanización"].values[0]
-    prediccion_acelerada = df.loc[
-        (df["Año"] == 2050) & (df["Categoría"] == "Expansión acelerada")
-    ]["Porcentaje de urbanización"].values[0]
-    prediccion_controlada = df.loc[
-        (df["Año"] == 2050) & (df["Categoría"] == "Expansión controlada")
-    ]["Porcentaje de urbanización"].values[0]
 
-    card_content_01 = [
-        dbc.CardBody(
-            [
-                html.H5("Expansión Acelerada", className="card-title"),
-                html.P(
-                    f"+{round((prediccion_acelerada - base) * 100, 1)}% vs 2020",
-                    className="card-text",
-                ),
-            ]
-        )
-    ]
-
-    card_content_02 = [
-        dbc.CardBody(
-            [
-                html.H5("Expansión Inercial", className="card-title"),
-                html.P(
-                    f"+{round((prediccion_inercial - base) * 100, 1)}% vs 2020",
-                    className="card-text",
-                ),
-            ]
-        )
-    ]
-
-    card_content_03 = [
-        dbc.CardBody(
-            [
-                html.H5("Expansión Controlada", className="card-title"),
-                html.P(
-                    f"+{round((prediccion_controlada - base) * 100, 1)}% vs 2020",
-                    className="card-text",
-                ),
-            ]
-        )
-    ]
-
-    cards = html.Div(
-        [
-            dbc.Row(
+    columns = []
+    for cat, color in zip(
+        ["inercial", "acelerada", "controlada"], ["danger", "warning", "success"]
+    ):
+        cat = f"Expansión {cat}"
+        prediction = df.loc[(df["Año"] == 2050) & (df["Categoría"] == cat)][
+            "Porcentaje de urbanización"
+        ].values[0]
+        card = dbc.Card(
+            dbc.CardBody(
                 [
-                    dbc.Col(dbc.Card(card_content_01, color="danger", inverse=True)),
-                    dbc.Col(dbc.Card(card_content_02, color="warning", inverse=True)),
-                    dbc.Col(dbc.Card(card_content_03, color="success", inverse=True)),
-                ],
-                className="mb-4",
-            )
-        ]
-    )
+                    html.H5("Expansión Acelerada", className="card-title"),
+                    html.P(
+                        f"+{round((prediction / base) * 100 - 100, 1)}% de área urbanizada 2050 vs. 2020.",
+                        className="card-text",
+                    ),
+                ]
+            ),
+            color=color,
+            inverse=True,
+        )
+        columns.append(card)
+
+    cards = html.Div(dbc.Row(columns, className="mb-4"))
     all_elements = [cards] + coverage_graphs + [dcc.Graph(figure=fig)]
     plot_tab = dbc.Tab(dbc.Card(dbc.CardBody(all_elements)), label="Resumen General")
     tabs = [plot_tab] + tabs
