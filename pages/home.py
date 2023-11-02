@@ -241,7 +241,7 @@ def set_city(n_clicks, country, city):
     id_hash = hash_geometry(bbox_latlon_json)
 
     path_cache = Path(f"./data/cache/{str(id_hash)}")
-    path_cache.mkdir(exist_ok=True)
+    path_cache.mkdir(exist_ok=True, parents=True)
 
     centroid = bbox_latlon.centroid
 
@@ -279,7 +279,7 @@ def set_custom_bbox(n_clicks, geojson, bbox_orig):
     if len(features) == 0:
         id_hash = hash_geometry(bbox_orig)
         path_cache = Path(f"./data/cache/{str(id_hash)}")
-        path_cache.mkdir(exist_ok=True)
+        path_cache.mkdir(exist_ok=True, parents=True)
         return (
             bbox_orig,
             id_hash,
@@ -303,7 +303,7 @@ def set_custom_bbox(n_clicks, geojson, bbox_orig):
 
     id_hash = hash_geometry(bbox_json)
     path_cache = Path(f"./data/cache/{str(id_hash)}")
-    path_cache.mkdir(exist_ok=True)
+    path_cache.mkdir(exist_ok=True, parents=True)
 
     if len(features) == 1:
         return bbox_json, id_hash, dash.no_update, dash.no_update, dash.no_update
