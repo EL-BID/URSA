@@ -74,17 +74,6 @@ def calculate_coverage(worldcover, sleuth_predictions, start_year):
     result_df = result_df * 100
     return result_df
 
-
-def load_or_calculate_coverage(worldcover, sleuth_predictions, start_year, path_cache):
-    fpath = path_cache / "coverage.csv"
-    if fpath.exists():
-        df = pd.read_csv(fpath)
-    else:
-        df = calculate_coverage(worldcover, sleuth_predictions, start_year)
-        df.to_csv(fpath)
-    return df
-
-
 def plot_coverage(lc_df, title):
     # Eliminamos columnas que tengan cero
     lc_df = lc_df.loc[:, (lc_df != 0).any(axis=0)]
@@ -279,11 +268,6 @@ def summary(id_hash, urban_rasters, years):
     country = props["country"]
     city = props["city"]
 
-    data_modes = {
-        mode: load_sleuth_predictions(path_cache, country, city, mode=mode)
-        for mode in modes
-    }
-
     historical_years = np.array(years)
     historical_grids = np.array(urban_rasters)
 
@@ -295,7 +279,9 @@ def summary(id_hash, urban_rasters, years):
 
     tabs = []
     coverage_graphs = []
-    for mode, grids in data_modes.items():
+    for mode in modes:
+        grids = load_sleuth_predictions(path_cache, country, city, mode=mode)
+
         x_pred = list(range(start_year + 1, start_year + num_years + 1))
         y_pred = [grid.sum() / grid.size for grid in grids]
         z_pred = [f"Expansión {mode}"] * (len(x_pred) + 1)
@@ -330,8 +316,8 @@ def summary(id_hash, urban_rasters, years):
         tabs.append(tab)
 
         # Coverage
-        estimate_coverage = load_or_calculate_coverage(
-            worldcover, grids, start_year, path_cache
+        estimate_coverage = calculate_coverage(
+            worldcover, grids, start_year, 
         )
         fig_coverage = plot_coverage(estimate_coverage, f"Expansión {mode}")
         coverage_graphs.append(dcc.Graph(figure=fig_coverage))
