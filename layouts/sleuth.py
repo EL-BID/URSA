@@ -94,12 +94,11 @@ def plot_coverage(lc_df, title):
     lc_df = lc_df[column_names_sorted]
 
     # "Urban" se convierte en la primera columna
-    lc_df = lc_df[
-        ["Urban"]
-        + [col for col in lc_df.columns if (col != "Urban") and (col != "Year")]
-    ]
+    wanted_cols = ["Urban"] + [col for col in lc_df.columns if (col != "Urban") and (col != "Year")]
+    lc_df = lc_df[wanted_cols]
+    lc_df["Año"] = list(range(2021, 2071))
 
-    fig = px.area(lc_df, color_discrete_map=WORLD_COVER_COLOR, markers=True)
+    fig = px.area(lc_df, x="Año", y=wanted_cols, color_discrete_map=WORLD_COVER_COLOR, markers=True)
 
     fig.update_layout(
         title=title,
@@ -110,10 +109,6 @@ def plot_coverage(lc_df, title):
     )
 
     fig.update_traces(hovertemplate="%{y:.2f}<extra></extra>")
-
-    fig.for_each_trace(
-        lambda t: t.update(name=t.name.split()[0])  # Usar solo el nombre de la columna
-    )
 
     return fig
 
@@ -355,26 +350,26 @@ def summary(id_hash, urban_rasters, years):
 
     columns = []
     for cat, color in zip(
-        ["inercial", "acelerada", "controlada"], ["danger", "warning", "success"]
+        ["acelerada", "inercial", "controlada"], ["danger", "warning", "success"]
     ):
         cat = f"Expansión {cat}"
-        prediction = df.loc[(df["Año"] == 2050) & (df["Categoría"] == cat)][
+        prediction = df.loc[(df["Año"] == 2070) & (df["Categoría"] == cat)][
             "Porcentaje de urbanización"
         ].values[0]
-        card = dbc.Card(
+        col = dbc.Col(dbc.Card(
             dbc.CardBody(
                 [
-                    html.H5("Expansión Acelerada", className="card-title"),
+                    html.H5(cat.title(), className="card-title"),
                     html.P(
-                        f"+{round((prediction / base) * 100 - 100, 1)}% de área urbanizada 2050 vs. 2020.",
+                        f"+{round(((prediction - base)/ base) * 100, 1)}% de área urbanizada 2070 vs. 2020.",
                         className="card-text",
                     ),
                 ]
             ),
             color=color,
             inverse=True,
-        )
-        columns.append(card)
+        ))
+        columns.append(col)
 
     cards = html.Div(dbc.Row(columns, className="mb-4"))
     all_elements = [cards] + coverage_graphs + [dcc.Graph(figure=fig)]
