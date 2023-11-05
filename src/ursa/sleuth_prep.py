@@ -87,8 +87,7 @@ def prep_rasters(bbox_mollweide, path_cache):
     geocube = bbox_to_geocube(bbox_latlon, path_cache, dou_xr)
     roads, *_ = load_roads(geocube)
 
-    # Join all arrays into a xarray data_array and store in disk
-    # grids = [dou_xr, slope_xr, roads, road_i, road_j, road_dist, excluded_xr]
+    np.save(path_cache / "years", urban_years)
     np.save(path_cache / "urban", dou_xr.values)
     np.save(path_cache / "roads", roads.values)
     np.save(path_cache / "slope", slope_xr.values)
