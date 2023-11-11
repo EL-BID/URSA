@@ -37,6 +37,7 @@ ursa-make-ghsl = "ursa.make_cities_csv_ghsl:main"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.5.0"
+ipykernel = "^6.26.0"
 
 [build-system]
 requires = ["poetry-core"]

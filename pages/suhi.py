@@ -5,7 +5,10 @@ import ee
 import dash_bootstrap_components as dbc
 import pandas as pd
 import ursa.heat_islands as ht
+import ursa.plots.heat_islands as pht
 import ursa.utils.geometry as ug
+import ursa.utils.raster as ru
+import ursa.world_cover as wc
 
 from components.text import figureWithDescription
 from components.page import new_page_layout
@@ -639,29 +642,33 @@ def generate_maps(id_hash, bbox_latlon, fua_latlon, uc_latlon):
     bbox_latlon = shape(bbox_latlon)
     fua_latlon = shape(fua_latlon)
     uc_latlon = shape(uc_latlon)
+    bbox_ee = ru.bbox_to_ee(bbox_latlon)
+
+    start_date, end_date = ht.date_format(SEASON, YEAR)
 
     try:
-        temp_map = ht.plot_cat_map(
-            bbox_latlon, fua_latlon.centroid, path_cache, SEASON, YEAR
+        lst, proj = ht.get_lst(bbox_ee, start_date, end_date)
+
+        lc, masks = wc.get_cover_and_masks(bbox_ee, proj)
+
+        img_cat = ht.get_cat_suhi(bbox_ee, start_date, end_date, masks, path_cache)
+        df_t_areas = ht.load_or_get_t_areas(bbox_ee, img_cat, masks, path_cache)
+        df_land_usage = ht.load_or_get_land_usage_df(bbox_ee, img_cat, path_cache)
+
+        temp_map = pht.plot_cat_map(
+            bbox_ee, fua_latlon.centroid, img_cat
         )
-    except Exception:
+        areas_plot = pht.plot_temp_areas(df_t_areas)
+        temps_by_lc_plot = pht.plot_temp_by_lc(df_land_usage)
+    except Exception as e:
         temp_map = dash.no_update
-
-    try:
-        areas_plot = ht.plot_temp_areas(bbox_latlon, path_cache, SEASON, YEAR)
-    except Exception:
         areas_plot = dash.no_update
+        temps_by_lc_plot = dash.no_update        
 
-    try:
-        temps_by_lc_plot = ht.plot_temp_by_lc(bbox_latlon, path_cache, SEASON, YEAR)
-    except Exception:
-        temps_by_lc_plot = dash.no_update
-
-    radial_temp_plot = ht.plot_radial_temperature(
-        bbox_latlon, uc_latlon, path_cache, SEASON, YEAR
-    )
-
-    radial_lc_plot = ht.plot_radial_lc(bbox_latlon, uc_latlon, path_cache, SEASON, YEAR)
+    df_f, df_lc = ht.load_or_get_radial_distributions(bbox_latlon, uc_latlon, start_date, end_date, path_cache)
+    
+    radial_temp_plot = pht.plot_radial_temperature(df_f)
+    radial_lc_plot = pht.plot_radial_lc(df_lc)
 
     return temp_map, areas_plot, temps_by_lc_plot, radial_temp_plot, radial_lc_plot
 

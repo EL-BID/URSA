@@ -19,7 +19,7 @@ from scipy.spatial import KDTree
 
 def load_or_prep_rasters(bbox_mollweide, path_cache):
     all_exist = True
-    for path in ["urban", "roads", "slope", "excluded"]:
+    for path in ["urban", "roads", "slope", "excluded", "years"]:
         full_path = path_cache / f"{path}.npy"
         all_exist &= full_path.exists()
 
