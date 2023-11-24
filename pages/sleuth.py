@@ -1668,24 +1668,14 @@ def update_selects(years):
 def update_coefficient_stores(id_hash):
     id_hash = str(id_hash)
 
-    with open("./data/output/cities/city_coefficients.json", "r", encoding="utf8") as f:
+    with open("./data/output/cities/coefficients_by_hash.json", "r", encoding="utf8") as f:
         coefficients = json.load(f)
 
-    with open(
-        "./data/output/cities/city_hashes_inverse.json", "r", encoding="utf8"
-    ) as f:
-        city_hashes_inverse = json.load(f)
-
-    country, city = city_hashes_inverse[id_hash]
-
     found_coefficients = {}
-    for field in sl.FIELDS:
-        if country in coefficients and city in coefficients[country]:
-            coef = coefficients[country][city][field]
-        else:
-            coef = 1
-
-        found_coefficients[field] = coef
+    if id_hash in coefficients:
+        found_coefficients = coefficients[id_hash]
+    else:
+        found_coefficients = {f: 1 for f in sl.FIELDS}
 
     row_orig = sl.create_parameter_row(0, parameters=found_coefficients)
     row_accel = sl.create_parameter_row(

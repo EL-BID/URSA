@@ -188,9 +188,9 @@ def create_parameter_row(idx, parameters):
     return dbc.Row(cols, class_name="mb-2", id={"type": "row-parameters", "index": idx})
 
 
-def download_sleuth_predictions(path_cache, country, city, mode="inercial"):
+def download_sleuth_predictions(path_cache, id_hash, mode):
     bucket = "tec-expansion-urbana-p"
-    local_filename = f"{country}_{city}_{mode}.npy"
+    local_filename = f"{mode}.npy"
 
     modes = {"inercial": "normal", "acelerada": "fast", "controlada": "slow"}
 
@@ -200,7 +200,7 @@ def download_sleuth_predictions(path_cache, country, city, mode="inercial"):
             print(f"El archivo {local_filename} ya está descargado.")
             return
 
-        url = f"http://{bucket}.s3.amazonaws.com/SLEUTH_predictions/{modes[mode]}/{country}/{city}.npy"
+        url = f"http://{bucket}.s3.amazonaws.com/SLEUTH_predictions/{id_hash}/{modes[mode]}.npy"
         r = requests.get(url, allow_redirects=True)
 
         if r.status_code == 200:
@@ -211,14 +211,14 @@ def download_sleuth_predictions(path_cache, country, city, mode="inercial"):
             print(f"Error al descargar el archivo. Código de estado: {r.status_code}")
 
 
-def load_sleuth_predictions(path_cache, country, city, mode="inercial"):
-    local_filename = f"{country}_{city}_{mode}.npy"
+def load_sleuth_predictions(path_cache, id_hash, mode):
+    local_filename = f"{mode}.npy"
 
     # Verifica si el archivo ya existe en el sistema
     if os.path.exists(path_cache / local_filename):
         print(f"El archivo {local_filename} ya está descargado.")
     else:
-        download_sleuth_predictions(path_cache, country, city, mode=mode)
+        download_sleuth_predictions(path_cache, id_hash, mode)
 
     return np.load(path_cache / local_filename)
 
@@ -260,14 +260,6 @@ def summary(id_hash, urban_rasters, years):
     modes = ["inercial", "acelerada", "controlada"]
     id_hash = str(id_hash)
 
-    with open(
-        "./data/output/cities/city_hashes_inverse.json", "r", encoding="utf8"
-    ) as f:
-        city_hashes_inverse = json.load(f)
-    props = city_hashes_inverse[id_hash]
-    country = props["country"]
-    city = props["city"]
-
     historical_years = np.array(years)
     historical_grids = np.array(urban_rasters)
 
@@ -280,7 +272,7 @@ def summary(id_hash, urban_rasters, years):
     tabs = []
     coverage_graphs = []
     for mode in modes:
-        grids = load_sleuth_predictions(path_cache, country, city, mode=mode)
+        grids = load_sleuth_predictions(path_cache, id_hash, mode=mode)
 
         x_pred = list(range(start_year + 1, start_year + num_years + 1))
         y_pred = [grid.sum() / grid.size for grid in grids]
@@ -314,12 +306,12 @@ def summary(id_hash, urban_rasters, years):
             label=f"Expansión {mode}",
         )
         tabs.append(tab)
-
         # Coverage
         estimate_coverage = calculate_coverage(
             worldcover, grids, start_year, 
         )
         fig_coverage = plot_coverage(estimate_coverage, f"Expansión {mode}")
+        # fig_coverage.write_image(f"./test/{mode}.eps", width=1200, height=600, scale=1.5)
         coverage_graphs.append(dcc.Graph(figure=fig_coverage))
 
     df = pd.DataFrame(
@@ -327,6 +319,7 @@ def summary(id_hash, urban_rasters, years):
     )
     fig = px.line(df, x="Año", y="Porcentaje de urbanización", color="Categoría")
     fig.update_yaxes(tickformat=",.0%")
+    # fig.write_image("./test/lines.eps", width=1200, height=600, scale=1.5)
 
     ## Cambio Porcentual por Escenario
 
