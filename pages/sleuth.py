@@ -35,7 +35,7 @@ RASTER_FIELD_MAP = {
     "urban": "Urbano",
 }
 
-path_fua = Path("./data/output/cities/")
+PATH_CACHE = Path("./data/cache")
 
 dash.register_page(
     __name__,
@@ -903,16 +903,11 @@ for field in sl.FIELDS:
     stores_coefficients.append(store)
 
 stores_attrs = []
-for field in RASTER_FIELDS:
-    s = dcc.Store(id={"type": "memory-attrs", "field": field})
-    stores_attrs.append(s)
-
 stores_rasters = []
 for field in RASTER_FIELDS:
-    store_1 = dcc.Store(id={"type": "memory-raster", "field": field})
-    store_2 = dcc.Store(id={"type": "memory-orig-raster", "field": field})
-    stores_rasters.append(store_1)
-    stores_rasters.append(store_2)
+    stores_attrs.append(dcc.Store(id={"type": "memory-attrs", "field": field}))
+    stores_rasters.append(dcc.Store(id={"type": "memory-raster", "field": field}))
+    
 
 all_stores = (
     stores_coefficients
@@ -944,6 +939,7 @@ layout = html.Div(
     Output({"type": "val-calibration", "field": "stop-year"}, "options"),
     Input({"type": "val-calibration", "field": "start-year"}, "value"),
     State("memory-years", "data"),
+    prevent_initial_call=True
 )
 def update_year_range(start_year, years):
     start_year = int(start_year)
@@ -995,15 +991,23 @@ def raster_to_bytes(data, crs, transform, dtype=rio.int32):
 @callback(
     Output({"type": "download-orig-raster", "field": dash.MATCH}, "data"),
     Input({"type": "btn-download-orig-raster", "field": dash.MATCH}, "n_clicks"),
-    State({"type": "memory-orig-raster", "field": dash.MATCH}, "data"),
-    State("memory-orig-attrs", "data"),
+    State("global-store-hash", "data"),
     prevent_initial_call=True,
 )
-def download_orig_raster(n_clicks, data, attrs):
-    data = np.array(data, dtype=rio.int32)
+def download_orig_raster(n_clicks, id_hash):
+    id_hash = str(id_hash)
+
+    triggered_field = dash.callback_context.triggered_id["field"]
+    fpath = PATH_CACHE / id_hash / f"{triggered_field}.npy"
+    data = np.load(fpath)
+    data = data.astype(rio.int32)
+
+    fpath_attrs = PATH_CACHE / id_hash / "attributes.json"
+    with open(fpath_attrs, "r") as f:
+        attrs = json.load(f)
+
     crs = CRS.from_string(attrs["crs"])
     transform = rio.Affine(*attrs["transform"])
-    field = dash.callback_context.triggered_id["field"]
     bytes = raster_to_bytes(data, crs, transform)
     return dcc.send_bytes(bytes, f"{field}.tif")
 
@@ -1034,10 +1038,15 @@ def download_current_raster(n_clicks, data, attrs):
     Output({"type": "raster-alert", "field": dash.MATCH}, "is_open"),
     Output({"type": "raster-alert", "field": dash.MATCH}, "children"),
     Input({"type": "upload-raster", "field": dash.MATCH}, "contents"),
-    State("memory-orig-attrs", "data"),
+    State("global-store-hash", "data"),
     prevent_initial_call=True,
 )
-def update_arrays(uploaded, attrs):
+def update_arrays(uploaded, id_hash):
+    id_hash = str(id_hash)
+    fpath = PATH_CACHE / id_hash / "attributes.json"
+    with open(fpath, "r") as f:
+        attrs = json.load(f)
+
     target_height = attrs["height"]
     target_width = attrs["width"]
 
@@ -1092,11 +1101,17 @@ def update_arrays(uploaded, attrs):
     ),
     Output({"type": "memory-attrs", "field": dash.MATCH}, "data", allow_duplicate=True),
     Input({"type": "btn-restore-raster", "field": dash.MATCH}, "n_clicks"),
-    State({"type": "memory-orig-raster", "field": dash.MATCH}, "data"),
-    State("memory-orig-attrs", "data"),
+    State("global-store-hash", "data"),
     prevent_initial_call=True,
 )
-def restore_raster(n_clicks, arr, attrs):
+def restore_raster(n_clicks, id_hash):
+    id_hash = str(id_hash)
+    triggered_field = dash.callback_context.triggered_id["field"]
+    arr = np.load(PATH_CACHE / id_hash / f"{triggered_field}.npy")
+    
+    with open(PATH_CACHE / id_hash / "attributes.json", "r") as f:
+        attrs = json.load(f)
+
     return arr, attrs
 
 
@@ -1264,10 +1279,14 @@ def update_ranges(c_min, c_max, c_num):
         {"type": "result-prediction-custom-raster", "field": dash.MATCH}, "children"
     ),
     Input({"type": "memory-raster", "field": dash.MATCH}, "data"),
-    State({"type": "memory-orig-raster", "field": dash.MATCH}, "data"),
+    State("global-store-hash", "data"),
 )
-def update_custom_raster_results(current, actual):
-    return ("No", "No") if current == actual else ("Sí", "Sí")
+def update_custom_raster_results(current, id_hash):
+    id_hash = str(id_hash)
+    triggered_field = dash.callback_context.triggered_id["field"]
+    original = np.load(PATH_CACHE / id_hash / f"{triggered_field}.npy")
+
+    return ("No", "No") if np.array_equal(current, original, equal_nan=True) else ("Sí", "Sí")
 
 
 # Actualizar resumen de coeficientes
@@ -1361,7 +1380,7 @@ def run_single_prediction(
     start_idx = all_years.index(start_year)
     seed_grid = np.array(grid_urban[start_idx], dtype=bool)
 
-    grid, means, stds = model.predict(seed_grid, num_years)
+    grid, _, _ = model.predict(seed_grid, num_years)
 
     grid_plot = xr.DataArray(
         data=grid * 100,
@@ -1534,11 +1553,17 @@ def start_prediction(
     Output("download-predicted-rasters", "data"),
     Input({"type": "btn-download-predicted-rasters", "index": dash.ALL}, "n_clicks"),
     State("memory-predicted-rasters", "data"),
-    State("memory-orig-attrs", "data"),
+    State("global-store-hash", "data"),
     prevent_initial_call=True,
 )
-def download_predicted_rasters(n_clicks, data, attrs):
+def download_predicted_rasters(n_clicks, data, id_hash):
+    id_hash = str(id_hash)
+    triggered_field = dash.callback_context.triggered_id["field"]
     triggered_idx = dash.callback_context.triggered_id["index"]
+
+    with open(PATH_CACHE / id_hash / "attributes.json", "r") as f:
+        attrs = json.load(f)
+    
     if n_clicks[triggered_idx] is None:
         return dash.no_update
 
@@ -1643,24 +1668,14 @@ def update_selects(years):
 def update_coefficient_stores(id_hash):
     id_hash = str(id_hash)
 
-    with open("./data/output/cities/city_coefficients.json", "r", encoding="utf8") as f:
+    with open("./data/output/cities/coefficients_by_hash.json", "r", encoding="utf8") as f:
         coefficients = json.load(f)
 
-    with open(
-        "./data/output/cities/city_hashes_inverse.json", "r", encoding="utf8"
-    ) as f:
-        city_hashes_inverse = json.load(f)
-
-    country, city = city_hashes_inverse[id_hash]
-
     found_coefficients = {}
-    for field in sl.FIELDS:
-        if country in coefficients and city in coefficients[country]:
-            coef = coefficients[country][city][field]
-        else:
-            coef = 1
-
-        found_coefficients[field] = coef
+    if id_hash in coefficients:
+        found_coefficients = coefficients[id_hash]
+    else:
+        found_coefficients = {f: 1 for f in sl.FIELDS}
 
     row_orig = sl.create_parameter_row(0, parameters=found_coefficients)
     row_accel = sl.create_parameter_row(
@@ -1688,15 +1703,12 @@ def update_coefficient_stores(id_hash):
         Output({"type": "memory-raster", "field": field}, "data")
         for field in RASTER_FIELDS
     ],
-    *[
-        Output({"type": "memory-orig-raster", "field": field}, "data")
-        for field in RASTER_FIELDS
-    ],
     Input("global-store-hash", "data"),
     Input("global-store-bbox-latlon", "data"),
 )
 def download_data(id_hash, bbox_latlon):
-    path_cache = Path(f"./data/cache/{id_hash}")
+    id_hash = str(id_hash)
+    path_cache = PATH_CACHE / id_hash
 
     bbox_latlon = shape(bbox_latlon)
     bbox_mollweide = ug.reproject_geometry(bbox_latlon, "ESRI:54009").envelope
@@ -1722,4 +1734,4 @@ def download_data(id_hash, bbox_latlon):
 
     summary = sl.summary(id_hash, urban_rasters, years)
 
-    return [years, summary] + out_attributes + out_rasters + out_rasters
+    return [years, summary] + out_attributes + out_rasters

@@ -40,7 +40,9 @@ URSA está a disposición del público general, y sobre todo de equipos de gobie
 3. Iniciar la imagen de docker con el código y dependencias. Desde el directorio
 donde se ha descargado la aplicación, ejecutar:
 
-        docker build -t bid-urban-growth .
+```
+docker build -t bid-urban-growth .
+```
 
 El proceso tomará un buen rato la primera vez, ya que necesitará descargar y
 configurar varios componentes de software. Una vez completada la primera
@@ -50,6 +52,7 @@ puesta en marcha, las subsiguientes serán casi instantáneas.
 
 Para cargar y correr un contenedor con la imagen de docker, se debe ejecutar el siguiente comando:
 
-    python3 launcher.py
+* **En Windows:** `launcher.bat`
+* **En Linux/Mac:** `bash launcher.sh`
 
-Se abrirá una ventana con la dirección http://localhost:8050/ que después de 10 segundos se deberá recargar en caso de que permanezca sin conexión.
+Posteriormente, se deberá abrir una ventana del navegador web y apuntar a la dirección http://localhost:8050/. Por razones de compatibilidad, se recomienda utilizar Firefox o Safari.

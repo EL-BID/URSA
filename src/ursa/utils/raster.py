@@ -67,7 +67,7 @@ def buffer_geometry(bounds, buff):
     return bbox
 
 
-def get_bboxes(city, country, data_path, buff=10):
+def get_bboxes(city, country, data_path, buff=10, square=False):
     """Calculates a bounding box for city in country.
 
     This functions uses data from the GHSL's 2015 definition of urban
@@ -113,9 +113,16 @@ def get_bboxes(city, country, data_path, buff=10):
     bounds = poly.bounds
 
     bbox = buffer_geometry(bounds, buff)
+    bbox = bbox.envelope.iloc[0]
+
+    if square:
+        centroid = bbox.centroid
+        minx, miny, maxx, maxy = bbox.bounds
+        delta = max((maxx - minx), (maxy - miny))
+        bbox = centroid.buffer(delta/2, cap_style=3)
 
     return (
-        bbox.envelope.iloc[0],
+        bbox,
         uc.iloc[0]["geometry"],
         fua.iloc[0]["geometry"],
     )
