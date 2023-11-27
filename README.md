@@ -52,7 +52,7 @@ puesta en marcha, las subsiguientes serán casi instantáneas.
 
 Para cargar y correr un contenedor con la imagen de docker, se debe ejecutar el siguiente comando:
 
-    * **En Windows:** `launcher.bat`
-    * **En Linux/Mac:** `bash launcher.sh`
+* **En Windows:** `launcher.bat`
+* **En Linux/Mac:** `bash launcher.sh`
 
 Posteriormente, se deberá abrir una ventana del navegador web y apuntar a la dirección http://localhost:8050/. Por razones de compatibilidad, se recomienda utilizar Firefox o Safari.
