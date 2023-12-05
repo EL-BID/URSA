@@ -87,6 +87,7 @@ def get_temps(lst, masks):
         res = lst_masked.reduceRegion(
             ee.Reducer.percentile([5]), bestEffort=False, maxPixels=MAX_PIXELS
         ).getInfo()
+        t_dict["rural_old"] = {}
         t_dict["rural_old"]["mean"] = rural_mean
         t_dict["rural"]["mean"] = res["ST_B10"]
 
