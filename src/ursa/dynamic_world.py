@@ -4,6 +4,7 @@ import geemap.plotlymap as geemap
 import geopandas as gpd
 import pandas as pd
 import plotly.express as px
+import ursa.utils.date as du
 import ursa.utils.raster as ru
 
 from shapely.geometry import Polygon
@@ -35,18 +36,6 @@ colors = {
 columns = list(class_dict.values())
 
 
-def date_format(season, year):
-    sdict = {
-        "Q1": [f"{year}-3-1", f"{year}-5-31"],
-        "Q2": [f"{year}-6-1", f"{year}-8-31"],
-        "Q3": [f"{year}-9-1", f"{year}-11-30"],
-        "Q4": [f"{year}-12-1", f"{year + 1}-2-29"],
-        "Qall": [f"{year}-1-1", f"{year}-12-31"],
-    }
-
-    return sdict[season]
-
-
 def plot_map_season(bbox_latlon, fua_latlon_centroid, season, year):
     """Plots Dynamic World temporal composite on map for year and season.
 
@@ -74,7 +63,7 @@ def plot_map_season(bbox_latlon, fua_latlon_centroid, season, year):
 
     bbox_ee = ru.bbox_to_ee(bbox_latlon)
 
-    start_date, end_date = date_format(season, year)
+    start_date, end_date = du.date_format(season, year)
 
     # Filter the Dynamic World NRT collection
     dw_col = ee.ImageCollection("GOOGLE/DYNAMICWORLD/V1")
@@ -184,7 +173,7 @@ def download_map_season(bbox_latlon, season, year):
     }
     bbox_ee = ru.bbox_to_ee(bbox_latlon)
 
-    start_date, end_date = date_format(season, year)
+    start_date, end_date = du.date_format(season, year)
 
     # Filter the Dynamic World NRT collection
     dw_col = ee.ImageCollection("GOOGLE/DYNAMICWORLD/V1")

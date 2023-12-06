@@ -6,6 +6,7 @@ import dash_bootstrap_components as dbc
 import pandas as pd
 import ursa.heat_islands as ht
 import ursa.plots.heat_islands as pht
+import ursa.utils.date as du
 import ursa.utils.geometry as ug
 import ursa.utils.raster as ru
 import ursa.world_cover as wc
@@ -592,9 +593,27 @@ def start_download(n_clicks, id_hash, bbox_latlon, task_name):
     path_cache = Path(f"./data/cache/{id_hash}")
 
     if task_name is None:
+        start_date, end_date = du.date_format("Qall", 2022)
+
         bbox_latlon = shape(bbox_latlon)
-        task = ht.download_cat_suhi(bbox_latlon, path_cache, "Qall", 2022)
+        bbox_ee = ru.bbox_to_ee(bbox_latlon)
+        
+        lst, proj = ht.get_lst(bbox_ee, start_date, end_date)
+        _, masks = wc.get_cover_and_masks(bbox_ee, proj)
+
+        img_cat = ht.get_cat_suhi(lst, masks, path_cache)
+
+        task = ee.batch.Export.image.toDrive(
+            image=img_cat,
+            description="suhi_raster",
+            scale=img_cat.projection().nominalScale(),
+            region=bbox_ee,
+            crs=img_cat.projection(),
+            fileFormat="GeoTIFF",
+        )
+        task.start()
         status = task.status()
+
         return (False, status["name"], {"display": "block"}, "Iniciando descarga")
     else:
         return (dash.no_update, dash.no_update, dash.no_update, dash.no_update)
@@ -602,6 +621,7 @@ def start_download(n_clicks, id_hash, bbox_latlon, task_name):
 
 @callback(
     Output("suhi-span-rasters-output", "children", allow_duplicate=True),
+    Output("suhi-interval", "disabled", allow_duplicate=True),
     Input("suhi-interval", "n_intervals"),
     State("suhi-store-task-name", "data"),
     prevent_initial_call=True,
@@ -616,10 +636,10 @@ def download_rasters(n_intervals, task_name):
     current_time = datetime.now(timezone.utc)
     time_elapsed = (current_time - start_time).total_seconds()
 
-    if state in ("UNSUBMITTED", "READY", "RUNNING", "CANCEL_REQUESTED"):
-        return f"Status de la Descarga: {state}, Tiempo transcurrido: {int(time_elapsed)} segundos"
-    elif state in ("COMPLETED", "FAILED", "CANCELLED"):
-        return f"Status de la Descarga: {state}, Tiempo transcurrido: {int(time_elapsed)} segundos"
+    if state in ("COMPLETED", "FAILED", "CANCELLED", "SUCCEEDED"):
+        return [f"Status de la Descarga: {state}, Tiempo transcurrido: {int(time_elapsed)} segundos"], True
+    
+    return [f"Status de la Descarga: {state}, Tiempo transcurrido: {int(time_elapsed)} segundos"], False
 
 
 @callback(
@@ -649,9 +669,9 @@ def generate_maps(id_hash, bbox_latlon, fua_latlon, uc_latlon):
     try:
         lst, proj = ht.get_lst(bbox_ee, start_date, end_date)
 
-        lc, masks = wc.get_cover_and_masks(bbox_ee, proj)
+        _, masks = wc.get_cover_and_masks(bbox_ee, proj)
 
-        img_cat = ht.get_cat_suhi(bbox_ee, start_date, end_date, masks, path_cache)
+        img_cat = ht.get_cat_suhi(lst, masks, path_cache)
         df_t_areas = ht.load_or_get_t_areas(bbox_ee, img_cat, masks, path_cache)
         df_land_usage = ht.load_or_get_land_usage_df(bbox_ee, img_cat, path_cache)
 
