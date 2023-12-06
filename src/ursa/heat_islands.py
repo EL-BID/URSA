@@ -87,6 +87,7 @@ def get_temps(lst, masks):
         res = lst_masked.reduceRegion(
             ee.Reducer.percentile([5]), bestEffort=False, maxPixels=MAX_PIXELS
         ).getInfo()
+        t_dict["rural_old"] = {}
         t_dict["rural_old"]["mean"] = rural_mean
         t_dict["rural"]["mean"] = res["ST_B10"]
 
@@ -106,10 +107,8 @@ def load_or_get_temps(lst, masks, path_cache):
     return temps
 
 
-def get_cat_suhi(bbox_ee, start_date, end_date, masks, path_cache):
+def get_cat_suhi(lst, masks, path_cache):
     print("Generating temperature discrete image ...")
-
-    lst, _ = get_lst(bbox_ee, start_date, end_date)
     temps = load_or_get_temps(lst, masks, path_cache)
 
     rural_lst_mean = temps["rural"]["mean"]
@@ -133,26 +132,6 @@ def get_cat_suhi(bbox_ee, start_date, end_date, masks, path_cache):
     print("Done.")
 
     return cat_img
-
-
-def download_cat_suhi(bbox_latlon, path_cache, season, year):
-    bbox_ee = bbox_to_ee(bbox_latlon)
-
-    start_date, end_date = date_format(season, year)
-
-    img_cat = get_cat_suhi(bbox_ee, start_date, end_date, path_cache)
-
-    task = ee.batch.Export.image.toDrive(
-        image=img_cat,
-        description="suhi_raster",
-        scale=img_cat.projection().nominalScale(),
-        region=bbox_ee,
-        crs=img_cat.projection(),
-        fileFormat="GeoTIFF",
-    )
-    task.start()
-    return task
-
 
 def make_offsets(s_mean: float, s_std: float, n: int = 3) -> List[Tuple[float, float]]:
     offsets = [(1.0, 1.0)] * (2 * n - 1)

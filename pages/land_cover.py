@@ -203,6 +203,7 @@ def start_download(n_clicks, bbox_latlon, task_name):
 
 @callback(
     Output("lc-span-rasters-output", "children", allow_duplicate=True),
+    Output("lc-interval", "disabled", allow_duplicate=True),
     Input("lc-interval", "n_intervals"),
     State("lc-store-task-name", "data"),
     prevent_initial_call=True,
@@ -217,10 +218,11 @@ def download_rasters(n_intervals, task_name):
     current_time = datetime.now(timezone.utc)
     time_elapsed = (current_time - start_time).total_seconds()
 
-    if state in ("UNSUBMITTED", "READY", "RUNNING", "CANCEL_REQUESTED"):
-        return f"Status de la Descarga: {state}, Tiempo transcurrido: {int(time_elapsed)} segundos"
-    elif state in ("COMPLETED", "FAILED", "CANCELLED"):
-        return f"Status de la Descarga: {state}, Tiempo transcurrido: {int(time_elapsed)} segundos"
+    if state in ("COMPLETED", "FAILED", "CANCELLED", "SUCCEEDED"):
+        return [f"Status de la Descarga: {state}, Tiempo transcurrido: {int(time_elapsed)} segundos"], True
+
+    return [f"Status de la Descarga: {state}, Tiempo transcurrido: {int(time_elapsed)} segundos"], False
+    
 
 
 @callback(
