@@ -1,0 +1,187 @@
+{
+    "ADDITIONAL_TEXT_PART1": {
+        "es": "En esta pestaña podrás explorar los tipos de cobertura de suelo presentes en el área alrededor de tu ciudad. Estos datos de cobertura de suelo provienen del proyecto",
+        "en": "In this tab, you can explore the types of land cover present in the area around your city. These land cover data come from the project",
+        "pt": "Nesta aba, você pode explorar os tipos de cobertura do solo presentes na área ao redor da sua cidade. Esses dados de cobertura do solo vêm do projeto"
+    },
+    "ADDITIONAL_TEXT_PART2": {
+        "es": " de Google.",
+        "en": " from Google.",
+        "pt": " do Google."
+    },
+    "ADDITIONAL_TEXT_PART3": {
+        "es": "En Dynamic World, las imágenes satelitales Sentinel son procesadas usando una red neuronal para clasificar cada pixel en una de las 9 posibles categorías de suelo. Dynamic World posee datos de cobertura de suelo desde el año 2016.",
+        "en": "In Dynamic World, Sentinel satellite images are processed using a neural network to classify each pixel into one of 9 possible soil categories. Dynamic World has land cover data since 2016.",
+        "pt": "Em Dynamic World, as imagens de satélite Sentinel são processadas usando uma rede neural para classificar cada pixel em uma das 9 possíveis categorias de solo. Dynamic World possui dados de cobertura do solo desde 2016."
+    },
+    "ADDITIONAL_TEXT_PART4": {
+        "es": "Las correspondencias y colores canónicos de cada etiqueta pueden revisarse en el siguiente",
+        "en": "The correspondences and canonical colors of each label can be reviewed in the following",
+        "pt": "As correspondências e cores canônicas de cada etiqueta podem ser revisadas no seguinte"
+    },
+    "tipo-agua": {
+        "es": "0: Agua",
+        "en": "0: Water",
+        "pt": "0: Água"
+    },
+    "tipo-arboles": {
+        "es": "1: Árboles",
+        "en": "1: Trees",
+        "pt": "1: Árvores"
+    },
+    "tipo-pasto": {
+        "es": "2: Pasto",
+        "en": "2: Grass",
+        "pt": "2: Grama"
+    },
+    "tipo-vegetacion": {
+        "es": "3: Vegetación inundada",
+        "en": "3: Flooded Vegetation",
+        "pt": "3: Vegetação Inundada"
+    },
+    "tipo-cultivos": {
+        "es": "4: Cultivos",
+        "en": "4: Crops",
+        "pt": "4: Culturas"
+    },
+    "tipo-arbustos": {
+        "es": "5: Arbustos y maleza",
+        "en": "5: Shrubs and Underbrush",
+        "pt": "5: Arbustos e Sub-bosque"
+    },
+    "tipo-construido": {
+        "es": "6: Construido",
+        "en": "6: Built-up",
+        "pt": "6: Construído"
+    },
+    "tipo-baldio": {
+        "es": "7: Baldío",
+        "en": "7: Barren",
+        "pt": "7: Baldio"
+    },
+    "tipo-nieve": {
+        "es": "8: Nieve y hielo",
+        "en": "8: Snow and Ice",
+        "pt": "8: Neve e Gelo"
+    },
+    "DESC1": {
+        "es": "El gráfico de barras muestra las superficie en kilómetros cuadrados que le corresponde a cada clase de cobertura en el año 2022.",
+        "en": "The bar chart shows the surface area in square kilometers corresponding to each land cover class in the year 2022.",
+        "pt": "O gráfico de barras mostra a superfície em quilômetros quadrados correspondente a cada classe de cobertura do solo no ano de 2022."
+    },
+    "TITLE1": {
+        "es": "Superficie por Categoría de Uso de Suelo (Año 2022)",
+        "en": "Surface Area by Land Use Category (Year 2022)",
+        "pt": "Superfície por Categoria de Uso do Solo (Ano 2022)"
+    },
+    "DESC2": {
+        "es": "El gráfico de líneas muestra la evolución en el tiempo de la cantidad de superficie de cada clase de cobertura desde 2016 hasta el 2022. El gráfico es interactivo y se pueden seleccionar una o varias clases específicas para observar más claramente su comportamiento en el tiempo.",
+        "en": "The line chart shows the time evolution of the surface area for each land cover class from 2016 to 2022. The chart is interactive, and one or several specific classes can be selected to more clearly observe their behavior over time.",
+        "pt": "O gráfico de linhas mostra a evolução temporal da superfície de cada classe de cobertura do solo de 2016 até 2022. O gráfico é interativo, e uma ou várias classes específicas podem ser selecionadas para observar mais claramente o seu comportamento ao longo do tempo."
+    },
+    "TITLE2": {
+        "es": "Cobertura de suelo",
+        "en": "Land Cover",
+        "pt": "Cobertura do Solo"
+    },
+    "TITLE3": {
+        "es": "Clasificación del Territorio por Categoría de Uso de Suelo (Año 2022)",
+        "en": "Land Classification by Land Use Category (Year 2022)",
+        "pt": "Classificação do Território por Categoria de Uso do Solo (Ano 2022)"
+    },
+    "MAIN_TEXT": {
+        "es": "El mapa muestra la categoría más común observada en 2022 para cada pixel de 10x10 metros. El relieve refleja la certeza del proceso de clasificación, una mayor altura refleja una mayor certidumbre de que el pixel pertenezca a la clase mostrada. Notese que los bordes entre clases presentan mayor incertidumbre.",
+        "en": "The map displays the most common category observed in 2022 for each 10x10 meter pixel. The relief reflects the certainty of the classification process, where greater height indicates a higher certainty that the pixel belongs to the displayed class. Note that the borders between classes show greater uncertainty.",
+        "pt": "O mapa exibe a categoria mais comum observada em 2022 para cada pixel de 10x10 metros. O relevo reflete a certeza do processo de classificação, onde uma maior altura indica uma maior certeza de que o pixel pertence à classe exibida. Note que as bordas entre as classes mostram maior incerteza."
+    },
+    "HOW-land": {
+        "es": "La información procesada en la sección Cobertura de Suelo se realiza principalmente mediante de Google Earth Engine. De esta manera, la descarga de los datos empleados, debido a su tamaño, es a través del Google Drive de la cuenta empleada en la autenticación de Google Earth Engine.",
+        "en": "The information processed in the Soil Coverage section is primarily done through Google Earth Engine. Therefore, the download of the used data, due to its size, is through the Google Drive of the account used in the authentication of Google Earth Engine.",
+        "pt": "As informações processadas na seção Cobertura do Solo são realizadas principalmente através do Google Earth Engine. Assim, o download dos dados utilizados, devido ao seu tamanho, é feito através do Google Drive da conta utilizada na autenticação do Google Earth Engine."
+    },
+    "WHERE-land": {
+        "es": "La descarga del raster con nombre 'dynamic_world_raster.tif' se hará al directorio raíz del Google Drive de la cuenta empleada.",
+        "en": "The download of the raster named 'dynamic_world_raster.tif' will be made to the root directory of the Google Drive of the account used.",
+        "pt": "O download do raster com o nome 'dynamic_world_raster.tif' será feito para o diretório raiz do Google Drive da conta utilizada."
+    },
+    "generate-drive-text1-land": {
+        "es": "Descarga de Datos",
+        "en": "Data Download",
+        "pt": "Download de Dados"
+    },
+    "generate-drive-text2-land": {
+        "es": "¿Cómo se realiza la descarga?",
+        "en": "How is the download done?",
+        "pt": "Como é feito o download?"
+    },
+    "generate-drive-text3-land": {
+        "es": "¿Dónde se descarga el archivo?",
+        "en": "Where is the file downloaded?",
+        "pt": "Onde o arquivo é baixado?"
+    },
+    "generate-drive-text4-land": {
+        "es": "¿Cuáles son los estados de la descarga?",
+        "en": "What are the download states?",
+        "pt": "Quais são os estados do download?"
+    },
+    "generate-drive-text5-land": {
+        "es": "Los estados de la tarea de descarga son los siguientes:",
+        "en": "The download task states are as follows:",
+        "pt": "Os estados da tarefa de download são os seguintes:"
+    },
+    "generate-drive-text6-land": {
+        "es": " - Pendiente en el cliente.",
+        "en": " - Pending on the client.",
+        "pt": " - Pendente no cliente."
+    },
+    "generate-drive-text7-land": {
+        "es": " - En cola en el servidor.",
+        "en": " - Queued on the server.",
+        "pt": " - Em fila no servidor."
+    },
+    "generate-drive-text8-land": {
+        "es": " - En ejecución.",
+        "en": " - In execution.",
+        "pt": " - Em execução."
+    },
+    "generate-drive-text9-land": {
+        "es": " - Completada exitosamente.",
+        "en": " - Completed successfully.",
+        "pt": " - Completado com sucesso."
+    },
+    "generate-drive-text10-land": {
+        "es": " - No completada debido a un error.",
+        "en": " - Not completed due to an error.",
+        "pt": " - Não concluído devido a um erro."
+    },
+    "generate-drive-text11-land": {
+        "es": " - En ejecución pero se ha solicitado su cancelación.",
+        "en": " - In execution but its cancellation has been requested.",
+        "pt": " - Em execução, mas seu cancelamento foi solicitado."
+    },
+    "generate-drive-text12-land": {
+        "es": " - Cancelada.",
+        "en": " - Cancelled.",
+        "pt": " - Cancelado."
+    },
+    "generate-drive-text13-land": {
+        "es": "¿Es posible hacer descargas simultáneas?",
+        "en": "Is it possible to make simultaneous downloads?",
+        "pt": "É possível fazer downloads simultâneos?"
+    },
+    "generate-drive-text14-land": {
+        "es": "URSA únicamente permite la ejecución de una tarea de descarga a la vez. Espere a que se complete la tarea antes de crear una nueva. Esto puede tomar varios minutos.",
+        "en": "URSA only allows the execution of one download task at a time. Wait for the task to complete before creating a new one. This may take several minutes.",
+        "pt": "URSA só permite a execução de uma tarefa de download por vez. Aguarde a conclusão da tarefa antes de criar uma nova. Isso pode levar vários minutos."
+    },
+    "lc-btn-download-rasters": {
+        "es": "Descarga rasters",
+        "en": "Download Rasters",
+        "pt": "Baixar Rasters"
+    },
+    "lc-btn-stop-task": {
+        "es": "Cancelar ejecución",
+        "en": "Cancel Execution",
+        "pt": "Cancelar Execução"
+    }
+}

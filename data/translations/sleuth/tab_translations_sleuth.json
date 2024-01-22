@@ -1,0 +1,82 @@
+{
+    "sleuth-tab-3": {
+        "es": "Resumen",
+        "en": "Summary",
+        "pt": "Resumo"
+    },
+    "Rasters-principal": {
+        "es": "Rasters",
+        "en": "Rasters",
+        "pt": "Rasters"
+    },
+    "Calibracion-principal": {
+        "es": "Calibración",
+        "en": "Calibration",
+        "pt": "Calibração"
+    },
+    "Prediccion-principal": {
+        "es": "Predicción",
+        "en": "Prediction",
+        "pt": "Previsão"
+    },
+    "rasters-slope": {
+        "es": "Pendiente",
+        "en": "Slope",
+        "pt": "Declive"
+    },
+    "rasters-roads": {
+        "es": "Caminos",
+        "en": "Paths",
+        "pt": "Caminhos"
+    },
+    "rasters-excluded": {
+        "es": "Exclusión",
+        "en": "Exclusion",
+        "pt": "Exclusão"
+    },
+    "rasters-urban": {
+        "es": "Urbano",
+        "en": "Urban",
+        "pt": "Urbano"
+    },
+    "parametros-calibracion": {
+        "es": "Parámetros",
+        "en": "Parameters",
+        "pt": "Parâmetros"
+    },
+    "espacio-calibracion": {
+        "es": "Espacio de búsqueda",
+        "en": "Search Space",
+        "pt": "Espaço de Busca"
+    },
+    "iniciar-calibracion": {
+        "es": "Iniciar",
+        "en": "Start",
+        "pt": "Iniciar"
+    },
+    "result-calibration-subtab": {
+        "es": "Resultados",
+        "en": "Results",
+        "pt": "Resultados"
+    },
+    "parametros-prediccion": {
+        "es": "Parámetros",
+        "en": "Parameters",
+        "pt": "Parâmetros"
+    },
+    "escenarios-prediccion": {
+        "es": "Escenarios",
+        "en": "Scenarios",
+        "pt": "Cenários"
+    },
+    "iniciar-prediccion": {
+        "es": "Iniciar",
+        "en": "Start",
+        "pt": "Iniciar"
+    },
+    "result-prediction-tabs": {
+        "es": "Resultados",
+        "en": "Results",
+        "pt": "Resultados"
+    }
+}

@@ -18,9 +18,14 @@ PATH_FUA = Path("./data/output/cities/")
 
 cities_fua = gpd.read_file("./data/output/cities/cities_fua.gpkg")
 cities_uc = gpd.read_file("./data/output/cities/cities_uc.gpkg")
+
 with open("./data/output/cities/cities_by_country.json", "r", encoding="utf8") as f:
     cities_by_country = json.load(f)
 
+# Traducciones
+with open('./data/translations/home/translations_home.json', 'r', encoding='utf-8') as file:
+    translations = json.load(file)
+    
 DROPDOWN_STYLE = {
     "color": "gray",
     "width": "67%",
@@ -49,6 +54,17 @@ city_dropdown = dbc.Select(
     persistence_type="session",
 )
 
+# Translation
+
+language_buttons = dbc.ButtonGroup(
+    [
+        dbc.Button("Español", id="btn-lang-es", n_clicks=0),
+        dbc.Button("English", id="btn-lang-en", n_clicks=0),
+        dbc.Button("Portuguese", id="btn-lang-pt", n_clicks=0),
+    ],
+    style={"position": "absolute", "top": "10px", "right": "10px", "z-index": "1"},
+)
+
 layout = html.Div(
     [
         dbc.Alert(
@@ -57,17 +73,16 @@ layout = html.Div(
             color="danger",
             dismissable=True,
         ),
-        html.H1(children="Bienvenido"),
+        #language_buttons,
+        html.H1(id="text1"),
         html.Div(
             [
                 html.P(
-                    "Esta aplicación web le permitirá explorar el crecimiento "
-                    "histórico y futuro de su ciudad."
+                    id="text2"
                 ),
-                html.P("Por favor seleccione un país y ciudad en los menús de abajo."),
+                html.P(id="text3"),
                 html.P(
-                    "Una vez elegida la ciudad puede explorar las "
-                    "visualizaciónes en la barra de navegación a la izquierda."
+                    id="text4"
                 ),
             ]
         ),
@@ -84,7 +99,7 @@ layout = html.Div(
                         ),
                         dbc.Row(
                             dbc.Col(
-                                dbc.Button("Seleccionar", id="btn-country-select"),
+                                dbc.Button(id="btn-country-select"),
                                 class_name="text-center",
                             )
                         ),
@@ -134,11 +149,7 @@ layout = html.Div(
                                             dbc.Card(
                                                 dbc.CardBody(
                                                     html.P(
-                                                        [
-                                                            "El bounding box por defecto utiliza los límites de zonas metropolitanas que identifica Global Human Settlement Layer (GHSL). Le recomendamos utilizar estos. Si quiere modificar el área de análisis para ampliarla o reducirla, utilice los botones de la derecha. Cuando haya terminado de seleccionar su área de interés, presione el botón de ",
-                                                            html.B("Aplicar"),
-                                                            ".",
-                                                        ],
+                                                            id="text5",
                                                         style={"text-align": "start"},
                                                     )
                                                 ),
@@ -147,18 +158,14 @@ layout = html.Div(
                                             dbc.Card(
                                                 dbc.CardBody(
                                                     html.P(
-                                                        [
-                                                            "Si desea utilizar la región original, borre todas las regiones personalizadas y presione ",
-                                                            html.B("Aplicar"),
-                                                            ".",
-                                                        ],
+                                                            id="text6",
                                                         style={"text-align": "start"},
                                                     )
                                                 ),
                                                 class_name="supp-info",
                                             ),
                                             dbc.Button(
-                                                "Aplicar", id="global-btn-apply-region"
+                                                id="global-btn-apply-region"
                                             ),
                                         ],
                                         style={"text-align": "center"},
@@ -175,6 +182,14 @@ layout = html.Div(
     ]
 )
 
+@callback(
+    [Output(key, 'children') for key in translations.keys()],
+    [Input('current-language-store', 'data')]
+)
+def update_translated_content(language_data):
+    language = language_data['language'] if language_data else 'es'
+    updated_content = [translations[key][language] for key in translations.keys()]
+    return updated_content
 
 @callback(
     Output("dropdown-city", "options"),

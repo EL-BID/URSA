@@ -85,10 +85,21 @@
 }
 
 .loading-callback-spinner::after {
-  content: "Descargando imágenes satelitales actualizadas. Este proceso puede tomar varios minutos. Por favor espere.";
   font-style: italic;
   transform: translateX(-50%);
   color: gray;
+}
+
+.loading-callback-spinner.es::after {
+  content: "Descargando imágenes satelitales actualizadas. Este proceso puede tomar varios minutos. Por favor espere.";
+}
+
+.loading-callback-spinner.en::after {
+  content: "Downloading updated satellite images. This process may take several minutes. Please wait.";
+}
+
+.loading-callback-spinner.pt::after {
+  content: "Baixando imagens de satélite atualizadas. Este processo pode levar vários minutos. Por favor, aguarde.";
 }
 
 .card.main-info {

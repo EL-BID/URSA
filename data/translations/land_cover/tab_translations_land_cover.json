@@ -1,0 +1,17 @@
+{
+    "tab-plots": {
+        "es": "Gráficas",
+        "en": "Charts",
+        "pt": "Gráficos"
+    },
+    "tab-info": {
+        "es": "Info",
+        "en": "Info",
+        "pt": "Informação"
+    },
+    "tabDownloadables": {
+        "es": "Descargables",
+        "en": "Downloadables",
+        "pt": "Descarregáveis"
+    }
+}
