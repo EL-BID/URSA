@@ -373,21 +373,27 @@ def update_tab_labels(btn_lang_es, btn_lang_en, btn_lang_pt):
 
 # ---
 
-
 @callback(
     Output("download-rasters-zip", "data"),
+    Input("global-store-hash", "data"),
     Input("btn-download-rasters", "n_clicks"),
     prevent_initial_call=True,
 )
-def download_file(n_clicks):
+def download_file(id_hash, n_clicks):
+
+    if id_hash is None:
+        return [dash.no_update] * 11 + ["/"]
+    
+    path_cache = Path(f"./data/cache/{str(id_hash)}")
+
     rasters: list[str] = [
-        "GHS_BUILT_S_100.tif",
-        #'GHS_LAND_100.tif',
-        "GHS_POP_100.tif",
-        "GHS_SMOD_1000.tif",
-        #'dou.tif',
-        #'protected.tif',
-        #'slope.tif'
+        path_cache / "GHS_BUILT_S_100.tif",
+        #path_cache / 'GHS_LAND_100.tif',
+        path_cache / "GHS_POP_100.tif",
+        path_cache / "GHS_SMOD_1000.tif",
+        #path_cache / 'dou.tif',
+        #path_cache / 'protected.tif',
+        #path_cache / 'slope.tif'
     ]
 
     zip_file_name: str = f"hist-growth-rasters.zip"
