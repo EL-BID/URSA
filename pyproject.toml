@@ -31,7 +31,7 @@ scikit-learn = "^1.2.2"
 openpyxl = "^3.1.2"
 dash-leaflet = "1.0.9rc1"
 python-dateutil = "^2.8.2"
-kaleido = "0.1.0post1"
+kaleido = "0.2.1"
 
 [tool.poetry.scripts]
 ursa-make-ghsl = "ursa.make_cities_csv_ghsl:main"
