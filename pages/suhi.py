@@ -828,7 +828,7 @@ def start_download(n_clicks, id_hash, bbox_latlon, task_name):
         lst, proj = ht.get_lst(bbox_ee, start_date, end_date)
         _, masks = wc.get_cover_and_masks(bbox_ee, proj)
 
-        img_cat = ht.get_cat_suhi(lst, masks, path_cache)
+        img_cat = ht.get_cat_suhi_raw(lst, masks, path_cache)
 
         task = ee.batch.Export.image.toDrive(
             image=img_cat,
