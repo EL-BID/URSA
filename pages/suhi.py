@@ -11,14 +11,23 @@ import ursa.utils.geometry as ug
 import ursa.utils.raster as ru
 import ursa.world_cover as wc
 
-from components.text import figureWithDescription
+from components.text import figureWithDescription, figureWithDescription_translation, figureWithDescription_translation2
 from components.page import new_page_layout
 from dash import html, dcc, callback, Input, Output, State
 from datetime import datetime, timezone
-from layouts.common import generate_drive_text
+from layouts.common import generate_drive_text, generate_drive_text_translation
 from pathlib import Path
 from shapely.geometry import shape
 
+import json
+
+# Traducciones
+with open('./data/translations/suhi/translations_suhi.json', 'r', encoding='utf-8') as file:
+    translations = json.load(file)
+    
+# Traducciones
+with open('./data/translations/suhi/tab_translations_suhi.json', 'r', encoding='utf-8') as file:
+    tab_translations = json.load(file)
 
 start_time_suhi = None
 
@@ -35,20 +44,12 @@ dash.register_page(
 WELCOME_CONTENT = [
     html.P(
         [
-            "Este apartado muestra un análisis sobre ",
-            html.Strong("islas de calor"),
-            " y el potencial impacto de estrategias de mitigación. La ",
-            html.A("metodología", href="https://www.mdpi.com/2072-4292/11/1/48"),
-            (
-                " (Zhou et al., 2018) para identificar islas de calor "
-                "consiste en contrastar la temperatura promedio anual de un "
-                "píxel urbano (100x100 metros) contra la temperatura "
-                "promedio anual de los píxeles rurales en la misma zona "
-                "geográfica de la ciudad. "
-                "Cada píxel de la zona de interés se clasifica en rural "
-                "o urbano, utilizando el conjunto de datos WorldCover de "
-                "la Agencia Espacial Europea (ESA)."
-            ),
+            html.Span(id="WELCOME_CONTENT_PART1"),
+            html.Strong(id="WELCOME_CONTENT_PART2"),
+            html.Span(id="WELCOME_CONTENT_PART3"),
+            html.A(id="WELCOME_CONTENT_PART4", href="https://www.mdpi.com/2072-4292/11/1/48"),
+            
+            html.Span(id="WELCOME_CONTENT_PART5"),
         ]
     ),
     html.Hr(style={"width": "70%", "margin-left": "30%"}),
@@ -96,28 +97,22 @@ MAP_TEXT = (
 
 HISTOGRAMA_TEXT = html.P(
     [
-        (
-            "Este diagrama de barras muestra la superficie en kilómetros "
-            "cuadrados del suelo que forma parte del área de análisis "
-            "para cada una de las 7 categorías de temperatura, "
-            "para el suelo tanto rural como urbano. "
-            "Las categorías de temperatura se particionan de la siguiente "
-            "forma:"
-        ),
+        html.Span(id="HISTOGRAM_TEXT"),  
         html.Ol(
             [
-                html.Li("Muy frío: < -2.5σ"),
-                html.Li("Frío: ≥ -2.5σ, < -1.5σ"),
-                html.Li("Ligeramente frío: ≥ -1.5σ, < -0.5σ"),
-                html.Li("Templado: ≥ -0.5σ, < 0.5σ"),
-                html.Li("Ligeramente cálido: ≥ 0.5σ, < 1.5σ"),
-                html.Li("Caliente: ≥ 1.5σ, < 2.5σ"),
-                html.Li("Muy caliente: ≥ 2.5σ"),
+                html.Li(html.Span(id="categoria-muy-frio")),
+                html.Li(html.Span(id="categoria-frio")),
+                html.Li(html.Span(id="categoria-ligeramente-frio")),
+                html.Li(html.Span(id="categoria-templado")),
+                html.Li(html.Span(id="categoria-ligeramente-calido")),
+                html.Li(html.Span(id="categoria-caliente")),
+                html.Li(html.Span(id="categoria-muy-caliente")),
             ]
         ),
-        "σ: desviación estándar",
+        html.Span(id="desviacion"), 
     ]
 )
+
 
 BARS_TEXT = (
     "Las barras verticales en este gráfico suman 1 (o 100%) cada una. "
@@ -226,55 +221,123 @@ def format_temp(temp):
 
 impactView = html.Div(
     [
-        html.H4("Impacto", className="text-primary"),
-        html.Div("Nueva temperatura promedio", style=SUBTITLE_STYLE),
+        html.H4(id = "impactView1", className="text-primary"),
+        html.Div(id = "impactView2", style=SUBTITLE_STYLE),
         html.Div("", id="impact-result-degrees", style=RESULT_STYLE),
-        html.Div("Promedio mitigados", style=SUBTITLE_STYLE),
+        html.Div(id = "impactView3", style=SUBTITLE_STYLE),
         html.Div(
             "",
             id="impact-mitigated-degrees",
             className="text-success",
             style=RESULT_STYLE,
         ),
-        html.Div("Área urbana intervenida", style=SUBTITLE_STYLE),
+        html.Div(id = "impactView4", style=SUBTITLE_STYLE),
         html.Div("", id="impact-result-square-kilometers", style=RESULT_STYLE),
-        html.Div("Caminos intervenidos", style=SUBTITLE_STYLE),
+        html.Div(id = "impactView5", style=SUBTITLE_STYLE),
         html.Div("", id="impact-result-kilometers", style=RESULT_STYLE),
     ]
 )
 
 strategyList = html.Div(
     [
-        html.H4("Estrategias de mitigación", className="text-primary"),
-        html.P(
-            "Selecciona las estrategias a implementar. "
-            "Puedes encontrar más infomración de cada estrategia o "
-            "seleccionar múltiples."
-        ),
+        html.H4(id="strategyList1", className="text-primary"),
+        html.P(html.Span(id="strategyList2")),
         html.Div(
             dcc.Checklist(
-                [
+                options=[
                     {
                         "label": html.Div(
                             [
                                 html.P(
-                                    strategy["title"],
-                                    id=f"check-{strategyId}",
+                                    html.Span(id="strat-vegetacion-title"),
+                                    #STRATEGIES["strat-vegetacion"]["title"],
+                                    id="check-strat-vegetacion",
                                     style={"display": "inline"},
                                 ),
                                 dbc.Popover(
-                                    dbc.PopoverBody(strategy["description"]),
-                                    target=f"check-{strategyId}",
+                                    dbc.PopoverBody(html.Span(id="strat-vegetacion-desc")),
+                                    target="check-strat-vegetacion",
                                     trigger="hover",
                                 ),
                             ],
                             style={"display": "inline"},
                         ),
-                        "value": strategyId,
-                    }
-                    for strategyId, strategy in STRATEGIES.items()
+                        "value": "strat-vegetacion",
+                    },
+                    {
+                        "label": html.Div(
+                            [
+                                html.P(
+                                    html.Span(id="strat-techos-verdes-title"),
+                                    id="check-strat-techos-verdes",
+                                    style={"display": "inline"},
+                                ),
+                                dbc.Popover(
+                                    dbc.PopoverBody(html.Span(id="strat-techos-verdes-desc")),
+                                    target="check-strat-techos-verdes",
+                                    trigger="hover",
+                                ),
+                            ],
+                            style={"display": "inline"},
+                        ),
+                        "value": "strat-techos-verdes",
+                    },
+                    {
+                        "label": html.Div(
+                            [
+                                html.P(
+                                    html.Span(id="strat-techos-frescos-title"),
+                                    id="check-strat-techos-frescos",
+                                    style={"display": "inline"},
+                                ),
+                                dbc.Popover(
+                                    dbc.PopoverBody(html.Span(id="strat-techos-frescos-desc")),
+                                    target="check-strat-techos-frescos",
+                                    trigger="hover",
+                                ),
+                            ],
+                            style={"display": "inline"},
+                        ),
+                        "value": "strat-techos-frescos",
+                    },
+                    {
+                        "label": html.Div(
+                            [
+                                html.P(
+                                    html.Span(id = "strat-pavimento-concreto-title"),
+                                    id="check-strat-pavimento-concreto",
+                                    style={"display": "inline"},
+                                ),
+                                dbc.Popover(
+                                    dbc.PopoverBody(html.Span(id = "strat-pavimento-concreto-desc")),
+                                    target="check-strat-pavimento-concreto",
+                                    trigger="hover",
+                                ),
+                            ],
+                            style={"display": "inline"},
+                        ),
+                        "value": "strat-pavimento-concreto",
+                    },
+                    {
+                        "label": html.Div(
+                            [
+                                html.P(
+                                    html.Span(id = "strat-pavimento-reflector-title"),
+                                    id="check-strat-pavimento-reflector",
+                                    style={"display": "inline"},
+                                ),
+                                dbc.Popover(
+                                    dbc.PopoverBody(html.Span(id = "strat-pavimento-reflector-desc")),
+                                    target="check-strat-pavimento-reflector",
+                                    trigger="hover",
+                                ),
+                            ],
+                            style={"display": "inline"},
+                        ),
+                        "value": "strat-pavimento-reflector",
+                    },
                 ],
-                [],
+                value=[],
                 id="strategy-checklist",
                 inputStyle={"margin-right": "10px"},
                 labelStyle={"display": "block", "margin-bottom": "15px"},
@@ -282,6 +345,7 @@ strategyList = html.Div(
         ),
     ]
 )
+
 
 legend_colors = {
     "Muy frío": "#2166AC",
@@ -302,23 +366,137 @@ map_legend = html.Div(
                     style={
                         "height": "10px",
                         "width": "10px",
-                        "backgroundColor": f"{value}",
+                        "backgroundColor": legend_colors["Muy frío"],
                         "margin-right": "5px",
                     },
                 ),
                 html.Div(
-                    key,
+                    html.Span(id="color-muy-frio"),
                     className="font-weight-light text-white",
                     style={"font-size": "13px"},
                 ),
             ],
             className="d-flex align-items-center m-1",
-        )
-        for key, value in legend_colors.items()
+        ),
+        html.Div(
+            [
+                html.Div(
+                    "",
+                    style={
+                        "height": "10px",
+                        "width": "10px",
+                        "backgroundColor": legend_colors["Frío"],
+                        "margin-right": "5px",
+                    },
+                ),
+                html.Div(
+                    html.Span(id="color-frio"),
+                    className="font-weight-light text-white",
+                    style={"font-size": "13px"},
+                ),
+            ],
+            className="d-flex align-items-center m-1",
+        ),
+        html.Div(
+            [
+                html.Div(
+                    "",
+                    style={
+                        "height": "10px",
+                        "width": "10px",
+                        "backgroundColor": legend_colors["Ligeramente frío"],
+                        "margin-right": "5px",
+                    },
+                ),
+                html.Div(
+                    html.Span(id="color-ligeramente-frio"),
+                    className="font-weight-light text-white",
+                    style={"font-size": "13px"},
+                ),
+            ],
+            className="d-flex align-items-center m-1",
+        ),
+        html.Div(
+            [
+                html.Div(
+                    "",
+                    style={
+                        "height": "10px",
+                        "width": "10px",
+                        "backgroundColor": legend_colors["Templado"],
+                        "margin-right": "5px",
+                    },
+                ),
+                html.Div(
+                    html.Span(id="color-templado"),
+                    className="font-weight-light text-white",
+                    style={"font-size": "13px"},
+                ),
+            ],
+            className="d-flex align-items-center m-1",
+        ),
+        html.Div(
+            [
+                html.Div(
+                    "",
+                    style={
+                        "height": "10px",
+                        "width": "10px",
+                        "backgroundColor": legend_colors["Ligeramente cálido"],
+                        "margin-right": "5px",
+                    },
+                ),
+                html.Div(
+                    html.Span(id="color-ligeramente-calido"),
+                    className="font-weight-light text-white",
+                    style={"font-size": "13px"},
+                ),
+            ],
+            className="d-flex align-items-center m-1",
+        ),
+        html.Div(
+            [
+                html.Div(
+                    "",
+                    style={
+                        "height": "10px",
+                        "width": "10px",
+                        "backgroundColor": legend_colors["Caliente"],
+                        "margin-right": "5px",
+                    },
+                ),
+                html.Div(
+                    html.Span(id="color-caliente"),
+                    className="font-weight-light text-white",
+                    style={"font-size": "13px"},
+                ),
+            ],
+            className="d-flex align-items-center m-1",
+        ),
+        html.Div(
+            [
+                html.Div(
+                    "",
+                    style={
+                        "height": "10px",
+                        "width": "10px",
+                        "backgroundColor": legend_colors["Muy caliente"],
+                        "margin-right": "5px",
+                    },
+                ),
+                html.Div(
+                    html.Span(id="color-muy-caliente"),
+                    className="font-weight-light text-white",
+                    style={"font-size": "13px"},
+                ),
+            ],
+            className="d-flex align-items-center m-1",
+        ),
     ],
     className="d-flex justify-content-around flex-column",
     style={"width": "fit-content", "backgroundColor": "rgba(0,0,0,0.35)"},
 )
+
 
 map = html.Div(
     [
@@ -333,25 +511,26 @@ plots = html.Div(
     [
         dbc.Row(
             [
-                figureWithDescription(
+                figureWithDescription_translation2( # Version modificada para HISTOGRAMA_TEXT
                     dcc.Graph(id="suhi-graph-areas"),
                     HISTOGRAMA_TEXT,
-                    "Frecuencia de la superficie (Km²) de análisis por categoría de temperatura",
+                    "title1"
                 ),
-                figureWithDescription(
+                
+                figureWithDescription_translation(
                     dcc.Graph(id="suhi-graph-temp-lc"),
-                    BARS_TEXT,
-                    "Fracción de uso de suelo por categoría de temperatura",
+                    "BARS_TEXT",
+                    "title2",
                 ),
-                figureWithDescription(
+                figureWithDescription_translation(
                     dcc.Graph(id="suhi-graph-radial-temp"),
-                    "",
-                    "Temperatura en función de la distancia al centro urbano",
+                    "empty-desc1",
+                    "title3",
                 ),
-                figureWithDescription(
+                figureWithDescription_translation(
                     dcc.Graph(id="suhi-graph-radial-lc"),
-                    "",
-                    "Fracción de uso de suelo en función de la distancia al centro urbano",
+                    "empty-desc2",
+                    "title4",
                 ),
             ],
             style={"overflow": "scroll", "height": "82vh"},
@@ -361,7 +540,7 @@ plots = html.Div(
 )
 
 welcomeAlert = dbc.Alert(WELCOME_CONTENT, color="secondary")
-mapIntroAlert = dbc.Alert(MAP_INTRO_TEXT, color="light")
+mapIntroAlert = dbc.Alert(id = "MAP_INTRO_TEXT", color="light")
 
 tabs = [
     dbc.Tab(
@@ -369,17 +548,14 @@ tabs = [
             [
                 html.Div(
                     [
-                        html.P("Temperatura promedio", style=SUBTITLE_STYLE),
+                        html.P(id = "temperature", style=SUBTITLE_STYLE),
                         html.P(
                             id="suhi-p-urban-temp",
                             style=MEAN_TEMPERATURE_STYLE,
                         ),
                         html.P(
                             [
-                                (
-                                    "* Datos obtenidos para el año 2022 a partir de "
-                                    "la imagen satelital "
-                                ),
+                                html.Span(id="satellite_image_data"),
                                 html.A(
                                     "USGS Landsat 8 Level 2, Collection 2, Tier 1",
                                     href=(
@@ -398,24 +574,24 @@ tabs = [
             ],
         ),
         label="Controles",
-        id="tab-controls",
+        id="tab-controls-suhi",
         tab_id="tabControls",
     ),
     dbc.Tab(
         plots,
         label="Gráficas",
-        id="tab-plots",
+        id="tab-plots-suhi",
         tab_id="tabPlots",
     ),
     dbc.Tab(
         html.Div([welcomeAlert, mapIntroAlert]),
         label="Info",
-        id="tab-info",
+        id="tab-info-suhi",
         tab_id="tabInfo",
     ),
     dbc.Tab(
         [
-            generate_drive_text(
+            generate_drive_text_translation(
                 how="La información procesada en la sección Islas de Calor se realiza incluyendo Google Earth Engine. De esta manera, la descarga de los datos empleados, debido a su tamaño, es a través del Google Drive de la cuenta empleada en la autenticación de Google Earth Engine en el caso del raster y al disco local en el caso de los datos tabulares para hacer la visualizaciones.",
                 where="La descarga del raster con nombre 'suhi_raster.tif' se hará al directorio raíz del Google Drive de la cuenta empleada. Por otro lado, el archivo descargado a disco es 'city-country-suhi-data.csv', reemplazando 'city' por la ciudad y 'country' por el país analizado, respectivamente.",
             ),
@@ -425,7 +601,7 @@ tabs = [
                         [
                             dbc.Col(
                                 dbc.Button(
-                                    "Descargar rasters",
+                                    #"Descargar rasters",
                                     id="suhi-btn-download-rasters",
                                     color="light",
                                     title="Descarga los archivos Raster a Google Drive. En este caso la información es procesada en Google Earth Engine y la única opción de descarga es al directorio raíz de tu Google Drive.",
@@ -434,7 +610,7 @@ tabs = [
                             ),
                             dbc.Col(
                                 dbc.Button(
-                                    "Cancelar ejecución",
+                                    #"Cancelar ejecución",
                                     id="suhi-btn-stop-task",
                                     color="danger",
                                     style={"display": "none"},
@@ -448,7 +624,7 @@ tabs = [
                         [
                             dbc.Col(
                                 dbc.Button(
-                                    "Descargar CSV",
+                                    #"Descargar CSV",
                                     id="suhi-btn-download-csv",
                                     color="light",
                                     title="Descarga el archivo .csv, que alimenta las visualizaciones, localmente en tu carpeta de Descargas.",
@@ -467,8 +643,20 @@ tabs = [
             ),
         ],
         label="Descargables",
+        id = "tabDownloadables-suhi",
     ),
 ]
+
+# Traduccion
+
+language_buttons = dbc.ButtonGroup(
+    [
+        dbc.Button("Español", id="btn-lang-es", n_clicks=0),
+        dbc.Button("English", id="btn-lang-en", n_clicks=0),
+        dbc.Button("Portuguese", id="btn-lang-pt", n_clicks=0),
+    ],
+    style={"position": "absolute", "top": "10px", "right": "10px", "z-index": "1"},
+)
 
 layout = new_page_layout(
     [map],
@@ -489,6 +677,45 @@ layout = new_page_layout(
         )
     ],
 )
+
+# ---
+"""
+layout = html.Div(
+    [language_buttons, layout],
+    style={"position": "relative"}
+)
+"""
+@callback(
+    [Output(key, 'children') for key in translations.keys()],
+    [Input('current-language-store', 'data')]
+)
+def update_translated_content(language_data):
+    language = language_data['language'] if language_data else 'es'
+    updated_content = [translations[key][language] for key in translations.keys()]
+    return updated_content
+
+# ---
+
+@callback(
+    [Output(key, 'label') for key in tab_translations.keys()],
+    [Input('btn-lang-es', 'n_clicks'),
+     Input('btn-lang-en', 'n_clicks'),
+     Input('btn-lang-pt', 'n_clicks')],
+    [State('current-language-store', 'data')],
+)
+def update_tab_labels(btn_lang_es, btn_lang_en, btn_lang_pt, language_data):
+    ctx = dash.callback_context
+
+    if not ctx.triggered:
+        language = language_data['language'] if language_data else 'es'
+    else:
+        button_id = ctx.triggered[0]['prop_id'].split('.')[0]
+        language = 'es' if button_id == 'btn-lang-es' else 'en' if button_id == 'btn-lang-en' else 'pt'
+
+    tab_labels = [tab_translations[key][language] for key in tab_translations.keys()]
+    return tab_labels
+
+# ---
 
 
 @callback(
@@ -601,7 +828,7 @@ def start_download(n_clicks, id_hash, bbox_latlon, task_name):
         lst, proj = ht.get_lst(bbox_ee, start_date, end_date)
         _, masks = wc.get_cover_and_masks(bbox_ee, proj)
 
-        img_cat = ht.get_cat_suhi(lst, masks, path_cache)
+        img_cat = ht.get_cat_suhi_raw(lst, masks, path_cache)
 
         task = ee.batch.Export.image.toDrive(
             image=img_cat,
@@ -652,10 +879,21 @@ def download_rasters(n_intervals, task_name):
     Input("global-store-bbox-latlon", "data"),
     Input("global-store-fua-latlon", "data"),
     Input("global-store-uc-latlon", "data"),
+    Input('btn-lang-es', 'n_clicks'),
+    Input('btn-lang-en', 'n_clicks'),
+    Input('btn-lang-pt', 'n_clicks'),
+    [State('current-language-store', 'data')],
 )
-def generate_maps(id_hash, bbox_latlon, fua_latlon, uc_latlon):
+def generate_maps(id_hash, bbox_latlon, fua_latlon, uc_latlon, btn_lang_es, btn_lang_en, btn_lang_pt, language_data):
     if id_hash is None:
         return [dash.no_update] * 5
+    
+    ctx = dash.callback_context
+    if not ctx.triggered:
+        language = language_data['language'] if language_data else 'es'
+    else:
+        button_id = ctx.triggered[0]['prop_id'].split('.')[0]
+        language = 'es' if button_id == 'btn-lang-es' else 'en' if button_id == 'btn-lang-en' else 'pt'
 
     path_cache = Path(f"./data/cache/{id_hash}")
 
@@ -678,8 +916,10 @@ def generate_maps(id_hash, bbox_latlon, fua_latlon, uc_latlon):
         temp_map = pht.plot_cat_map(
             bbox_ee, fua_latlon.centroid, img_cat
         )
-        areas_plot = pht.plot_temp_areas(df_t_areas)
-        temps_by_lc_plot = pht.plot_temp_by_lc(df_land_usage)
+        areas_plot = pht.plot_temp_areas(df_t_areas, language=language) # 
+        
+        temps_by_lc_plot = pht.plot_temp_by_lc(df_land_usage, language=language) #
+        
     except Exception as e:
         temp_map = dash.no_update
         areas_plot = dash.no_update
@@ -687,8 +927,8 @@ def generate_maps(id_hash, bbox_latlon, fua_latlon, uc_latlon):
 
     df_f, df_lc = ht.load_or_get_radial_distributions(bbox_latlon, uc_latlon, start_date, end_date, path_cache)
     
-    radial_temp_plot = pht.plot_radial_temperature(df_f)
-    radial_lc_plot = pht.plot_radial_lc(df_lc)
+    radial_temp_plot = pht.plot_radial_temperature(df_f, language=language) #
+    radial_lc_plot = pht.plot_radial_lc(df_lc, language=language) #
 
     return temp_map, areas_plot, temps_by_lc_plot, radial_temp_plot, radial_lc_plot
 

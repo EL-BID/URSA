@@ -1,0 +1,42 @@
+{
+    "text1": {
+        "es": "Bienvenido",
+        "en": "Welcome",
+        "pt": "Bem-vindo"
+    },
+    "text2": {
+        "es": "Esta aplicación web le permitirá explorar el crecimiento histórico y futuro de su ciudad.",
+        "en": "This web application will allow you to explore the historical and future sprawl of your city.",
+        "pt": "Este aplicativo web permitirá que você explore o crescimento histórico e futuro de sua cidade."
+    },
+    "text3": {
+        "es": "Por favor seleccione un país y ciudad en los menús de abajo.",
+        "en": "Please select a country and city from the menus below.",
+        "pt": "Por favor, selecione um país e uma cidade nos menus abaixo."
+    },
+    "text4": {
+        "es": "Una vez elegida la ciudad puede explorar las visualizaciones en la barra de navegación a la izquierda.",
+        "en": "Once you have chosen the city, you can explore the visualizations on the left navigation bar.",
+        "pt": "Depois de escolher a cidade, você pode explorar as visualizações na barra de navegação à esquerda."
+    },
+    "btn-country-select": {
+        "es": "Seleccionar",
+        "en": "Select",
+        "pt": "Selecionar"
+    },
+    "text5": {
+        "es": "El bounding box por defecto utiliza los límites de zonas metropolitanas que identifica Global Human Settlement Layer (GHSL). Le recomendamos utilizar estos. Si quiere modificar el área de análisis para ampliarla o reducirla, utilice los botones de la derecha. Cuando haya terminado de seleccionar su área de interés, presione el botón de Aplicar.",
+        "en": "The default bounding box uses the limits of metropolitan areas identified by the Global Human Settlement Layer (GHSL). We recommend using these. If you want to modify the analysis area to expand or reduce it, use the buttons on the right. When you have finished selecting your area of interest, press the Apply button.",
+        "pt": "A caixa delimitadora padrão utiliza os limites das áreas metropolitanas identificadas pela Camada Global de Assentamento Humano (GHSL). Recomendamos usar esses limites. Se desejar modificar a área de análise para ampliar ou reduzir, use os botões à direita. Quando terminar de selecionar sua área de interesse, pressione o botão Aplicar."
+    },
+    "text6": {
+        "es": "Si desea utilizar la región original, borre todas las regiones personalizadas y presione: Aplicar.",
+        "en": "If you want to use the original region, delete all custom regions and press: Apply",
+        "pt": "Se desejar usar a região original, exclua todas as regiões personalizadas e pressione: Aplicar"
+    },
+    "global-btn-apply-region": {
+        "es": "Aplicar",
+        "en": "Apply",
+        "pt": "Aplicar"
+    }
+}

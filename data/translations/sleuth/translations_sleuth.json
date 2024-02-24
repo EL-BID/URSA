@@ -1,0 +1,447 @@
+{
+    "rasters-text1-slope": {
+        "es": "Descargar raster original (Pendiente)",
+        "en": "Download Original Raster (Slope)",
+        "pt": "Baixar Raster Original (Inclinação)"
+    },
+    "rasters-text2-slope": {
+        "es": "Descargar raster actual (Pendiente)",
+        "en": "Download Current Raster (Slope)",
+        "pt": "Baixar Raster Atual (Inclinação)"
+    },
+    "rasters-text3-slope": {
+        "es": "Restaurar raster original (Pendiente)",
+        "en": "Restore Original Raster (Slope)",
+        "pt": "Restaurar Raster Original (Inclinação)"
+    },
+    "rasters-text4-slope": {
+        "es": "Subir raster personalizado (Pendiente):",
+        "en": "Upload Custom Raster (Slope):",
+        "pt": "Carregar Raster Personalizado (Inclinação):"
+    },
+    "rasters-text5-slope": {
+        "es": "Arrastre o (Pendiente)",
+        "en": "Drag or (Slope)",
+        "pt": "Arraste ou (Inclinação)"
+    },
+    "rasters-text6-slope": {
+        "es": "seleccione archivos (Pendiente)",
+        "en": "select files (Slope)",
+        "pt": "selecione arquivos (Inclinação)"
+    },
+    "rasters-text1-roads": {
+        "es": "Descargar raster original (Caminos)",
+        "en": "Download Original Raster (Roads)",
+        "pt": "Baixar Raster Original (Caminhos)"
+    },
+    "rasters-text2-roads": {
+        "es": "Descargar raster actual (Caminos)",
+        "en": "Download Current Raster (Roads)",
+        "pt": "Baixar Raster Atual (Caminhos)"
+    },
+    "rasters-text3-roads": {
+        "es": "Restaurar raster original (Caminos)",
+        "en": "Restore Original Raster (Roads)",
+        "pt": "Restaurar Raster Original (Caminhos)"
+    },
+    "rasters-text4-roads": {
+        "es": "Subir raster personalizado (Caminos):",
+        "en": "Upload Custom Raster (Roads):",
+        "pt": "Carregar Raster Personalizado (Caminhos):"
+    },
+    "rasters-text5-roads": {
+        "es": "Arrastre o (Caminos)",
+        "en": "Drag or (Roads)",
+        "pt": "Arraste ou (Caminhos)"
+    },
+    "rasters-text6-roads": {
+        "es": "seleccione archivos (Caminos)",
+        "en": "select files (Roads)",
+        "pt": "selecione arquivos (Caminhos)"
+    },
+    "rasters-text1-excluded": {
+        "es": "Descargar raster original (Exclusión)",
+        "en": "Download Original Raster (Excluded)",
+        "pt": "Baixar Raster Original (Exclusão)"
+    },
+    "rasters-text2-excluded": {
+        "es": "Descargar raster actual (Exclusión)",
+        "en": "Download Current Raster (Excluded)",
+        "pt": "Baixar Raster Atual (Exclusão)"
+    },
+    "rasters-text3-excluded": {
+        "es": "Restaurar raster original (Exclusión)",
+        "en": "Restore Original Raster (Excluded)",
+        "pt": "Restaurar Raster Original (Exclusão)"
+    },
+    "rasters-text4-excluded": {
+        "es": "Subir raster personalizado (Exclusión):",
+        "en": "Upload Custom Raster (Excluded):",
+        "pt": "Carregar Raster Personalizado (Exclusão):"
+    },
+    "rasters-text5-excluded": {
+        "es": "Arrastre o (Exclusión)",
+        "en": "Drag or (Excluded)",
+        "pt": "Arraste ou (Exclusão)"
+    },
+    "rasters-text6-excluded": {
+        "es": "seleccione archivos (Exclusión)",
+        "en": "select files (Excluded)",
+        "pt": "selecione arquivos (Exclusão)"
+    },
+    "rasters-text1-urban": {
+        "es": "Descargar raster original (Urbano)",
+        "en": "Download Original Raster (Urban)",
+        "pt": "Baixar Raster Original (Urbano)"
+    },
+    "rasters-text2-urban": {
+        "es": "Descargar raster actual (Urbano)",
+        "en": "Download Current Raster (Urban)",
+        "pt": "Baixar Raster Atual (Urbano)"
+    },
+    "rasters-text3-urban": {
+        "es": "Restaurar raster original (Urbano)",
+        "en": "Restore Original Raster (Urban)",
+        "pt": "Restaurar Raster Original (Urbano)"
+    },
+    "rasters-text4-urban": {
+        "es": "Subir raster personalizado (Urbano):",
+        "en": "Upload Custom Raster (Urban):",
+        "pt": "Carregar Raster Personalizado (Urbano):"
+    },
+    "rasters-text5-urban": {
+        "es": "Arrastre o (Urbano)",
+        "en": "Drag or (Urban)",
+        "pt": "Arraste ou (Urbano)"
+    },
+    "rasters-text6-urban": {
+        "es": "seleccione archivos (Urbano)",
+        "en": "select files (Urban)",
+        "pt": "selecione arquivos (Urbano)"
+    },
+    "calibration-text1": {
+        "es": "Fechas",
+        "en": "Dates",
+        "pt": "Datas"
+    },
+    "calibration-text2": {
+        "es": "Año inicial",
+        "en": "Initial Year",
+        "pt": "Ano Inicial"
+    },
+    "calibration-text4": {
+        "es": "Año final",
+        "en": "Final Year",
+        "pt": "Ano Final"
+    },
+    "calibration-text6": {
+        "es": "Monte Carlo",
+        "en": "Monte Carlo",
+        "pt": "Monte Carlo"
+    },
+    "calibration-text7": {
+        "es": "Iteraciones",
+        "en": "Iterations",
+        "pt": "Iterações"
+    },
+    "calibration-text9": {
+        "es": "Semilla",
+        "en": "Seed",
+        "pt": "Semente"
+    },
+    "calibration-text11": {
+        "es": "Refinamiento",
+        "en": "Refinement",
+        "pt": "Refinamento"
+    },
+    "calibration-text12": {
+        "es": "Etapas",
+        "en": "Stages",
+        "pt": "Etapas"
+    },
+    "calibration-text14": {
+        "es": "Divisiones",
+        "en": "Divisions",
+        "pt": "Divisões"
+    },
+    "calibration-text16": {
+        "es": "Ganadores",
+        "en": "Winners",
+        "pt": "Vencedores"
+    },
+    "calibration-text18": {
+        "es": "Misceláneo",
+        "en": "Miscellaneous",
+        "pt": "Diversos"
+    },
+    "calibration-text19": {
+        "es": "Límite crítico",
+        "en": "Critical Limit",
+        "pt": "Limite Crítico"
+    },
+    "coeficientes-text1-diffusion": {
+        "es": "Mínimo",
+        "en": "Minimum",
+        "pt": "Mínimo"
+    },
+    "coeficientes-text3-diffusion": {
+        "es": "Máximo",
+        "en": "Maximum",
+        "pt": "Máximo"
+    },
+    "coeficientes-text1-breed": {
+        "es": "Mínimo",
+        "en": "Minimum",
+        "pt": "Mínimo"
+    },
+    "coeficientes-text3-breed": {
+        "es": "Máximo",
+        "en": "Maximum",
+        "pt": "Máximo"
+    },
+    "coeficientes-text1-spread": {
+        "es": "Mínimo",
+        "en": "Minimum",
+        "pt": "Mínimo"
+    },
+    "coeficientes-text3-spread": {
+        "es": "Máximo",
+        "en": "Maximum",
+        "pt": "Máximo"
+    },
+    "coeficientes-text1-slope": {
+        "es": "Mínimo",
+        "en": "Minimum",
+        "pt": "Mínimo"
+    },
+    "coeficientes-text3-slope": {
+        "es": "Máximo",
+        "en": "Maximum",
+        "pt": "Máximo"
+    },
+    "coeficientes-text1-road": {
+        "es": "Mínimo",
+        "en": "Minimum",
+        "pt": "Mínimo"
+    },
+    "coeficientes-text3-road": {
+        "es": "Máximo",
+        "en": "Maximum",
+        "pt": "Máximo"
+    },
+    "btn-calibrate": {
+        "es": "Ejecutar calibración",
+        "en": "Execute Calibration",
+        "pt": "Executar Calibração"
+    },
+    "simulacion-text1": {
+        "es": "Parámetros",
+        "en": "Parameters",
+        "pt": "Parâmetros"
+    },
+    "simulacion-text2": {
+        "es": "Años de calibración: ",
+        "en": "Calibration Years: ",
+        "pt": "Anos de calibração: "
+    },
+    "simulacion-text3": {
+        "es": "Iteraciones de Monte Carlo: ",
+        "en": "Monte Carlo Iterations: ",
+        "pt": "Iterações do Monte Carlo: "
+    },
+    "simulacion-text4": {
+        "es": "Semilla del PRNG: ",
+        "en": "PRNG Seed: ",
+        "pt": "Semente do PRNG: "
+    },
+    "simulacion-text5": {
+        "es": "Etapas de refinamiento: ",
+        "en": "Refinement Stages: ",
+        "pt": "Etapas de refinamento: "
+    },
+    "simulacion-text6": {
+        "es": "Divisiones de refinamiento: ",
+        "en": "Refinement Divisions: ",
+        "pt": "Divisões de refinamento: "
+    },
+    "simulacion-text7": {
+        "es": "Ganadores de refinamiento: ",
+        "en": "Refinement Winners: ",
+        "pt": "Vencedores do refinamento: "
+    },
+    "simulacion-text8": {
+        "es": "Límite crítico: ",
+        "en": "Critical Limit: ",
+        "pt": "Limite Crítico: "
+    },
+    "simulacion-text9": {
+        "es": "Espacio de búsqueda",
+        "en": "Search Space",
+        "pt": "Espaço de Busca"
+    },
+    "simulacion-text10": {
+        "es": "Rasters personalizados",
+        "en": "Custom Rasters",
+        "pt": "Rasters Personalizados"
+    },
+    "simulacion-text11": {
+        "es": "Resumen",
+        "en": "Summary",
+        "pt": "Resumo"
+    },
+    "prediccion-text1": {
+        "es": "Fechas",
+        "en": "Dates",
+        "pt": "Datas"
+    },
+    "prediccion-text2": {
+        "es": "Año inicial",
+        "en": "Initial Year",
+        "pt": "Ano Inicial"
+    },
+    "prediccion-text4": {
+        "es": "Número de años",
+        "en": "Number of Years",
+        "pt": "Número de Anos"
+    },
+    "prediccion-text6": {
+        "es": "Monte Carlo",
+        "en": "Monte Carlo",
+        "pt": "Monte Carlo"
+    },
+    "prediccion-text7": {
+        "es": "Iteraciones",
+        "en": "Iterations",
+        "pt": "Iterações"
+    },
+    "prediccion-text9": {
+        "es": "Semilla",
+        "en": "Seed",
+        "pt": "Semente"
+    },
+    "prediccion-text11": {
+        "es": "Misceláneo",
+        "en": "Miscellaneous",
+        "pt": "Diversos"
+    },
+    "prediccion-text12": {
+        "es": "Límite crítico",
+        "en": "Critical Limit",
+        "pt": "Limite Crítico"
+    },
+    "prediccion-text14": {
+        "es": "Escenario 1",
+        "en": "Scenario 1",
+        "pt": "Cenário 1"
+    },
+    "prediccion-text15": {
+        "es": "Escenario 2",
+        "en": "Scenario 2",
+        "pt": "Cenário 2"
+    },
+    "prediccion-text16": {
+        "es": "Escenario 3",
+        "en": "Scenario 3",
+        "pt": "Cenário 3"
+    },
+    "btn-add-row": {
+        "es": "Añadir escenario",
+        "en": "Add Scenario",
+        "pt": "Adicionar Cenário"
+    },
+    "prediccion-text17": {
+        "es": "Resumen",
+        "en": "Summary",
+        "pt": "Resumo"
+    },
+    "prediccion-text18": {
+        "es": "Parámetros",
+        "en": "Parameters",
+        "pt": "Parâmetros"
+    },
+    "prediccion-text19": {
+        "es": "Año inicial: ",
+        "en": "Initial Year: ",
+        "pt": "Ano Inicial: "
+    },
+    "prediccion-text20": {
+        "es": "Número de años: ",
+        "en": "Number of Years: ",
+        "pt": "Número de Anos: "
+    },
+    "prediccion-text21": {
+        "es": "Iteraciones de Monte Carlo: ",
+        "en": "Monte Carlo Iterations: ",
+        "pt": "Iterações do Monte Carlo: "
+    },
+    "prediccion-text22": {
+        "es": "Semilla del PRNG: ",
+        "en": "PRNG Seed: ",
+        "pt": "Semente do PRNG: "
+    },
+    "prediccion-text23": {
+        "es": "Límite crítico: ",
+        "en": "Critical Limit: ",
+        "pt": "Limite Crítico: "
+    },
+    "prediccion-text24": {
+        "es": "Coeficientes",
+        "en": "Coefficients",
+        "pt": "Coeficientes"
+    },
+    "prediccion-text25": {
+        "es": "(Un asterisco indica que el coeficiente fue modificado)",
+        "en": "(An asterisk indicates that the coefficient was modified)",
+        "pt": "(Um asterisco indica que o coeficiente foi modificado)"
+    },
+    "prediccion-text26": {
+        "es": "Rasters personalizados",
+        "en": "Custom Rasters",
+        "pt": "Rasters Personalizados"
+    },
+    "btn-predict": {
+        "es": "Ejecutar predicción",
+        "en": "Run Prediction",
+        "pt": "Executar Previsão"
+    },
+    "Pendiente-faltante": {
+        "es": "Pendiente: ",
+        "en": "Slope: ",
+        "pt": "Declive: "
+    },
+    "Caminos-faltante": {
+        "es": "Caminos: ",
+        "en": "Paths: ",
+        "pt": "Caminhos: "
+    },
+    "Exclusion-faltante": {
+        "es": "Exclusión: ",
+        "en": "Exclusion: ",
+        "pt": "Exclusão: "
+    },
+    "Urbano-faltante": {
+        "es": "Urbano: ",
+        "en": "Urban: ",
+        "pt": "Urbano: "
+    },
+    "Pendiente-faltante2": {
+        "es": "Pendiente: ",
+        "en": "Slope: ",
+        "pt": "Declive: "
+    },
+    "Caminos-faltante2": {
+        "es": "Caminos: ",
+        "en": "Paths: ",
+        "pt": "Caminhos: "
+    },
+    "Exclusion-faltante2": {
+        "es": "Exclusión: ",
+        "en": "Exclusion: ",
+        "pt": "Exclusão: "
+    },
+    "Urbano-faltante2": {
+        "es": "Urbano: ",
+        "en": "Urban: ",
+        "pt": "Urbano: "
+    }
+}

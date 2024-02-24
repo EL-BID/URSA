@@ -6,12 +6,21 @@ import dash_bootstrap_components as dbc
 import ursa.dynamic_world as udw
 
 from components.page import new_page_layout
-from components.text import figureWithDescription
+from components.text import figureWithDescription, figureWithDescription_translation
 from dash import html, dcc, callback, Input, Output, State
 from datetime import datetime, timezone
-from layouts.common import generate_drive_text
+from layouts.common import generate_drive_text, generate_drive_text_translation, generate_drive_text_translation_land
 from pathlib import Path
 from shapely.geometry import shape
+
+import json
+
+# Traducciones
+with open('./data/translations/land_cover/translations_land_cover.json', 'r', encoding='utf-8') as file:
+    translations = json.load(file)
+    
+with open('./data/translations/land_cover/tab_translations_land_cover.json', 'r', encoding='utf-8') as file:
+    tab_translations = json.load(file)
 
 path_fua = Path("./data/output/cities/")
 
@@ -28,41 +37,33 @@ MAIN_TEXT = """El mapa muestra la categoría mas común observada en 2022
         Notese que los bordes entre clases presentan mayor
         incertidumbre. """
 
-ADDITIONAL_TEXT = html.Div(
-    [
-        """En esta pestaña podrás explorar los tipos de cobertura de suelo "
-    presentes en el área alrededor de tu ciudad.
-    Estos datos de cobertura de suelo provienen del proyecto """,
-        html.A("Dynamic World", href="https://dynamicworld.app"),
-        " de Google.",
-        html.Br(),
-        """En Dynamic World, las imágenes satelitales Sentinel son
-    procesadas usando un red neuronal para clasificar cada
-    pixel en una de las 9 posibles categorías de suelo.
-    Dynamic World posee datos de cobertura de suelo desde el
-    año 2016.""",
-        html.Br(),
-        "Las correspondencias y colores canónicos de cada etiqueta pueden revisarse en el siguiente ",
-        html.A(
-            "enlace",
-            href="https://developers.google.com/earth-engine/datasets/catalog/GOOGLE_DYNAMICWORLD_V1#bands",
-        ),
-        ":",
-        html.Ul(
-            [
-                html.Li("0: Agua"),
-                html.Li("1: Árboles"),
-                html.Li("2: Pasto"),
-                html.Li("3: Vegetación inundada"),
-                html.Li("4: Cultivos"),
-                html.Li("5: Arbustos y maleza"),
-                html.Li("6: Construido"),
-                html.Li("7: Baldío"),
-                html.Li("8: Nieve y hielo"),
-            ]
-        ),
-    ]
-)
+ADDITIONAL_TEXT = [
+    html.Div(id='ADDITIONAL_TEXT_PART1'),
+    html.A("Dynamic World", href="https://dynamicworld.app"),
+    html.Div(id='ADDITIONAL_TEXT_PART2'),
+    html.Br(),
+    html.Div(id='ADDITIONAL_TEXT_PART3'),
+    html.Br(),
+    html.Div(id='ADDITIONAL_TEXT_PART4'),
+    html.A(
+        "enlace",
+        href="https://developers.google.com/earth-engine/datasets/catalog/GOOGLE_DYNAMICWORLD_V1#bands",
+    ),
+    ":",
+    html.Ul(
+        [
+            html.Li(id = "tipo-agua"),
+            html.Li(id = "tipo-arboles"),
+            html.Li(id = "tipo-pasto"),
+            html.Li(id = "tipo-vegetacion"),
+            html.Li(id = "tipo-cultivos"),
+            html.Li(id = "tipo-arbustos"),
+            html.Li(id = "tipo-construido"),
+            html.Li(id = "tipo-baldio"),
+            html.Li(id = "tipo-nieve"),
+        ]
+    ),
+]
 
 maps = html.Div(
     [
@@ -73,26 +74,16 @@ maps = html.Div(
 
 lines = html.Div(
     [
-        figureWithDescription(
-            dcc.Graph(id="cover-lines-1"),
-            html.P(
-                "El gráfico de barras muestra las superficie en kilómetros "
-                "cuadrados que le corresponde a cada clase de cobertura en "
-                "el año 2022."
-            ),
-            "Superficie por Categoría de Uso de Suelo (Año 2022)",
+        figureWithDescription_translation(
+        dcc.Graph(id="cover-lines-1"),
+        "DESC1",  # ID descripción
+        "TITLE1"  # ID título
         ),
-        figureWithDescription(
-            dcc.Graph(id="cover-lines-2"),
-            html.P(
-                "El gráfico de líneas muestra la evolución en el tiempo "
-                "de la cantidad de superficie de cada clase de cobertura "
-                "desde 2016 hasta el 2022. "
-                "El gráfico es interactivo y se pueden seleccionar una "
-                "o varias clases específicas para observar más claramente "
-                "su comportamiento en el tiempo."
-            ),
-            "Cobertura de suelo",
+        
+        figureWithDescription_translation(
+        dcc.Graph(id="cover-lines-2"),
+        "DESC2",  # ID descripción
+        "TITLE2"  # ID título
         ),
     ],
     style={"overflow": "scroll", "height": "82vh"},
@@ -101,10 +92,8 @@ lines = html.Div(
 main_info = dbc.Card(
     dbc.CardBody(
         [
-            html.H4(
-                "Clasificación del Territorio por Categoría de Uso de Suelo (Año 2022)"
-            ),
-            MAIN_TEXT,
+            html.H4(id="TITLE3"), 
+            html.Div(id="MAIN_TEXT"),  
         ]
     ),
     class_name="main-info",
@@ -127,7 +116,7 @@ tabs = [
     ),
     dbc.Tab(
         [
-            generate_drive_text(
+            generate_drive_text_translation_land(
                 how="La información procesada en la sección Cobertura de Suelo se realiza principalmente mediante de Google Earth Engine. De esta manera, la descarga de los datos empleados, debido a su tamaño, es a través del Google Drive de la cuenta empleada en la autenticación de Google Earth Engine.",
                 where="La descarga del raster con nombre 'dynamic_world_raster.tif' se hará al directorio raíz del Google Drive de la cuenta empleada.",
             ),
@@ -137,16 +126,18 @@ tabs = [
                         [
                             dbc.Col(
                                 dbc.Button(
-                                    "Descarga rasters",
+                                    html.Span(id = "info-button1"),
+                                    #"Descarga rasters",
                                     id="lc-btn-download-rasters",
                                     color="light",
                                     title="Descarga los archivos Raster a Google Drive. En este caso la información es procesada en Google Earth Engine y la única opción de descarga es al directorio raíz de tu Google Drive.",
+                                    #html.Span(id = "info-button1"),
                                 ),
                                 width=4,
                             ),
                             dbc.Col(
                                 dbc.Button(
-                                    "Cancelar ejecución",
+                                    #"Cancelar ejecución",
                                     id="lc-btn-stop-task",
                                     color="danger",
                                     style={"display": "none"},
@@ -164,8 +155,20 @@ tabs = [
             ),
         ],
         label="Descargables",
+        id = "tabDownloadables",
+        tab_id="tabDownloadables",
     ),
 ]
+
+# Traducciones
+language_buttons = dbc.ButtonGroup(
+    [
+        dbc.Button("Español", id="btn-lang-es", n_clicks=0),
+        dbc.Button("English", id="btn-lang-en", n_clicks=0),
+        dbc.Button("Portuguese", id="btn-lang-pt", n_clicks=0),
+    ],
+    style={"position": "absolute", "top": "10px", "right": "10px", "z-index": "1"},
+)
 
 layout = new_page_layout(
     maps,
@@ -176,6 +179,46 @@ layout = new_page_layout(
         dcc.Location(id="lc-location"),
     ],
 )
+
+"""
+layout = html.Div(
+    [language_buttons, layout],
+    style={"position": "relative"}
+)
+"""
+
+@callback(
+    [Output(key, 'children') for key in translations.keys()],
+    [Input('current-language-store', 'data')]
+)
+def update_translated_content(language_data):
+    language = language_data['language'] if language_data else 'es'
+    updated_content = [translations[key][language] for key in translations.keys()]
+    return updated_content
+
+
+# ---
+
+@callback(
+    [Output(key, 'label') for key in tab_translations.keys()],
+    [Input('btn-lang-es', 'n_clicks'),
+     Input('btn-lang-en', 'n_clicks'),
+     Input('btn-lang-pt', 'n_clicks')],
+    [State('current-language-store', 'data')],
+)
+def update_tab_labels(btn_lang_es, btn_lang_en, btn_lang_pt, language_data):
+    ctx = dash.callback_context
+
+    if not ctx.triggered:
+        language = language_data['language'] if language_data else 'es'
+    else:
+        button_id = ctx.triggered[0]['prop_id'].split('.')[0]
+        language = 'es' if button_id == 'btn-lang-es' else 'en' if button_id == 'btn-lang-en' else 'pt'
+
+    tab_labels = [tab_translations[key][language] for key in tab_translations.keys()]
+    return tab_labels
+
+# ---
 
 
 @callback(
@@ -226,17 +269,28 @@ def download_rasters(n_intervals, task_name):
 
 
 @callback(
-    Output("cover-map-1", "figure"),
-    Output("cover-lines-1", "figure"),
-    Output("cover-lines-2", "figure"),
-    Output("lc-location", "pathname"),
-    Input("global-store-hash", "data"),
-    Input("global-store-bbox-latlon", "data"),
-    Input("global-store-fua-latlon", "data"),
+    [Output("cover-map-1", "figure"),
+     Output("cover-lines-1", "figure"),
+     Output("cover-lines-2", "figure"),
+     Output("lc-location", "pathname")],
+    [Input("global-store-hash", "data"),
+     Input("global-store-bbox-latlon", "data"),
+     Input("global-store-fua-latlon", "data"),
+     Input('btn-lang-es', 'n_clicks'),
+     Input('btn-lang-en', 'n_clicks'),
+     Input('btn-lang-pt', 'n_clicks')],
+    [State('current-language-store', 'data')],
 )
-def generate_plots(id_hash, bbox_latlon, fua_latlon):
+def generate_plots(id_hash, bbox_latlon, fua_latlon, btn_lang_es, btn_lang_en, btn_lang_pt, language_data):
     if id_hash is None:
         return [dash.no_update] * 3 + ["/"]
+    
+    ctx = dash.callback_context
+    if not ctx.triggered:
+        language = language_data['language'] if language_data else 'es'
+    else:
+        button_id = ctx.triggered[0]['prop_id'].split('.')[0]
+        language = 'es' if button_id == 'btn-lang-es' else 'en' if button_id == 'btn-lang-en' else 'pt'
 
     path_cache = Path(f"./data/cache/{id_hash}")
 
@@ -244,13 +298,13 @@ def generate_plots(id_hash, bbox_latlon, fua_latlon):
     fua_latlon = shape(fua_latlon)
 
     map1 = udw.plot_map_season(
-        bbox_latlon, fua_latlon.centroid, season="Qall", year=2022
+        bbox_latlon, fua_latlon.centroid, season="Qall", year=2022, language=language
     )
-    lines1 = udw.plot_lc_year(bbox_latlon, path_cache)
-    lines2 = udw.plot_lc_time_series(bbox_latlon, path_cache)
+    lines1 = udw.plot_lc_year(bbox_latlon, path_cache, year=2022, language=language)
+    lines2 = udw.plot_lc_time_series(bbox_latlon, path_cache, language=language)
+
 
     return map1, lines1, lines2, dash.no_update
-
 
 @callback(
     Output("lc-btn-stop-task", "style"),

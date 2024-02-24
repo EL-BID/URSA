@@ -5,10 +5,11 @@ import sys
 
 import dash_bootstrap_components as dbc
 
-from components.navbar import navbar
+from components.navbar import navbar, create_navbar
 from dash import Dash, html, dcc
 from pathlib import Path
 from ursa.utils.image import b64_image
+from dash.dependencies import Input, Output, State
 
 
 BID_LOGO_PATH = "./assets/BID_blue.png"
@@ -39,10 +40,23 @@ content = dcc.Loading(
     type="circle",
 )
 
+# Traducciones
+language_buttons = dbc.ButtonGroup(
+    [
+        dbc.Button("Español", id="btn-lang-es", n_clicks=0),
+        dbc.Button("English", id="btn-lang-en", n_clicks=0),
+        dbc.Button("Portuguese", id="btn-lang-pt", n_clicks=0),
+    ],
+    style={"position": "absolute", "top": "10px", "right": "10px", "z-index": "1"},
+)
+
 app.layout = dbc.Container(
     [
         dbc.Row(
             [
+                dbc.Row(
+            dbc.Col(language_buttons)
+        ),
                 dbc.Col(
                     html.A(
                         html.Img(
@@ -67,8 +81,12 @@ app.layout = dbc.Container(
             ]
         ),
         dbc.Row(
-            [dbc.Col(navbar, className="col-auto"), dbc.Col(content)],
+            [
+                dbc.Col(html.Div(create_navbar('es'), id='navbar-container'), className="col-auto"),
+                dbc.Col(content)
+            ],
         ),
+        dcc.Store(id="current-language-store", data={'language': 'es'}),
         dcc.Store(id="global-store-bbox-latlon"),
         dcc.Store(id="global-store-bbox-latlon-orig"),
         dcc.Store(id="global-store-hash-orig"),
@@ -80,6 +98,28 @@ app.layout = dbc.Container(
     fluid=True,
 )
 
+@app.callback(
+    [Output('navbar-container', 'children'), 
+     Output('current-language-store', 'data', allow_duplicate=True),
+     Output('loading-spinner', 'className')],  
+    [Input('btn-lang-es', 'n_clicks'), 
+     Input('btn-lang-en', 'n_clicks'), 
+     Input('btn-lang-pt', 'n_clicks')],
+    [State('current-language-store', 'data')],
+    prevent_initial_call=True,
+)
+def update_navbar(btn_lang_es, btn_lang_en, btn_lang_pt, language_data):
+    if not dash.callback_context.triggered:
+        language = 'es'  # Idioma predeterminado
+    else:
+        button_id = dash.callback_context.triggered[0]['prop_id'].split('.')[0]
+        language = 'es' if button_id == 'btn-lang-es' else 'en' if button_id == 'btn-lang-en' else 'pt'
+        language_data = {'language': language}
+
+    updated_navbar = create_navbar(language)
+    spinner_class = 'loading-callback-spinner ' + language 
+    return updated_navbar, language_data, spinner_class
+ 
 
 if __name__ == "__main__":
     try:

@@ -1,0 +1,117 @@
+{
+    "calibration-text3": {
+        "es": "Año a partir del cual realizar la calibración.",
+        "en": "Year from which to perform the calibration.",
+        "pt": "Ano a partir do qual realizar a calibração."
+    },
+    "calibration-text5": {
+        "es": "Año hasta el cual realizar la calibración.",
+        "en": "Year until which to perform the calibration.",
+        "pt": "Ano até o qual realizar a calibração."
+    },
+    "calibration-text8": {
+        "es": "Número de iteraciones de Monte Carlo.",
+        "en": "Number of Monte Carlo iterations.",
+        "pt": "Número de iterações do Monte Carlo."
+    },
+    "calibration-text10": {
+        "es": "Semilla para el generador de números aleatorios. La misma semilla producirá los mismos resultados cada vez.",
+        "en": "Seed for the random number generator. The same seed will produce the same results each time.",
+        "pt": "Semente para o gerador de números aleatórios. A mesma semente produzirá os mesmos resultados todas as vezes."
+    },
+    "calibration-text13": {
+        "es": "Número de etapas de refinamiento.",
+        "en": "Number of refinement stages.",
+        "pt": "Número de etapas de refinamento."
+    },
+    "calibration-text15": {
+        "es": "Número de divisiones de refinamiento.",
+        "en": "Number of refinement divisions.",
+        "pt": "Número de divisões de refinamento."
+    },
+    "calibration-text17": {
+        "es": "Número de ganadores de refinamiento.",
+        "en": "Number of refinement winners.",
+        "pt": "Número de vencedores do refinamento."
+    },
+    "calibration-text20": {
+        "es": "Límite crítico de pendientes.",
+        "en": "Critical limit of slopes.",
+        "pt": "Limite crítico de inclinações."
+    },
+    "coeficientes-text2-diffusion": {
+        "es": "Coeficiente mínimo a probar.",
+        "en": "Minimum coefficient to test.",
+        "pt": "Coeficiente mínimo a testar."
+    },
+    "coeficientes-text4-diffusion": {
+        "es": "Coeficiente máximo a probar.",
+        "en": "Maximum coefficient to test.",
+        "pt": "Coeficiente máximo a testar."
+    },
+    "coeficientes-text2-breed": {
+        "es": "Coeficiente mínimo a probar.",
+        "en": "Minimum coefficient to test.",
+        "pt": "Coeficiente mínimo a testar."
+    },
+    "coeficientes-text4-breed": {
+        "es": "Coeficiente máximo a probar.",
+        "en": "Maximum coefficient to test.",
+        "pt": "Coeficiente máximo a testar."
+    },
+    "coeficientes-text2-spread": {
+        "es": "Coeficiente mínimo a probar.",
+        "en": "Minimum coefficient to test.",
+        "pt": "Coeficiente mínimo a testar."
+    },
+    "coeficientes-text4-spread": {
+        "es": "Coeficiente máximo a probar.",
+        "en": "Maximum coefficient to test.",
+        "pt": "Coeficiente máximo a testar."
+    },
+    "coeficientes-text2-slope": {
+        "es": "Coeficiente mínimo a probar.",
+        "en": "Minimum coefficient to test.",
+        "pt": "Coeficiente mínimo a testar."
+    },
+    "coeficientes-text4-slope": {
+        "es": "Coeficiente máximo a probar.",
+        "en": "Maximum coefficient to test.",
+        "pt": "Coeficiente máximo a testar."
+    },
+    "coeficientes-text2-road": {
+        "es": "Coeficiente mínimo a probar.",
+        "en": "Minimum coefficient to test.",
+        "pt": "Coeficiente mínimo a testar."
+    },
+    "coeficientes-text4-road": {
+        "es": "Coeficiente máximo a probar.",
+        "en": "Maximum coefficient to test.",
+        "pt": "Coeficiente máximo a testar."
+    },
+    "prediccion-text3": {
+        "es": "Año a partir del cual realizar la predicción.",
+        "en": "Year from which to start the prediction.",
+        "pt": "Ano a partir do qual realizar a previsão."
+    },
+    "prediccion-text5": {
+        "es": "Número de años hacia el futuro para los cuales hacer la predicción.",
+        "en": "Number of years into the future for which to make the prediction.",
+        "pt": "Número de anos para o futuro para os quais fazer a previsão."
+    },
+    "prediccion-text8": {
+        "es": "Número de iteraciones de Monte Carlo.",
+        "en": "Number of Monte Carlo iterations.",
+        "pt": "Número de iterações do Monte Carlo."
+    },
+    "prediccion-text10": {
+        "es": "Semilla para el generador de números aleatorios. La misma semilla producirá los mismos resultados cada vez.",
+        "en": "Seed for the random number generator. The same seed will produce the same results every time.",
+        "pt": "Semente para o gerador de números aleatórios. A mesma semente produzirá os mesmos resultados todas as vezes."
+    },
+    "prediccion-text13": {
+        "es": "Límite crítico de pendientes.",
+        "en": "Critical slope limit.",
+        "pt": "Limite crítico de inclinações."
+    }
+}

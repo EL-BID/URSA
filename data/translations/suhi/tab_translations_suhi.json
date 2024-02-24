@@ -1,0 +1,22 @@
+{
+    "tab-controls-suhi": {
+        "es": "Controles",
+        "en": "Controls",
+        "pt": "Controles"
+    },
+    "tab-plots-suhi": {
+        "es": "Gráficas",
+        "en": "Charts",
+        "pt": "Gráficos"
+    },
+    "tab-info-suhi": {
+        "es": "Info",
+        "en": "Info",
+        "pt": "Informação"
+    },
+    "tabDownloadables-suhi": {
+        "es": "Descargables",
+        "en": "Downloadables",
+        "pt": "Descarregáveis"
+    }
+}

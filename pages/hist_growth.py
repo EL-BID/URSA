@@ -4,7 +4,7 @@ import dash_bootstrap_components as dbc
 import ursa.ghsl as ghsl
 import ursa.utils.geometry as ug
 
-from components.text import figureWithDescription
+from components.text import figureWithDescription, figureWithDescription_translation, figureWithDescription_translation2
 from components.text import mapComponent
 from components.page import new_page_layout
 from dash import html, dcc, callback, Input, Output
@@ -12,71 +12,57 @@ from pathlib import Path
 from shapely.geometry import shape
 from zipfile import ZipFile
 
+import json
+
+# Traducciones
+with open('./data/translations/hist_grow/translations_hist.json', 'r', encoding='utf-8') as file:
+    translations = json.load(file)
+    
+# Traducciones
+with open('./data/translations/hist_grow/tab_translations_hist.json', 'r', encoding='utf-8') as file:
+    tab_translations = json.load(file)
+
 dash.register_page(__name__, title="URSA")
 
 WELCOME_TEXT = [
     (
-        "En esta pestaña encontrarás información acerca del crecimiento "
-        "histórico de la ciudad. A partir de datos del proyecto "
+        html.Div(id='WELCOME_TEXT_PART1')
     ),
     html.A("Global Human Settlement Layer", href="https://ghsl.jrc.ec.europa.eu/"),
     (
-        " (GHSL) se muestra el cambio en el área urbanizada, la superficie "
-        "construida y la población en la zona metropolitana de tu elección."
+        html.Div(id='WELCOME_TEXT_PART2')
     ),
 ]
 
 MAP_INTRO_TEXT = [
     (
-        "Los cuatro mapas que se presentan a continuación contienen "
-        "información agregada de las características urbanas de la región."
+        html.Div(id='MAP_INTRO_TEXT_PART1')
     ),
     html.Ul(
         [
             html.Li(
-                "Los límites de la región de análisis se delinean con un "
-                "contorno de color azul."
+                id='MAP_INTRO_TEXT_PART2'
             ),
             html.Li(
-                "La región delineada en un color marrón identifica el área "
-                "urbana principal."
+                id='MAP_INTRO_TEXT_PART3'
             ),
             html.Li(
-                "El área urbana principal se define porque cada pixel "
-                "(100x100 metros) posee una densidad de al menos 300 "
-                "habitantes por kilómetro cuadrado al año 2020."
+                id='MAP_INTRO_TEXT_PART4'
             ),
             html.Li(
-                "Las regiones delineadas con un color amarillo corresponden "
-                "a la urbanización periférica; se trata de zonas sin "
-                "contigüidad al área urbana principal, pero que tienen "
-                "una densidad de al menos 300 habitantes por kilómetro "
-                "cuadrado al año 2020. "
-                "Accede a más información acerca de cada mapa haciendo clic "
-                "en el botón correspondiente en la interfaz de usuario."
+                id='MAP_INTRO_TEXT_PART5'
             ),
         ]
     ),
 ]
 
-MAP_HIST_BUILTUP_INTRO_TEXT = "Evolución temporal de la construcción. "
+MAP_HIST_BUILTUP_INTRO_TEXT = "Evolución temporal de la construcción."
 
 MAP_HIST_BUILTUP_EXPANDED_TEXT = html.Div(
     [
-        (
-            "Las celdas de la cartografía son de 100x100 metros. "
-            "Una celda se considera como construida (built-up) cuando "
-            "al menos el 20% de su superficie está cubierta por algún "
-            "tipo de construcción. "
-            "De acuerdo con la definición del "
-        ),
+        html.Span(id="MAP_HIST_BUILTUP_EXPANDED_TEXT_PART1"),
         html.Acronym("GHSL", title="Global Human Settlement Layer"),
-        (
-            ", una construcción es cualquier tipo de estructura "
-            "techada erigida sobre suelo para cualquier uso. "
-            "Este mapa muestra el año en que cada celda se considera "
-            "construida por primera vez en las imágenes de satélite."
-        ),
+        html.Span(id="MAP_HIST_BUILTUP_EXPANDED_TEXT_PART2"),
     ]
 )
 
@@ -127,38 +113,17 @@ LINE_GRAPH_TEXT_1 = """Este primer gráfico de líneas muestra el cambio en la
 
 LINE_GRAPH_TEXT_2 = html.Div(
     [
-        "A partir de las imágenes de satélite y de la información del ",
+        html.Span(id="LINE_GRAPH_TEXT_2_PART1"),
         html.Acronym("GHSL", title="Global Human Settlement Layer"),
-        (
-            ", el gráfico de lineas muestra el cambio en la superficie "
-            "del área construida dentro de la zona de interés del año "
-            "1975 al 2020. "
-            "El área en color marrón corresponde a los kilómetros cuadrados "
-            "por año de la superficie urbanizada en el cluster urbano "
-            "principal de la ciudad. "
-            "El área en color amarillo corresponde a la superficie "
-            "urbanizada de las zonas periférias sin contigüidad con la "
-            "zona urbanizada central. "
-            "El lector o lectora puede apreciar el crecimiento de la "
-            "superficie urbanizada por año, distinguiendo en que medida "
-            "se debe a crecimiento en la periferia versus en la zona central."
-        ),
-    ]
+        html.Span(id="LINE_GRAPH_TEXT_2_PART2"),
+    ],
 )
 
 LINE_GRAPH_TEXT_3 = html.Div(
     [
         html.Acronym("GHSL", title="Global Human Settlement Layer"),
-        """ calcula estimados de población para las zonas metropolitanas de
-        todo el mundo. Estos estimados se reportan en una cuadrícula, en este
-        caso de 100x100 metros. El gráfico de líneas muestra el cambio en
-        número de población de acuerdo con estos estimados, solamente para
-        las celdas clasificadas como urbanizadas. Los estimados de población
-        fueron elaborados con datos del 2010, extrapolados el 2020. Estaremos
-        actualizando la herramienta conforme GHS publica nuevos estimados de
-        población basados en las proyecciones de los censos levantados en 2020.
-        El lector o lectora puede apreciar el cambio poblacional por
-        año y por tipo de urbanización: central o periférica.""",
+        
+        html.Span(id="LINE_GRAPH_TEXT_3"),
     ]
 )
 
@@ -181,45 +146,74 @@ de la misma infraestructura. """
 
 maps = html.Div(
     [
-        mapComponent("Año en el que aparece la construcción", id="growth-map-1"),
-        mapComponent("Año en el que se considera celda urbana", id="growth-map-2"),
-        mapComponent("Fracción de construcción 2020", id="growth-map-3"),
-        mapComponent("Habitantes por celda", id="growth-map-4"),
+        html.Div(
+            [
+                html.H4(id="map-title-1"),  
+                mapComponent(title="", id="growth-map-1")  
+            ],
+            style={"margin-bottom": "20px"}  
+        ),
+        html.Div(
+            [
+                html.H4(id="map-title-2"),  
+                mapComponent(title="", id="growth-map-2")  
+            ],
+            style={"margin-bottom": "20px"} 
+        ),
+        html.Div(
+            [
+                html.H4(id="map-title-3"),  
+                mapComponent(title="", id="growth-map-3") 
+            ],
+            style={"margin-bottom": "20px"}  
+        ),
+        html.Div(
+            [
+                html.H4(id="map-title-4"),  
+                mapComponent(title="", id="growth-map-4")  
+            ],
+            style={"margin-bottom": "20px"}  
+        )
+
     ],
     style={"height": "90vh", "overflow": "scroll"},
 )
 
 lines = html.Div(
     [
-        figureWithDescription(
-            dcc.Graph(id="growth-lines-1"),
-            LINE_GRAPH_TEXT_1,
-            "Superficie del Área Urbana por Tipo de Urbanización (1975-2020)",
+        figureWithDescription_translation(
+        dcc.Graph(id="growth-lines-1"),
+        "LINE_GRAPH_TEXT_1",  # ID descripción
+        "sub1"  # ID título
         ),
-        figureWithDescription(
-            dcc.Graph(id="growth-lines-2"),
-            LINE_GRAPH_TEXT_2,
-            "Superficie del Área Construida por Tipo de Urbanización (1975-2020)",
+        
+        figureWithDescription_translation2(
+           dcc.Graph(id="growth-lines-2"), 
+            ["LINE_GRAPH_TEXT_2_PART1", "GHSL", "LINE_GRAPH_TEXT_2_PART2"], 
+            "sub2"  
         ),
-        figureWithDescription(
-            dcc.Graph(id="growth-lines-3"),
-            LINE_GRAPH_TEXT_3,
-            "Población Total del Área Urbana por Tipo de Urbanización (1975-2020)",
+        
+        figureWithDescription_translation2(
+            dcc.Graph(id="growth-lines-3"), 
+            ["GHSL", "LINE_GRAPH_TEXT_3"], 
+            "sub3"
         ),
-        figureWithDescription(
-            dcc.Graph(id="growth-lines-4"),
-            LINE_GRAPH_TEXT_4,
-            "Densidad de Construcción por Tipo de Urbanización (1975-2020)",
+        
+        figureWithDescription_translation(
+        dcc.Graph(id="growth-lines-4"),
+        "LINE_GRAPH_TEXT_4",  # ID descripción
+        "sub4"  # ID título
         ),
-        figureWithDescription(
-            dcc.Graph(id="growth-lines-5"),
-            LINE_GRAPH_TEXT_5,
-            "Densidad de Población por Tipo de Urbanización (1975-2020)",
+        
+        figureWithDescription_translation(
+        dcc.Graph(id="growth-lines-5"),
+        "LINE_GRAPH_TEXT_5",  # ID descripción
+        "sub5"  # ID título
         ),
-        figureWithDescription(
-            dcc.Graph(id="growth-lines-6"),
-            LINE_GRAPH_TEXT_6,
-            "Densidad de Población (por Superficie de Construcción) por Tipo de Urbanización (1975-2020)",
+        figureWithDescription_translation(
+        dcc.Graph(id="growth-lines-6"),
+        "LINE_GRAPH_TEXT_6",  # ID descripción
+        "sub6"  # ID título
         ),
     ],
     style={"height": "82vh", "overflow": "scroll"},
@@ -231,7 +225,7 @@ mapIntroAlert = dbc.Card(dbc.CardBody(MAP_INTRO_TEXT), class_name="supp-info")
 constructionYearMapInfoAlert = dbc.Card(
     dbc.CardBody(
         [
-            html.H4("Año en el que aparece la construcción"),
+            html.H4(id="sub7"),
             MAP_HIST_BUILTUP_EXPANDED_TEXT,
         ]
     ),
@@ -240,25 +234,28 @@ constructionYearMapInfoAlert = dbc.Card(
 urbanCellYearMapInfoAlert = dbc.Card(
     dbc.CardBody(
         [
-            html.H4("Año en el que se considera celda urbana"),
-            MAP_HIST_URBAN_EXPANDED_TEXT,
+            html.H4(id="sub8"),
+            html.Span(id = "MAP_HIST_URBAN_EXPANDED_TEXT"),
         ]
     ),
     class_name="supp-info",
 )
 contstructionFractionMapInfoAlert = dbc.Card(
-    dbc.CardBody([html.H4("Fracción de construcción 2020"), MAP_BUILT_F_EXPANDED_TEXT]),
+    dbc.CardBody([html.H4(id="sub9"), 
+                  
+                  html.Span(id = "MAP_BUILT_F_EXPANDED_TEXT")]),
     class_name="supp-info",
 )
 inhabitantsFractionMapInfoAlert = dbc.Card(
-    dbc.CardBody([html.H4("Habitantes por celda"), MAP_POP_EXPANDED_TEXT]),
+    dbc.CardBody([html.H4(id = "sub10"), 
+                  html.Span(id = "MAP_POP_EXPANDED_TEXT")]),
     class_name="supp-info",
 )
 
 
 download_button = html.Div(
     [
-        dbc.Button("Descargar a disco", id="btn-download-rasters", color="light"),
+        dbc.Button(id="btn-download-rasters", color="light"),
         dcc.Download(id="download-rasters-zip"),
         html.Span(
             "?",
@@ -274,7 +271,7 @@ download_button = html.Div(
             },
         ),
         dbc.Tooltip(
-            "Descarga los archivos Raster localmente en tu carpeta de Descargas.",
+            html.Span(id = "download-raster-instructions"),
             target="tooltip-target01",
         ),
     ]
@@ -284,8 +281,8 @@ download_button = html.Div(
 tabs = [
     dbc.Tab(
         lines,
-        label="Gráficas",
-        id="tab-plots",
+        label = "Gráficas",
+        id="tab-plots-hist",
         tab_id="tabPlots",
     ),
     dbc.Tab(
@@ -299,17 +296,29 @@ tabs = [
                 inhabitantsFractionMapInfoAlert,
             ]
         ),
-        label="Info",
-        id="tab-info",
+        label= "Info",
+        id="tab-info-hist",
         tab_id="tabInfo",
     ),
     dbc.Tab(
         html.Div([download_button]),
-        label="Descargables",
-        id="tab-download",
+
+        label= "Descargables",
+        id="tab-download-hist",
         tab_id="tabDownload",
     ),
 ]
+
+# Traduccion
+
+language_buttons = dbc.ButtonGroup(
+    [
+        dbc.Button("Español", id="btn-lang-es", n_clicks=0),
+        dbc.Button("English", id="btn-lang-en", n_clicks=0),
+        dbc.Button("Portuguese", id="btn-lang-pt", n_clicks=0),
+    ],
+    style={"position": "absolute", "top": "10px", "right": "10px", "z-index": "1"},
+)
 
 layout = new_page_layout(
     maps,
@@ -317,7 +326,7 @@ layout = new_page_layout(
     stores=[dcc.Location(id="growth-location")],
     alerts=[
         dbc.Alert(
-            "Algunas gráficas no pudieron ser generadas. Considere cambiar la bounding box de análisis.",
+           html.Span(id="charts-generation-error"),
             id="growth-alert",
             is_open=False,
             dismissable=True,
@@ -325,22 +334,66 @@ layout = new_page_layout(
         )
     ],
 )
+# ---
+"""
+layout = html.Div(
+    [language_buttons, layout],
+    style={"position": "relative"}
+)
+"""
+@callback(
+    [Output(key, 'children') for key in translations.keys()],
+    [Input('current-language-store', 'data')]
+)
+def update_translated_content(language_data):
+    language = language_data['language'] if language_data else 'es'
+    updated_content = [translations[key][language] for key in translations.keys()]
+    return updated_content
 
+# --
+
+@callback(
+    [Output(key, 'label') for key in tab_translations.keys()], 
+    [Input('btn-lang-es', 'n_clicks'),
+     Input('btn-lang-en', 'n_clicks'),
+     Input('btn-lang-pt', 'n_clicks')]
+)
+def update_tab_labels(btn_lang_es, btn_lang_en, btn_lang_pt):
+    ctx = dash.callback_context
+
+    if not ctx.triggered:
+        language = 'es'  # Idioma predeterminado
+    else:
+        button_id = ctx.triggered[0]['prop_id'].split('.')[0]
+        language = 'es' if button_id == 'btn-lang-es' else 'en' if button_id == 'btn-lang-en' else 'pt'
+
+    tab_labels = [tab_translations[key][language] for key in tab_translations.keys()]
+
+    return tab_labels  
+
+# ---
 
 @callback(
     Output("download-rasters-zip", "data"),
+    Input("global-store-hash", "data"),
     Input("btn-download-rasters", "n_clicks"),
     prevent_initial_call=True,
 )
-def download_file(n_clicks):
+def download_file(id_hash, n_clicks):
+
+    if id_hash is None:
+        return [dash.no_update] * 11 + ["/"]
+    
+    path_cache = Path(f"./data/cache/{str(id_hash)}")
+
     rasters: list[str] = [
-        "GHS_BUILT_S_100.tif",
-        #'GHS_LAND_100.tif',
-        "GHS_POP_100.tif",
-        "GHS_SMOD_1000.tif",
-        #'dou.tif',
-        #'protected.tif',
-        #'slope.tif'
+        path_cache / "GHS_BUILT_S_100.tif",
+        #path_cache / 'GHS_LAND_100.tif',
+        path_cache / "GHS_POP_100.tif",
+        path_cache / "GHS_SMOD_1000.tif",
+        #path_cache / 'dou.tif',
+        #path_cache / 'protected.tif',
+        #path_cache / 'slope.tif'
     ]
 
     zip_file_name: str = f"hist-growth-rasters.zip"
@@ -368,13 +421,23 @@ def download_file(n_clicks):
     Output("growth-location", "pathname"),
     Input("global-store-hash", "data"),
     Input("global-store-bbox-latlon", "data"),
-    Input("global-store-uc-latlon", "data"),
+    [Input("global-store-uc-latlon", "data"),
+    Input('btn-lang-es', 'n_clicks'),
+    Input('btn-lang-en', 'n_clicks'),
+    Input('btn-lang-pt', 'n_clicks')]
 )
-def generate_lines(id_hash, bbox_latlon, uc_latlon):
+def generate_lines(id_hash, bbox_latlon, uc_latlon, btn_lang_es, btn_lang_en, btn_lang_pt):
     error_triggered = False
 
     if id_hash is None:
         return [dash.no_update] * 11 + ["/"]
+    
+    ctx = dash.callback_context
+    if not ctx.triggered:
+        language = 'es'  # Idioma predeterminado
+    else:
+        button_id = ctx.triggered[0]['prop_id'].split('.')[0]
+        language = 'es' if button_id == 'btn-lang-es' else 'en' if button_id == 'btn-lang-en' else 'pt'
 
     path_cache = Path(f"./data/cache/{str(id_hash)}")
 
@@ -396,24 +459,70 @@ def generate_lines(id_hash, bbox_latlon, uc_latlon):
         path_cache=path_cache,
     )
 
+    translations = {
+        "es": {
+            "Urban Area": "Área urbana",
+            "Built Area": "Área construida",
+            "Population": "Población",
+            "Construction Density": "Densidad de construcción",
+            "Population Density": "Densidad de población",
+            "Population Density (Construction)": "Densidad de población (construcción)",
+            "Area (km²)": "Área (km²)",
+            "People per km²": "Personas por km²",
+            "People per km² of Construction": "Personas por km² de construcción",
+            "Fraction of Built Area": "Fracción de área construida"
+            
+        },
+        "en": {
+            "Urban Area": "Urban Area",
+            "Built Area": "Built Area",
+            "Population": "Population",
+            "Construction Density": "Construction Density",
+            "Population Density": "Population Density",
+            "Population Density (Construction)": "Population Density (Construction)",
+            "Area (km²)": "Area (km²)",
+            "People per km²": "People per km²",
+            "People per km² of Construction": "People per km² of Construction",
+            "Fraction of Built Area": "Fraction of Built Area"
+            
+        },
+        "pt": {
+            "Urban Area": "Área urbana",
+            "Built Area": "Área construída",
+            "Population": "População",
+            "Construction Density": "Densidade de construção",
+            "Population Density": "Densidade populacional",
+            "Population Density (Construction)": "Densidade populacional (construção)",
+            "Area (km²)": "Área (km²)",
+            "People per km²": "Pessoas por km²",
+            "People per km² of Construction": "Pessoas por km² de construção",
+            "Fraction of Built Area": "Fração da Área Construída"
+       
+        }
+    }
+
+
+    
     line_plot_params = [
         dict(
             y_cols=["urban_cluster_main", "urban_cluster_other"],
-            title="Área urbana",
-            ylabel="Área (km²)",
+            title=translations[language]["Urban Area"],
+            ylabel=translations[language]["Urban Area"],
             var_type="extensive",
         ),
         dict(
             y_cols=["built_cluster_main", "built_cluster_other"],
-            title="Área construida",
-            ylabel="Área (km²)",
+            title=translations[language]["Built Area"],
+            ylabel=translations[language]["Built Area"],
             var_type="extensive",
         ),
+        # 
+        
         dict(
-            y_cols=["pop_cluster_main", "pop_cluster_other"],
-            title="Población",
-            ylabel="Población",
-            var_type="extensive",
+        y_cols=["pop_cluster_main", "pop_cluster_other"],
+        title=translations[language]["Population"],
+        ylabel=translations[language]["Population"],
+        var_type="extensive",
         ),
         dict(
             y_cols=[
@@ -421,8 +530,8 @@ def generate_lines(id_hash, bbox_latlon, uc_latlon):
                 "built_density_cluster_other",
                 "built_density_cluster_all",
             ],
-            title="Densidad de construcción",
-            ylabel="Fracción de área construida",
+            title=translations[language]["Construction Density"],
+            ylabel=translations[language]["Fraction of Built Area"],
             var_type="intensive",
         ),
         dict(
@@ -431,8 +540,8 @@ def generate_lines(id_hash, bbox_latlon, uc_latlon):
                 "pop_density_cluster_other",
                 "pop_density_cluster_all",
             ],
-            title="Densidad de población",
-            ylabel="Personas por km²",
+            title=translations[language]["Population Density"],
+            ylabel=translations[language]["People per km²"],
             var_type="intensive",
         ),
         dict(
@@ -441,8 +550,8 @@ def generate_lines(id_hash, bbox_latlon, uc_latlon):
                 "pop_b_density_cluster_other",
                 "pop_b_density_cluster_all",
             ],
-            title="Densidad de población (construcción)",
-            ylabel="Personas por km² de construcción",
+            title=translations[language]["Population Density (Construction)"],
+            ylabel=translations[language]["People per km² of Construction"],
             var_type="intensive",
         ),
     ]
@@ -450,18 +559,18 @@ def generate_lines(id_hash, bbox_latlon, uc_latlon):
     plots = []
     for params in line_plot_params:
         try:
-            lines = ghsl.plot_growth(growth_df, **params)
+            lines = ghsl.plot_growth(growth_df, **params, language = language)
             plots.append(lines)
         except Exception:
             plots.append(dash.no_update)
             error_triggered = True
 
-    map1 = ghsl.plot_built_agg_img(smod, built, bbox_mollweide, centroid_mollweide)
-    map2 = ghsl.plot_smod_clusters(smod, bbox_latlon)
+    map1 = ghsl.plot_built_agg_img(smod, built, bbox_mollweide, centroid_mollweide, language = language)
+    map2 = ghsl.plot_smod_clusters(smod, bbox_latlon, language=language)
     map3 = ghsl.plot_built_year_img(
-        smod, built, bbox_latlon, bbox_mollweide, centroid_mollweide
+        smod, built, bbox_latlon, bbox_mollweide, centroid_mollweide, language = language
     )
-    map4 = ghsl.plot_pop_year_img(smod, pop, bbox_mollweide, centroid_mollweide)
+    map4 = ghsl.plot_pop_year_img(smod, pop, bbox_mollweide, centroid_mollweide, language = language)
 
     plots.append(map1)
     plots.append(map2)
