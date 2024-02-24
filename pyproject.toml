@@ -24,7 +24,8 @@ dash-bootstrap-components = "^1.4.1"
 gdal = [
     { url = "https://download.lfd.uci.edu/pythonlibs/archived/GDAL-3.4.3-cp310-cp310-win_amd64.whl", platform = "win64"},
     { url = "https://download.lfd.uci.edu/pythonlibs/archived/GDAL-3.4.3-cp310-cp310-win_amd64.whl", platform = "win32"},
-    { version = "3.4.3", platform = "linux", source = "pypi" }
+    { version = "3.4.3", platform = "linux", source = "pypi" },
+    { version = "3.4.3", platform = "darwin", source = "pypi" }
 ]
 sleuth-sklearn = {git = "https://github.com/RodolfoFigueroa/sleuth-sklearn/"}
 scikit-learn = "^1.2.2"
