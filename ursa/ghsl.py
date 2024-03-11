@@ -93,7 +93,7 @@ def download_s3(
     if data_path is not None:
         raster.rio.to_raster(data_path / f"GHS_{ds}_{resolution}.tif")
 
-    print("Done.")
+    print(f"Done: GHS_{ds}_{resolution}.tif")
 
     return raster
 

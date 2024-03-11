@@ -11,11 +11,11 @@ import ursa.utils.geometry as ug
 import ursa.utils.raster as ru
 import ursa.world_cover as wc
 
-from components.text import figureWithDescription, figureWithDescription_translation, figureWithDescription_translation2
+from components.text import figureWithDescription_translation, figureWithDescription_translation2
 from components.page import new_page_layout
 from dash import html, dcc, callback, Input, Output, State
 from datetime import datetime, timezone
-from layouts.common import generate_drive_text, generate_drive_text_translation
+from layouts.common import generate_drive_text_translation
 from pathlib import Path
 from shapely.geometry import shape
 
