@@ -133,6 +133,25 @@ def get_cat_suhi(lst, masks, path_cache):
 
     return cat_img
 
+
+def get_cat_suhi_raw(lst, masks, path_cache):
+    print("Generating temperature discrete image ...")
+    temps = load_or_get_temps(lst, masks, path_cache)
+
+    rural_lst_mean = temps["rural"]["mean"]
+    std = temps["total"]["std"]
+    offsets = make_offsets(0, std)
+
+    unwanted_mask = masks["unwanted"]
+
+    img_suhi = lst.subtract(rural_lst_mean)
+    img_suhi = img_suhi.updateMask(unwanted_mask)
+
+    print("Done.")
+
+    return img_suhi
+
+
 def make_offsets(s_mean: float, s_std: float, n: int = 3) -> List[Tuple[float, float]]:
     offsets = [(1.0, 1.0)] * (2 * n - 1)
     for i in range(n - 1):
