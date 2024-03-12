@@ -602,12 +602,36 @@ tabs = [
                             dbc.Col(
                                 dbc.Button(
                                     #"Descargar rasters",
-                                    id="suhi-btn-download-rasters",
+                                    id="suhi-btn-download-rasters-normal",
                                     color="light",
-                                    title="Descarga los archivos Raster a Google Drive. En este caso la información es procesada en Google Earth Engine y la única opción de descarga es al directorio raíz de tu Google Drive.",
+                                    title="Descarga los rasters a Google Drive.",
                                 ),
                                 width=4,
                             ),
+                            dbc.Col(
+                                dbc.Button(
+                                    #"Descargar rasters",
+                                    id="suhi-btn-download-rasters-raw",
+                                    color="light",
+                                    title="Descarga los rasters correspondientes a la diferencia rural a Google Drive. ",
+                                ),
+                                width=4,
+                            ),
+                            dbc.Col(
+                                dbc.Button(
+                                    #"Descargar rasters",
+                                    id="suhi-btn-download-rasters-celsius",
+                                    color="light",
+                                    title="Descarga los rasters en grados centígrados a Google Drive.",
+                                ),
+                                width=4,
+                            ),
+                        ],
+                        justify="center",
+                        className="my-2"
+                    ),
+                    dbc.Row(
+                        [
                             dbc.Col(
                                 dbc.Button(
                                     #"Cancelar ejecución",
@@ -617,11 +641,6 @@ tabs = [
                                 ),
                                 width=4,
                             ),
-                        ],
-                        justify="center",
-                    ),
-                    dbc.Row(
-                        [
                             dbc.Col(
                                 dbc.Button(
                                     #"Descargar CSV",
@@ -634,6 +653,7 @@ tabs = [
                             dbc.Col(width=4),
                         ],
                         justify="center",
+                        className="my-2"
                     ),
                     dbc.Row(
                         dbc.Col(html.Span(id="suhi-span-rasters-output"), width=3),
@@ -802,18 +822,9 @@ def download_file(n_clicks, id_hash):
         return dcc.send_data_frame(df.to_csv, "suhi_data.csv")
 
 
-@callback(
-    Output("suhi-interval", "disabled", allow_duplicate=True),
-    Output("suhi-store-task-name", "data"),
-    Output("suhi-btn-stop-task", "style", allow_duplicate=True),
-    Output("suhi-span-rasters-output", "children", allow_duplicate=True),
-    Input("suhi-btn-download-rasters", "n_clicks"),
-    State("global-store-hash", "data"),
-    State("global-store-bbox-latlon", "data"),
-    State("suhi-store-task-name", "data"),
-    prevent_initial_call=True,
-)
-def start_download(n_clicks, id_hash, bbox_latlon, task_name):
+# Descargas
+    
+def _download_handler(n_clicks, id_hash, bbox_latlon, task_name, download_type):
     if n_clicks is None or n_clicks == 0:
         return dash.no_update, dash.no_update, dash.no_update
 
@@ -828,11 +839,16 @@ def start_download(n_clicks, id_hash, bbox_latlon, task_name):
         lst, proj = ht.get_lst(bbox_ee, start_date, end_date)
         _, masks = wc.get_cover_and_masks(bbox_ee, proj)
 
-        img_cat = ht.get_cat_suhi_raw(lst, masks, path_cache)
+        if download_type == "normal":
+            img_cat = ht.get_cat_suhi(lst, masks, path_cache)
+        elif download_type == "raw":
+            img_cat = ht.get_cat_suhi_raw(lst, masks, path_cache)
+        elif download_type == "celsius":
+            img_cat = ht.get_cat_suhi_celsius(lst, masks)
 
         task = ee.batch.Export.image.toDrive(
             image=img_cat,
-            description="suhi_raster",
+            description="suhi_raster_" + download_type,
             scale=img_cat.projection().nominalScale(),
             region=bbox_ee,
             crs=img_cat.projection(),
@@ -845,10 +861,56 @@ def start_download(n_clicks, id_hash, bbox_latlon, task_name):
     else:
         return (dash.no_update, dash.no_update, dash.no_update, dash.no_update)
 
+@callback(
+    Output("suhi-interval", "disabled", allow_duplicate=True),
+    Output("suhi-store-task-name", "data", allow_duplicate=True),
+    Output("suhi-btn-stop-task", "style", allow_duplicate=True),
+    Output("suhi-span-rasters-output", "children", allow_duplicate=True),
+    Input("suhi-btn-download-rasters-normal", "n_clicks"),
+    State("global-store-hash", "data"),
+    State("global-store-bbox-latlon", "data"),
+    State("suhi-store-task-name", "data"),
+    prevent_initial_call=True,
+)
+def start_download_normal(n_clicks, id_hash, bbox_latlon, task_name):
+    return _download_handler(n_clicks, id_hash, bbox_latlon, task_name, "normal")
+
+
+@callback(
+    Output("suhi-interval", "disabled", allow_duplicate=True),
+    Output("suhi-store-task-name", "data", allow_duplicate=True),
+    Output("suhi-btn-stop-task", "style", allow_duplicate=True),
+    Output("suhi-span-rasters-output", "children", allow_duplicate=True),
+    Input("suhi-btn-download-rasters-raw", "n_clicks"),
+    State("global-store-hash", "data"),
+    State("global-store-bbox-latlon", "data"),
+    State("suhi-store-task-name", "data"),
+    prevent_initial_call=True,
+)
+def start_download_raw(n_clicks, id_hash, bbox_latlon, task_name):
+    return _download_handler(n_clicks, id_hash, bbox_latlon, task_name, "raw")
+
+
+@callback(
+    Output("suhi-interval", "disabled", allow_duplicate=True),
+    Output("suhi-store-task-name", "data", allow_duplicate=True),
+    Output("suhi-btn-stop-task", "style", allow_duplicate=True),
+    Output("suhi-span-rasters-output", "children", allow_duplicate=True),
+    Input("suhi-btn-download-rasters-celsius", "n_clicks"),
+    State("global-store-hash", "data"),
+    State("global-store-bbox-latlon", "data"),
+    State("suhi-store-task-name", "data"),
+    prevent_initial_call=True,
+)
+def start_download_normal(n_clicks, id_hash, bbox_latlon, task_name):
+    return _download_handler(n_clicks, id_hash, bbox_latlon, task_name, "celsius")
+
 
 @callback(
     Output("suhi-span-rasters-output", "children", allow_duplicate=True),
     Output("suhi-interval", "disabled", allow_duplicate=True),
+    Output("suhi-btn-stop-task", "style", allow_duplicate=True),
+    Output("suhi-store-task-name", "data", allow_duplicate=True),
     Input("suhi-interval", "n_intervals"),
     State("suhi-store-task-name", "data"),
     prevent_initial_call=True,
@@ -864,9 +926,9 @@ def download_rasters(n_intervals, task_name):
     time_elapsed = (current_time - start_time).total_seconds()
 
     if state in ("COMPLETED", "FAILED", "CANCELLED", "SUCCEEDED"):
-        return [f"Status de la Descarga: {state}, Tiempo transcurrido: {int(time_elapsed)} segundos"], True
+        return [f"Status de la Descarga: {state}, Tiempo transcurrido: {int(time_elapsed)} segundos"], True, {"display": "none"}, None
     
-    return [f"Status de la Descarga: {state}, Tiempo transcurrido: {int(time_elapsed)} segundos"], False
+    return [f"Status de la Descarga: {state}, Tiempo transcurrido: {int(time_elapsed)} segundos"], False, dash.no_update, dash.no_update
 
 
 @callback(

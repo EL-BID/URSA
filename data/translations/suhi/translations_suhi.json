@@ -154,10 +154,20 @@
         "en": "* Data obtained for the year 2022 from the satellite image",
         "pt": "* Dados obtidos para o ano de 2022 a partir da imagem de satélite"
     },
-    "suhi-btn-download-rasters": {
-        "es": "Descargar rasters",
-        "en": "Download Rasters",
-        "pt": "Baixar Rasters"
+    "suhi-btn-download-rasters-normal": {
+        "es": "Descargar rasters (normal)",
+        "en": "Download Rasters (normal)",
+        "pt": "Baixar Rasters(normal)"
+    },
+    "suhi-btn-download-rasters-raw": {
+        "es": "Descargar rasters (crudo)",
+        "en": "Download Rasters (raw)",
+        "pt": "Baixar Rasters (cru)"
+    },
+    "suhi-btn-download-rasters-celsius": {
+        "es": "Descargar rasters (centígrado)",
+        "en": "Download Rasters (celsius)",
+        "pt": "Baixar Rasters (centígrado)"
     },
     "suhi-btn-stop-task": {
         "es": "Cancelar ejecución",

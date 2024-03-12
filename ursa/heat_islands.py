@@ -108,7 +108,6 @@ def load_or_get_temps(lst, masks, path_cache):
 
 
 def get_cat_suhi(lst, masks, path_cache):
-    print("Generating temperature discrete image ...")
     temps = load_or_get_temps(lst, masks, path_cache)
 
     rural_lst_mean = temps["rural"]["mean"]
@@ -129,25 +128,27 @@ def get_cat_suhi(lst, masks, path_cache):
     cat_img = cat_img.where(img_suhi.gte(offsets[-1][1]), i + 3)
     cat_img = cat_img.updateMask(cat_img.neq(0))
 
-    print("Done.")
-
     return cat_img
 
 
 def get_cat_suhi_raw(lst, masks, path_cache):
-    print("Generating temperature discrete image ...")
     temps = load_or_get_temps(lst, masks, path_cache)
 
     rural_lst_mean = temps["rural"]["mean"]
-    std = temps["total"]["std"]
-    offsets = make_offsets(0, std)
-
+    
     unwanted_mask = masks["unwanted"]
 
     img_suhi = lst.subtract(rural_lst_mean)
     img_suhi = img_suhi.updateMask(unwanted_mask)
 
-    print("Done.")
+    return img_suhi
+
+
+def get_cat_suhi_celsius(lst, masks):    
+    unwanted_mask = masks["unwanted"]
+
+    img_suhi = lst
+    img_suhi = img_suhi.updateMask(unwanted_mask)
 
     return img_suhi
 
