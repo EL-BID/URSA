@@ -7,52 +7,51 @@
 
 **U**rban **R**eporting based on **S**atellite **A**nalysis
 
-## **¿Qué es?**
+URSA is a support system for urban planning. It allows easy access to the vast amount of information captured by satellite sensors, taking care of collecting, processing, and presenting key information about the evolution of cities in Latin America and the Caribbean (LAC).
 
-URSA es un sistema de apoyo para la planificación urbana. Permite acceder de forma sencilla a la enorme cantidad de información capturada por sensores satelitales, encargándose de recopilar, procesar y presentar información clave acerca de la evolución de ciudades en Latinoamérica y el Caribe (LAC).
+URSA is a free, open-source tool.
 
-URSA es una herramienta gratuita, de código abierto.
+[Installation guide for Windows](https://github.com/EL-BID/URSA/blob/main/documentation/ENG-URSA_Installation_Guide_Windows.pdf)
 
-[TUTORIAL PARA INSTALACIÓN Y USO EN WINDOWS](https://github.com/EL-BID/URSA/blob/main/documentation/URSA-Tutorial-Windows.pdf)
-
-
-## ¿Por qué fue desarrollada?
-
-El sistema fue desarrollado en colaboración entre la División de Vivienda y Desarrollo Urbano (HUD) del BID y el Centro para el Futuro de las Ciudades del Tecnológico de Monterrey. La misión fue la de diseñar una plataforma que permita a los gobiernos municipales adquirir de forma fácil información cartográfica actualizada, en el formato apropiado y en la resolución geográfica adecuada. 
+[(en español) Guía de instalación en Windows](https://github.com/EL-BID/URSA/blob/main/documentation/ESP-URSA-Guia_Instalacion_Windows.pdf)
 
 
-## ¿Por qué la estamos compartiendo?
 
-URSA está a disposición del público general, y sobre todo de equipos de gobierno, para apoyar los procesos de toma de decisiones, planificación y gestión en ciudades y regiones metropolitanas.
+## Why was it developed?
+
+The system was developed in collaboration between the Housing and Urban Development Division (HUD) of the IDB and the Center for the Future of Cities at the Tecnológico de Monterrey. The mission was to design a platform that allows municipal governments to easily acquire updated cartographic information in the appropriate format and geographic resolution.
+
+## Why are we sharing it?
+
+URSA is available to the general public, and especially to government teams, to support decision-making, planning, and management processes in cities and metropolitan regions.
 
 ![](https://github.com/bitsandbricks/URSA/raw/main/documentation/URSA_analisis_historico_.gif)
 
 
-## Instalación
+## Quick Start
 
-(estos pasos son requeridos sólo una vez)
+(these steps are required only once)
 
-1. Clonar o descargar el contenido de este repositorio.
+1. Clone or download the content of this repository.
 
-2. Instalar
-[Docker](https://docs.docker.com/engine/install/)
+2. Install Docker.
 
-3. Iniciar la imagen de docker con el código y dependencias. Desde el directorio
-donde se ha descargado la aplicación, ejecutar:
+3. Start the Docker image with the code and dependencies. From the directory where the application was downloaded, run:
 
 ```
 docker build -t bid-urban-growth .
 ```
 
-El proceso tomará un buen rato la primera vez, ya que necesitará descargar y
-configurar varios componentes de software. Una vez completada la primera
-puesta en marcha, las subsiguientes serán casi instantáneas.
+The process will take a while the first time, as it will need to download and configure several software components. Once the initial setup is complete, subsequent launches will be almost instantaneous.
+
 
 ## Uso
 
-Para cargar y correr un contenedor con la imagen de docker, se debe ejecutar el siguiente comando:
+Usage
 
-* **En Windows:** `launcher.bat`
-* **En Linux/Mac:** `bash launcher.sh`
+To load and run a container with the docker image, the following command must be executed:
 
-Posteriormente, se deberá abrir una ventana del navegador web y apuntar a la dirección http://localhost:8050/. Por razones de compatibilidad, se recomienda utilizar Firefox o Safari.
+* __On Windows:__ launcher.bat
+* __On Linux/Mac:__ bash launcher.sh
+  
+Subsequently, a web browser window should be opened and pointed to the address http://localhost:8050/. For compatibility reasons, it is recommended to use Firefox or Safari.
