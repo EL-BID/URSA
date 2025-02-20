@@ -51,3 +51,8 @@ To load and run a container with the docker image, the following command must be
 * __On Linux/Mac:__ bash launcher.sh
   
 Subsequently, a web browser window should be opened and pointed to the address http://localhost:8050/. For compatibility reasons, it is recommended to use Firefox or Safari.
+
+
+## Contributing
+
+Participation in the project through interaction with our code repositories is open to anyone, provided they abide by the terms of the [Contributor Covenant Code of Conduct](https://www.contributor-covenant.org/version/2/1/code_of_conduct/). Bug reports and pull requests are welcome via our [issues page](https://github.com/EL-BID/URSA/issues).
