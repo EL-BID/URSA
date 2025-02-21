@@ -24,4 +24,4 @@ The only exception is Dynamic World data, which, despite being available under a
 
 # Example of Using Alternative Sources
 
-File `example.py` includes a script to download, merge, and clip WorldCover rasters from the ESA website. 
+File `documentation/GEE_dependency/example.py` includes a script to download, merge, and clip WorldCover rasters from the ESA website. 
