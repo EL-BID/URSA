@@ -4,9 +4,9 @@ The current version of URSA requires users to provide a Google Earth Engine auth
 
 Below is a list of features that rely on data obtained through Google Earth Engine:
 
-- **Land Cover:** Uses **WorldCover** rasters.
-- **Future Scenarios:** Downloads data from **Geomorpho90m** (topography) and the **World Database on Protected Areas** (WDPA).
-- **Urban Heat Islands:** Downloads and processes temperature data from **Landsat 9**.
+- **Land Cover:** Uses [**WorldCover**](https://developers.google.com/earth-engine/datasets/catalog/ESA_WorldCover_v200) rasters.
+- **Future Scenarios:** Downloads data from [**Geomorpho90m**](https://gee-community-catalog.org/projects/geomorpho90/) (topography) and the [**World Database on Protected Areas**](https://developers.google.com/earth-engine/datasets/catalog/WCMC_WDPA_current_polygons).
+- **Urban Heat Islands:** Downloads and processes temperature data from [**Landsat 9**]().
 
 ## Alternative Sources
 
