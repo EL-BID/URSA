@@ -267,7 +267,7 @@ def plot_built_poly(built_gdf, bbox_latlon, year=2020):
 
     west, south, east, north = bbox_latlon.bounds
 
-    Map = geemap.Map()
+    Map = geemap.Map(ee_initialize=False)
 
     gdf = built_gdf[built_gdf.year == year].to_crs(4326).reset_index(drop=True)
     gdf["id"] = list(gdf.index)
