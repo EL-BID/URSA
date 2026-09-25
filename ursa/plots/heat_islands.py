@@ -174,7 +174,7 @@ def plot_cat_map(bbox_ee, fua_latlon_centroid, img_cat):
     print("Generating temperature map ...")
     vis_params = {"min": 0, "max": 7, "palette": ["#000000"] + list(TEMP_COLORS.values())}
 
-    Map = geemap.Map(basemap="carto-positron")
+    Map = geemap.Map(basemap="carto-positron", ee_initialize=False)
     Map.set_center(fua_latlon_centroid.y, fua_latlon_centroid.x, zoom=10)
     Map.addLayer(img_cat.clip(bbox_ee), vis_params, "SUHI", opacity=0.6)
     Map.layout.mapbox.layers[0].sourceattribution = "LandSat" " | Google Earth Engine"

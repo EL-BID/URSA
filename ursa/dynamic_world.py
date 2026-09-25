@@ -145,7 +145,7 @@ def plot_map_season(bbox_latlon, fua_latlon_centroid, season, year, language='es
     rgb_image = dw_lbl.visualize(**vis_params).divide(255)
     probability_hillshade = rgb_image.multiply(hillshade)
 
-    Map = geemap.Map(basemap="carto-positron")
+    Map = geemap.Map(basemap="carto-positron", ee_initialize=False)
 
     centroid = fua_latlon_centroid
     Map.set_center(centroid.y, centroid.x, zoom=10)

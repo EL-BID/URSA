@@ -1,0 +1,21 @@
+# Build context is copied verbatim by the Dockerfile's "COPY . ." step, so
+# anything listed here no longer travels into the image.
+
+.git
+__pycache__/
+*.py[cod]
+*.egg-info/
+.mypy_cache/
+.pytest_cache/
+.ipynb_checkpoints/
+.vscode/
+.idea/
+
+# Manuals and tutorials. They are distributed with the source repository, not
+# served by the application.
+documentation/
+
+# 44 MB of GHSL source rasters. They are only read by the one-off
+# ursa.make_cities_csv* helper scripts, never by the application, which loads
+# its cities from data/output. Uncomment to shrink the build context further.
+# data/input/
