@@ -9,6 +9,8 @@ import ursa.utils.raster as ru
 
 from shapely.geometry import Polygon
 
+from ursa.constants import BASEMAP_ATTRIBUTION, BASEMAP_STYLE
+
 class_dict = {
     "0": "Agua",
     "1": "Árboles",
@@ -145,7 +147,7 @@ def plot_map_season(bbox_latlon, fua_latlon_centroid, season, year, language='es
     rgb_image = dw_lbl.visualize(**vis_params).divide(255)
     probability_hillshade = rgb_image.multiply(hillshade)
 
-    Map = geemap.Map(basemap="carto-positron", ee_initialize=False)
+    Map = geemap.Map(basemap=BASEMAP_STYLE, ee_initialize=False)
 
     centroid = fua_latlon_centroid
     Map.set_center(centroid.y, centroid.x, zoom=10)
@@ -167,7 +169,7 @@ def plot_map_season(bbox_latlon, fua_latlon_centroid, season, year, language='es
         gdf,
         geojson=gdf.geometry,
         locations="index",
-        mapbox_style="carto-positron",
+        mapbox_style=BASEMAP_STYLE,
         color="Clases",
         color_discrete_map=translated_colors,
     )
@@ -179,7 +181,7 @@ def plot_map_season(bbox_latlon, fua_latlon_centroid, season, year, language='es
         'href="https://developers.google.com/earth-engine/'
         'datasets/catalog/GOOGLE_DYNAMICWORLD_V1#description">'
         "Dynamic World V1</a>"
-        " | Google Earth Engine"
+        f" | Google Earth Engine | {BASEMAP_ATTRIBUTION}"
     )
 
     return Map
