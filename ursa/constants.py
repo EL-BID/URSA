@@ -23,3 +23,17 @@ TEMP_PALETTE_MAP_INV = {value: key for key, value in TEMP_PALETTE_MAP.items()}
 TEMP_PALETTE_MAP_K = {x: y for x, y in zip(TEMP_NAMES, RdBu7k)}
 
 TEMP_PALETTE_MAP_INV_K = {value: key for key, value in TEMP_PALETTE_MAP_K.items()}
+
+# Basemap served by OpenFreeMap. It needs no API key and has no usage quota,
+# unlike the CARTO styles that plotly.js used to inline ("carto-positron"),
+# which now return watermarked tiles when requested without a key.
+BASEMAP_STYLE = "https://tiles.openfreemap.org/styles/positron"
+
+# OpenFreeMap, OpenMapTiles and OpenStreetMap only allow this basemap to be
+# used as long as the credit stays visible on the map.
+BASEMAP_ATTRIBUTION = (
+    '<a href="https://openfreemap.org/" target="_blank">OpenFreeMap</a> © '
+    '<a href="https://www.openmaptiles.org/" target="_blank">OpenMapTiles</a> © '
+    '<a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'
+    " contributors"
+)

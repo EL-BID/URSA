@@ -10,10 +10,13 @@ import plotly.express as px
 import rasterio as rio
 import rioxarray as rxr
 import tempfile
+import ursa.utils.plotly as pu
 import ursa.utils.raster as ru
 
 from PIL import Image, ImageOps
 from shapely.geometry import shape
+
+from ursa.constants import BASEMAP_STYLE
 
 HEIGHT = 600
 HIGH_RES = True
@@ -391,7 +394,7 @@ def plot_built_agg_img(smod, built, bbox_mollweide, centroid_mollweide, thresh=0
         lon="lon",
         color="Year",
         color_discrete_map=cmap_cat,
-        mapbox_style="carto-positron",
+        mapbox_style=BASEMAP_STYLE,
     )
 
     fig.update_layout(
@@ -478,6 +481,8 @@ def plot_built_agg_img(smod, built, bbox_mollweide, centroid_mollweide, thresh=0
         x=1,
         y=0,
     )
+
+    pu.add_basemap_credit(fig)
 
     return fig
 
@@ -679,7 +684,7 @@ def plot_smod_clusters(smod, bbox_latlon, feature="clusters", language='es'):
         hover_data={translations[language]["Year"]: True, "index": False},
         color_discrete_map=cmap_cat,
         opacity=0.5,
-        mapbox_style="carto-positron",
+        mapbox_style=BASEMAP_STYLE,
     )
     fig.update_traces(marker_line_width=0)
     fig.update_layout(
@@ -697,6 +702,8 @@ def plot_smod_clusters(smod, bbox_latlon, feature="clusters", language='es'):
         x=1,
         y=0,
     )
+
+    pu.add_basemap_credit(fig)
 
     fig.update_layout(
         margin={"r": 0, "t": 30, "l": 0, "b": 0},
@@ -782,7 +789,7 @@ def plot_built_year_img(
         lon="lon",
         color=c_col,
         color_continuous_scale="cividis",
-        mapbox_style="carto-positron",
+        mapbox_style=BASEMAP_STYLE,
     )
     fig.update_layout(
         mapbox_center={"lat": (latmin + latmax) / 2, "lon": (lonmin + lonmax) / 2}
@@ -877,6 +884,8 @@ def plot_built_year_img(
         y=0,
     )
 
+    pu.add_basemap_credit(fig)
+
     return fig
 
 
@@ -967,7 +976,7 @@ def plot_pop_year_img(smod, pop, bbox_mollweide, centroid_mollweide, year=2020, 
         lon="lon",
         color=translations[language]["Population"],
         color_discrete_map=cmap_d,
-        mapbox_style="carto-positron",
+        mapbox_style=BASEMAP_STYLE,
     )
     fig.update_layout(
         mapbox_center={"lat": (latmin + latmax) / 2, "lon": (lonmin + lonmax) / 2}
@@ -1061,6 +1070,8 @@ def plot_pop_year_img(smod, pop, bbox_mollweide, centroid_mollweide, year=2020, 
         x=1,
         y=0,
     )
+
+    pu.add_basemap_credit(fig)
 
     return fig
 
